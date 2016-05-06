@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp">
+        <TextView
+            android:id="@+id/tvLastAuditDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12/03/2016"
+            android:textSize="14sp"/>
+        <TextView
+            android:id="@+id/tvAtmUniqueId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:text="HDFC0921212312"
+            android:textSize="14sp"/>
+        <TextView
+            android:id="@+id/tvBankName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:text="HDFC"
+            android:textSize="14sp"/>
+        <TextView
+            android:id="@+id/tvAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/tvBankName"
+            android:text="SECTOR 21, DWARKA"
+            android:textSize="14sp"/>
+        <TextView
+            android:id="@+id/tvPincode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/tvAddress"
+            android:text="110075"
+            android:textSize="14sp"/>
+        <TextView
+            android:id="@+id/tvCity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvAddress"
+            android:layout_marginRight="5dp"
+            android:layout_toLeftOf="@+id/tvPincode"
+            android:layout_toStartOf="@+id/tvPincode"
+            android:text="NEW DELHI"
+            android:textSize="14sp"/>
+    </RelativeLayout>
+</RelativeLayout>
