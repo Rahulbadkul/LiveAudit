@@ -22,7 +22,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String LOG = DatabaseHandler.class.getName ();
 
     // Database Version
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // Database Name
     private static final String DATABASE_NAME = "liveAudit";
@@ -69,12 +69,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 //            + KEY_TODO_ID + " INTEGER," + KEY_TAG_ID + " INTEGER,"
 //            + KEY_CREATED_AT + " DATETIME" + ")";
 
-    SQLiteDatabase db1;
 
 
     public DatabaseHandler (Context context) {
         super (context, DATABASE_NAME, null, DATABASE_VERSION);
-        db1 = getWritableDatabase ();
+
     }
 
     @Override
@@ -89,7 +88,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void onUpgrade (SQLiteDatabase db, int oldVersion, int newVersion) {
         // on upgrade drop older tables
         db.execSQL ("DROP TABLE IF EXISTS " + TABLE_QUESTIONS);
-//        db.execSQL ("DROP TABLE IF EXISTS " + TABLE_TAG);
+        db.execSQL ("DROP TABLE IF EXISTS " + TABLE_ATMS);
 //        db.execSQL ("DROP TABLE IF EXISTS " + TABLE_TODO_TAG);
 
         // create new tables

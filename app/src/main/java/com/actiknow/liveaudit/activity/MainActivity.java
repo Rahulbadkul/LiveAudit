@@ -62,16 +62,13 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
     GoogleApiClient client;
 //    GoogleApiClient googleApiClient;
     Dialog splash;
-
+    DatabaseHandler db;
     // Action Bar components
     private List<Atms> atmsList = new ArrayList<Atms> ();
     private AllAtmAdapter adapter;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private RelativeLayout mDrawerPanel;
-
-
-    DatabaseHandler db;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -81,7 +78,7 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
         initView ();
 
         db = new DatabaseHandler (getApplicationContext ());
-        db.getWritableDatabase ();
+//        db.getWritableDatabase ();
 
 
         Typeface tf = SetTypeFace.getTypeface (MainActivity.this);
