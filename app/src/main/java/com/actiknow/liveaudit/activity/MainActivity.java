@@ -256,22 +256,16 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
                         }
                     });
             AppController.getInstance ().addToRequestQueue (strRequest);
-//                strRequest.setShouldCache (true);
-
-//            }
-
-
-
-//            strRequest1.setShouldCache (true);
 
 
         } else {
 
-            tvNoInternetConnection.setVisibility (View.VISIBLE);
+            //          tvNoInternetConnection.setVisibility (View.VISIBLE);
             progressBar.setVisibility (View.GONE);
-            listViewAllAtms.setVisibility (View.GONE);
+            listViewAllAtms.setVisibility (View.VISIBLE);
 
-            adapter.notifyDataSetChanged ();
+            atmsList.clear ();
+
 
             // Getting all Atms
             Log.d ("Get All Atms", "Getting All Atms");
@@ -281,6 +275,8 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
                 Log.d ("Atm ID", atms.getAtm_unique_id ());
             }
 
+
+            adapter.notifyDataSetChanged ();
 
             /*
 
@@ -318,7 +314,6 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
 
 */
         }
-
 
         db.closeDB ();
 
