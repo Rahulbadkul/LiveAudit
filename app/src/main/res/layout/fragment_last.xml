@@ -14,10 +14,10 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:visibility="visible"
-        card_view:cardCornerRadius="10dp"
-        card_view:cardElevation="10dp"
+        card_view:cardCornerRadius="4dp"
+        card_view:cardElevation="4dp"
         card_view:cardUseCompatPadding="true"
-        card_view:contentPadding="5dp">
+        card_view:contentPadding="2dp">
 
 <!--
         <ScrollView
@@ -48,7 +48,7 @@
                     android:layout_margin="10dp"
                     android:progressDrawable="@drawable/red_scrubber_progress"
                     android:thumb="@drawable/red_scrubber_control"/>
-                <Button
+                Button
                     android:id="@+id/btSubmit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

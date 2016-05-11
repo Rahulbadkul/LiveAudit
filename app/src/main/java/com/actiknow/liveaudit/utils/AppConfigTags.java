@@ -37,4 +37,12 @@ public class AppConfigTags {
     public static final String QUESTION = "question";
     public static final String QUESTION_ID = "question_id";
 
+
+    public static final String AUDITOR_ID = "auditor_id";
+    public static final String SWITCH_FLAG = "switch_flag";
+    public static final String COMMENT = "comment";
+    public static final String IMAGE1 = "image1";
+    public static final String IMAGE2 = "image2";
+
+
 }

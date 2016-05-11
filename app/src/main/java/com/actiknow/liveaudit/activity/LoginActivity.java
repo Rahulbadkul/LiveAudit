@@ -93,6 +93,7 @@ public class LoginActivity extends AppCompatActivity {
                         LoginDetailsPref loginDetailsPref = LoginDetailsPref.getInstance ();
                         loginDetailsPref.putStringPref (LoginActivity.this, LoginDetailsPref.USERNAME, Constants.username);
                         loginDetailsPref.putStringPref (LoginActivity.this, LoginDetailsPref.PASSWORD, Constants.password);
+                        loginDetailsPref.putIntPref (LoginActivity.this, LoginDetailsPref.AUDITOR_ID, Constants.auditor_id_main);
 
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

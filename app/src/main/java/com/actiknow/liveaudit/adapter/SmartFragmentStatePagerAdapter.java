@@ -34,15 +34,16 @@ public abstract class SmartFragmentStatePagerAdapter extends FragmentStatePagerA
         super.destroyItem (container, position, object);
     }
 
-    @Override
-    public float getPageWidth (int position) {
-        return 0.93f;
-    }
+//    @Override
+//    public float getPageWidth (int position) {
+//        return 0.93f;
+//    }
 
 
     // Returns the fragment for the position (if instantiated)
     public Fragment getRegisteredFragment (int position) {
         return registeredFragments.get (position);
     }
+
 
 }

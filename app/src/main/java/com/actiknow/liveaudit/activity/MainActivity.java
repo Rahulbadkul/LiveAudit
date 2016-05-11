@@ -154,12 +154,19 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
                         @Override
                         public void onErrorResponse (VolleyError error) {
                             Log.d ("TAG", error.toString ());
+                            Log.d ("Get AllQuestions", "Getting All Questions");
+                            List<Questions> allQuestions = db.getAllQuestions ();
+                            for (Questions question : allQuestions) {
+                                Constants.questionsList.add (question);
+                                Log.d ("Question", question.getQuestion ());
+                            }
+
                         }
                     });
             AppController.getInstance ().addToRequestQueue (strRequest1);
         } else {
             // Getting all Questions
-            Log.d ("Get AllQuestions", "Getting All Questions");
+            Log.d ("Get AllQuestions", "Getting All Questions from database");
             List<Questions> allQuestions = db.getAllQuestions ();
             for (Questions question : allQuestions) {
                 Constants.questionsList.add (question);
@@ -170,25 +177,6 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
 
 
 
-
-/*
-        Cache cache2 = AppController.getInstance ().getRequestQueue ().getCache ();
-        Cache.Entry entry2 = cache2.get (AppConfigURL.URL_GETALLATMS);
-        if (entry2 != null) {
-            try {
-                String data = new String (entry2.data, "UTF-8");
-                Log.e ("Karman", " " + data);
-                // handle data, like converting it to xml, json, bitmap etc.,
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace ();
-            }
-        }
-        else {
-            Log.e ("Karman", "in else condition");
-
-        }
-
-*/
         if (NetworkConnection.isNetworkAvailable (this)) {
             Log.d ("URL", AppConfigURL.URL_GETALLATMS);
             StringRequest strRequest = new StringRequest (Request.Method.POST, AppConfigURL.URL_GETALLATMS,
@@ -250,31 +238,32 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
                         @Override
                         public void onErrorResponse (VolleyError error) {
                             Log.d ("TAG", error.toString ());
-                            tvNoInternetConnection.setVisibility (View.VISIBLE);
                             progressBar.setVisibility (View.GONE);
-                            listViewAllAtms.setVisibility (View.GONE);
+                            listViewAllAtms.setVisibility (View.VISIBLE);
+                            atmsList.clear ();
+
+                            // Getting all Atms
+                            Log.d ("Get All Atms", "Getting All Atms");
+                            List<Atms> allAtms = db.getAllAtms ();
+                            for (Atms atms : allAtms) {
+                                atmsList.add (atms);
+                                Log.d ("Atm ID", atms.getAtm_unique_id ());
+                            }
+                            adapter.notifyDataSetChanged ();
                         }
                     });
             AppController.getInstance ().addToRequestQueue (strRequest);
-
-
         } else {
-
-            //          tvNoInternetConnection.setVisibility (View.VISIBLE);
             progressBar.setVisibility (View.GONE);
             listViewAllAtms.setVisibility (View.VISIBLE);
-
             atmsList.clear ();
-
-
             // Getting all Atms
-            Log.d ("Get All Atms", "Getting All Atms");
+            Log.d ("Get All Atms", "Getting All Atms from database");
             List<Atms> allAtms = db.getAllAtms ();
             for (Atms atms : allAtms) {
                 atmsList.add (atms);
                 Log.d ("Atm ID", atms.getAtm_unique_id ());
             }
-
 
             adapter.notifyDataSetChanged ();
 
@@ -311,12 +300,9 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
 
             // Showing Alert Message
             alertDialog.show ();
-
 */
         }
-
         db.closeDB ();
-
     }
 
     private void isLogin () {
@@ -332,6 +318,7 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
         LoginDetailsPref loginDetailsPref = LoginDetailsPref.getInstance ();
         Constants.username = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.USERNAME);
         Constants.password = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.PASSWORD);
+        Constants.auditor_id_main = loginDetailsPref.getIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_ID);
     }
 
 

@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.actiknow.liveaudit.model.Atms;
 import com.actiknow.liveaudit.model.Questions;
+import com.actiknow.liveaudit.model.Response;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // Table Names
     private static final String TABLE_QUESTIONS = "questions";
     private static final String TABLE_ATMS = "atms";
+    private static final String TABLE_RESPONSES = "responses";
 //    private static final String TABLE_TODO_TAG = "todo_tags";
 
     // Common column names
@@ -47,6 +49,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_CITY = "city";
     private static final String KEY_PINCODE = "pincode";
 
+    // RESPONSE Table - column names
+    private static final String KEY_AUDITOR_ID = "auditor_id";
+    private static final String KEY_QUESTION_ID = "question_id";
+    private static final String KEY_SWITCH_FLAG = "switch_flag";
+    private static final String KEY_COMMENT = "comment";
+    private static final String KEY_IMAGE1 = "image1";
+    private static final String KEY_IMAGE2 = "image2";
+
     // NOTE_TAGS Table - column names
 //    private static final String KEY_TODO_ID = "todo_id";
 //    private static final String KEY_TAG_ID = "tag_id";
@@ -62,6 +72,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             + "(" + KEY_ID + " INTEGER PRIMARY KEY," + KEY_ATM_ID + " TEXT,"
             + KEY_LAST_AUDIT_DATE + " TEXT," + KEY_BANK_NAME + " TEXT," + KEY_ADDRESS + " TEXT," + KEY_CITY + " TEXT,"
             + KEY_PINCODE + " TEXT," + KEY_CREATED_AT + " DATETIME" + ")";
+
+    // Tag table create statement
+    private static final String CREATE_TABLE_RESPONSE = "CREATE TABLE " + TABLE_ATMS
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY," + KEY_ATM_ID + " TEXT,"
+            + KEY_AUDITOR_ID + " INTEGER," + KEY_QUESTION_ID + " INTEGER," + KEY_SWITCH_FLAG + " INTEGER," + KEY_COMMENT + " TEXT,"
+            + KEY_IMAGE1 + " TEXT," + KEY_IMAGE2 + " TEXT," + KEY_CREATED_AT + " DATETIME" + ")";
+
 
     // todo_tag table create statement
 //    private static final String CREATE_TABLE_TODO_TAG = "CREATE TABLE "
@@ -277,12 +294,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
         values.put (KEY_ATM_ID, atm.getAtm_unique_id ());
-        values.put (KEY_ATM_ID, atm.getAtm_unique_id ());
-        values.put (KEY_ATM_ID, atm.getAtm_unique_id ());
-        values.put (KEY_ATM_ID, atm.getAtm_unique_id ());
-        values.put (KEY_ATM_ID, atm.getAtm_unique_id ());
-        values.put (KEY_ATM_ID, atm.getAtm_unique_id ());
-        values.put (KEY_ATM_ID, atm.getAtm_unique_id ());
+        values.put (KEY_LAST_AUDIT_DATE, atm.getAtm_last_audit_date ());
+        values.put (KEY_BANK_NAME, atm.getAtm_bank_name ());
+        values.put (KEY_ADDRESS, atm.getAtm_address ());
+        values.put (KEY_CITY, atm.getAtm_city ());
+        values.put (KEY_PINCODE, atm.getAtm_pincode ());
         // updating row
         return db.update (TABLE_ATMS, values, KEY_ID + " = ?",
                 new String[] {String.valueOf (atm.getAtm_id ())});
@@ -303,6 +319,125 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void deleteAllAtms () {
         SQLiteDatabase db = this.getWritableDatabase ();
         db.execSQL ("delete from " + TABLE_ATMS);
+    }
+
+
+    // ------------------------ "Response" table methods ----------------//
+
+    /**
+     * Creating a atm
+     */
+    public long createResponse (Response response) {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        ContentValues values = new ContentValues ();
+        values.put (KEY_ID, response.getResponse_id ());
+        values.put (KEY_ATM_ID, response.getResponse_atm_unique_id ());
+        values.put (KEY_AUDITOR_ID, response.getResponse_auditor_id ());
+        values.put (KEY_QUESTION_ID, response.getResponse_question_id ());
+        values.put (KEY_SWITCH_FLAG, response.getResponse_switch_flag ());
+        values.put (KEY_COMMENT, response.getResponse_comment ());
+        values.put (KEY_IMAGE1, response.getResponse_image1 ());
+        values.put (KEY_IMAGE2, response.getResponse_image2 ());
+        values.put (KEY_CREATED_AT, getDateTime ());
+        long response_id = db.insert (TABLE_RESPONSES, null, values);
+        return response_id;
+    }
+
+    /**
+     * get single response
+     */
+    public Response getResponse (long response_id) {
+        SQLiteDatabase db = this.getReadableDatabase ();
+        String selectQuery = "SELECT  * FROM " + TABLE_RESPONSES + " WHERE " + KEY_ID + " = " + response_id;
+        Log.e (LOG, selectQuery);
+        Cursor c = db.rawQuery (selectQuery, null);
+        if (c != null)
+            c.moveToFirst ();
+        Response response = new Response ();
+        response.setResponse_id (c.getInt (c.getColumnIndex (KEY_ID)));
+        response.setResponse_atm_unique_id (c.getString (c.getColumnIndex (KEY_ATM_ID)));
+        response.setResponse_auditor_id (c.getInt (c.getColumnIndex (KEY_AUDITOR_ID)));
+        response.setResponse_question_id (c.getInt (c.getColumnIndex (KEY_QUESTION_ID)));
+        response.setResponse_switch_flag (c.getInt (c.getColumnIndex (KEY_SWITCH_FLAG)));
+        response.setResponse_comment (c.getString (c.getColumnIndex (KEY_COMMENT)));
+        response.setResponse_image1 (c.getString (c.getColumnIndex (KEY_IMAGE1)));
+        response.setResponse_image2 (c.getString (c.getColumnIndex (KEY_IMAGE2)));
+        return response;
+    }
+
+    /**
+     * getting all atms
+     */
+    public List<Response> getAllResponse () {
+        List<Response> responses = new ArrayList<Response> ();
+        String selectQuery = "SELECT  * FROM " + TABLE_RESPONSES;
+//        Log.e (LOG, selectQuery);
+        SQLiteDatabase db = this.getReadableDatabase ();
+        Cursor c = db.rawQuery (selectQuery, null);
+        // looping through all rows and adding to list
+        if (c.moveToFirst ()) {
+            do {
+                Response response = new Response ();
+                response.setResponse_id (c.getInt (c.getColumnIndex (KEY_ID)));
+                response.setResponse_atm_unique_id (c.getString (c.getColumnIndex (KEY_ATM_ID)));
+                response.setResponse_auditor_id (c.getInt (c.getColumnIndex (KEY_AUDITOR_ID)));
+                response.setResponse_question_id (c.getInt (c.getColumnIndex (KEY_QUESTION_ID)));
+                response.setResponse_switch_flag (c.getInt (c.getColumnIndex (KEY_SWITCH_FLAG)));
+                response.setResponse_comment (c.getString (c.getColumnIndex (KEY_COMMENT)));
+                response.setResponse_image1 (c.getString (c.getColumnIndex (KEY_IMAGE1)));
+                response.setResponse_image2 (c.getString (c.getColumnIndex (KEY_IMAGE2)));
+                responses.add (response);
+            } while (c.moveToNext ());
+        }
+        return responses;
+    }
+
+    /**
+     * getting atm count
+     */
+    public int getResponseCount () {
+        String countQuery = "SELECT  * FROM " + TABLE_RESPONSES;
+//        Log.e (LOG, countQuery);
+        SQLiteDatabase db = this.getReadableDatabase ();
+        Cursor cursor = db.rawQuery (countQuery, null);
+        int count = cursor.getCount ();
+        cursor.close ();
+        return count;
+    }
+
+    /**
+     * Updating an atm
+     */
+    public int updateResponse (Response response) {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        ContentValues values = new ContentValues ();
+        values.put (KEY_ATM_ID, response.getResponse_atm_unique_id ());
+        values.put (KEY_AUDITOR_ID, response.getResponse_auditor_id ());
+        values.put (KEY_QUESTION_ID, response.getResponse_question_id ());
+        values.put (KEY_SWITCH_FLAG, response.getResponse_switch_flag ());
+        values.put (KEY_COMMENT, response.getResponse_comment ());
+        values.put (KEY_IMAGE1, response.getResponse_image1 ());
+        values.put (KEY_IMAGE2, response.getResponse_image2 ());
+        // updating row
+        return db.update (TABLE_RESPONSES, values, KEY_ID + " = ?",
+                new String[] {String.valueOf (response.getResponse_id ())});
+    }
+
+    /**
+     * Deleting an atm
+     */
+    public void deleteResponse (long response_id) {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        db.delete (TABLE_RESPONSES, KEY_ID + " = ?",
+                new String[] {String.valueOf (response_id)});
+    }
+
+    /**
+     * Deleting all atms
+     */
+    public void deleteAllResponses () {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        db.execSQL ("delete from " + TABLE_RESPONSES);
     }
 
 
@@ -442,8 +577,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
      * get datetime
      */
     private String getDateTime () {
-        SimpleDateFormat dateFormat = new SimpleDateFormat (
-                "yyyy-MM-dd HH:mm:ss", Locale.getDefault ());
+        SimpleDateFormat dateFormat = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss", Locale.getDefault ());
         Date date = new Date ();
         return dateFormat.format (date);
     }

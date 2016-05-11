@@ -26,10 +26,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.AtmDetailsActivity"
-            android:screenOrientation="portrait">
-        </activity>
-        <activity
             android:name=".activity.TakePictureActivity"
             android:screenOrientation="portrait">
         </activity>

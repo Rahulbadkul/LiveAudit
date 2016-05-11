@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/text_color_white">
@@ -26,20 +25,20 @@
                 android:src="@drawable/live_audit_logo"/>
         </RelativeLayout>
     </android.support.v7.widget.Toolbar>
-
-    <com.pixelcan.inkpageindicator.InkPageIndicator
-        android:id="@+id/indicator"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/toolbar1"
-        android:paddingBottom="8dp"
-        android:paddingTop="8dp"
-        app:animationDuration="320"
-        app:currentPageIndicatorColor="@color/text_color_black"
-        app:dotDiameter="8dp"
-        app:dotGap="8dp"
-        app:pageIndicatorColor="@color/text_color_grey_dark"/>
-
+    <!--
+        <com.pixelcan.inkpageindicator.InkPageIndicator
+            android:id="@+id/indicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/toolbar1"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp"
+            app:animationDuration="320"
+            app:currentPageIndicatorColor="@color/text_color_black"
+            app:dotDiameter="8dp"
+            app:dotGap="8dp"
+            app:pageIndicatorColor="@color/text_color_grey_dark"/>
+    -->
     <!--
         <android.support.v4.view.ViewPager
             android:id="@+id/vpPager"
@@ -56,9 +55,21 @@
         android:id="@+id/vpPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/indicator"
-        android:gravity="center"
-        android:paddingLeft="5dp"
+        android:layout_above="@+id/btNext"
+        android:layout_below="@+id/toolbar1"
+        android:gravity="center" android:paddingLeft="5dp"
         android:paddingRight="5dp">
     </com.actiknow.liveaudit.utils.CustomViewPager>
+
+    <Button
+        android:id="@+id/btNext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="20dp"
+        android:background="@drawable/bg_button"
+        android:text="NEXT"
+        android:textColor="@color/text_color_white"
+        android:textSize="20sp"
+        android:textStyle="bold"/>
 </RelativeLayout>

@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.actiknow.liveaudit.R;
 import com.actiknow.liveaudit.activity.ViewPagerActivity;
 import com.actiknow.liveaudit.model.Atms;
+import com.actiknow.liveaudit.utils.Constants;
 import com.actiknow.liveaudit.utils.SetTypeFace;
 
 import java.util.List;
@@ -78,6 +79,7 @@ public class AllAtmAdapter extends BaseAdapter {
 
 			@Override
 			public void onClick (View arg0) {
+				Constants.atm_unique_id = atm.getAtm_unique_id ().toUpperCase ();
 				Intent intent = new Intent (activity, ViewPagerActivity.class);
 				activity.startActivity (intent);
 				activity.overridePendingTransition (R.anim.slide_in_right, R.anim.slide_out_left);
@@ -85,5 +87,4 @@ public class AllAtmAdapter extends BaseAdapter {
 		});
 		return convertView;
 	}
-
 }

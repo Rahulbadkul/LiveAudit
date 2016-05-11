@@ -22,6 +22,19 @@ public class CustomViewPager extends ViewPager {
         this.childId = childId;
     }
 
+    @Override
+    public boolean onInterceptTouchEvent (MotionEvent event) {
+        // Never allow swiping to switch between pages
+        return false;
+    }
+
+    @Override
+    public boolean onTouchEvent (MotionEvent event) {
+        // Never allow swiping to switch between pages
+        return false;
+    }
+
+
     /*
 
     @Override
@@ -42,25 +55,4 @@ public class CustomViewPager extends ViewPager {
 
 */
 
-    @Override
-    public boolean onTouchEvent (MotionEvent event) {
-        //     if (!BaseFragment.flag) {
-        //       return false;
-        //    } else {
-            return super.onTouchEvent (event);
-        //     }
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent (MotionEvent event) {
-        //    if (!BaseFragment.flag) {
-        //        return false;
-        //    } else {
-        return super.onInterceptTouchEvent (event);
-        //    }
-    }
-
-//    public void setPagingEnabled (boolean enabled) {
-//        this.enabled = enabled;
-//    }
 }

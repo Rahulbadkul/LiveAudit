@@ -2,6 +2,7 @@ package com.actiknow.liveaudit.adapter;
 
 import android.support.v4.app.FragmentManager;
 
+import com.actiknow.liveaudit.activity.ViewPagerActivity;
 import com.actiknow.liveaudit.fragment.BaseFragment;
 import com.actiknow.liveaudit.model.Questions;
 import com.actiknow.liveaudit.utils.Constants;
@@ -25,12 +26,20 @@ public class MyPagerAdapter extends SmartFragmentStatePagerAdapter {
     @Override
     public android.support.v4.app.Fragment getItem (int position) {
 
+        //    if (position == 0){
+        //        Log.e ("karman", "in adapter");
+        //        Constants.count = 0;
+        //        Constants.final_rating = 0;
+//        }
+
         if(position != NUM_ITEMS-1){
+            ViewPagerActivity.flag = false;
             final Questions question = Constants.questionsList.get (position);
             return BaseFragment.newInstance (position, question.getQuestion (), question.getQuestion_id ());
-        }
-        else
+        } else {
+            ViewPagerActivity.flag = true;
             return BaseFragment.newInstance (position);
+        }
     }
 
     // Returns the page title for the top indicator

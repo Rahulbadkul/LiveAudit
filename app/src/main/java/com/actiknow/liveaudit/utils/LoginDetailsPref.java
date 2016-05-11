@@ -5,15 +5,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 public class LoginDetailsPref {
-    private String LOGIN_DETAILS = "LOGIN_DETAILS";
-
     public static String USERNAME = "username";
     public static String PASSWORD = "password";
-   // public static String ROLL = "roll";
-
-
+    public static String AUDITOR_ID = "auditor_id";
     //    private String merchantDetails[] = {MOBILE, PASSWORD, MERCHANT_ID};
     private static LoginDetailsPref loginDetailsPref;
+    // public static String ROLL = "roll";
+    private String LOGIN_DETAILS = "LOGIN_DETAILS";
 
     public static LoginDetailsPref getInstance () {
         if (loginDetailsPref == null)

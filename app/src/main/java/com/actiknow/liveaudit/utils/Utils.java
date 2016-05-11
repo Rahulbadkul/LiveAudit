@@ -1,6 +1,11 @@
 package com.actiknow.liveaudit.utils;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.text.TextUtils;
+import android.util.Base64;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * Created by Admin on 23-12-2015.
@@ -27,5 +32,18 @@ public class Utils {
         } else {
             return 0;
         }
+    }
+
+    public Bitmap base64ToBitmap (String b64) {
+        byte[] imageAsBytes = Base64.decode (b64.getBytes (), Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray (imageAsBytes, 0, imageAsBytes.length);
+    }
+
+    public String bitmapToBase64 (Bitmap bmp) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream ();
+        bmp.compress (Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageBytes = baos.toByteArray ();
+        String encodedImage = Base64.encodeToString (imageBytes, Base64.DEFAULT);
+        return encodedImage;
     }
 }
