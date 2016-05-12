@@ -71,5 +71,6 @@
         android:text="NEXT"
         android:textColor="@color/text_color_white"
         android:textSize="20sp"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        android:visibility="gone"/>
 </RelativeLayout>

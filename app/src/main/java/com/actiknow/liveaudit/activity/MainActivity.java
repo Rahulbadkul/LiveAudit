@@ -115,6 +115,10 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
         initPref ();
         isLogin ();
 
+        if (Constants.auditor_id_main == 0)
+            finish ();
+
+
         if (NetworkConnection.isNetworkAvailable (this)) {
             Log.d ("URL", AppConfigURL.URL_GETALLQUESTIONS);
             StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_GETALLQUESTIONS,
@@ -306,7 +310,7 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
     }
 
     private void isLogin () {
-        if (Constants.username == "" || Constants.password == "") {
+        if (Constants.username == "" || Constants.password == "" || Constants.auditor_id_main == 0 || Constants.auditor_name == "") {
             Intent myIntent = new Intent (this, LoginActivity.class);
             startActivity (myIntent);
         }
@@ -316,6 +320,7 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
 
     private void initPref () {
         LoginDetailsPref loginDetailsPref = LoginDetailsPref.getInstance ();
+        Constants.auditor_name = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.AUDITOR_NAME);
         Constants.username = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.USERNAME);
         Constants.password = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.PASSWORD);
         Constants.auditor_id_main = loginDetailsPref.getIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_ID);

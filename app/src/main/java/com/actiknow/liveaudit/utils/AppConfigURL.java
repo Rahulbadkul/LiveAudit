@@ -6,6 +6,7 @@ public class AppConfigURL {
     //c9 urls
     public static String URL_GETALLATMS = "https://atm-ncr-cammy92.c9users.io/getallatms.php";
     public static String URL_GETALLQUESTIONS = "https://atm-ncr-cammy92.c9users.io/getallquestions.php";
+    public static String URL_LOGIN = "https://atm-ncr-cammy92.c9users.io/login.php";
     //    public static String URL_GETALLATMS = "http://" + host + "/" + folder_name + "/getallatms.php";
 //    public static String URL_GETATMDETAILS = "http://" + host + "/" + folder_name + "/getatmdetails.php";
 //    public static String URL_SUBMITRESPONSE = "http://" + host + "/" + folder_name + "/submitresponse.php";

@@ -12,25 +12,12 @@ import android.widget.Toast;
 import com.actiknow.liveaudit.R;
 import com.actiknow.liveaudit.adapter.MyPagerAdapter;
 import com.actiknow.liveaudit.adapter.SmartFragmentStatePagerAdapter;
-import com.actiknow.liveaudit.app.AppController;
 import com.actiknow.liveaudit.model.Response;
-import com.actiknow.liveaudit.utils.AppConfigTags;
-import com.actiknow.liveaudit.utils.AppConfigURL;
 import com.actiknow.liveaudit.utils.Constants;
 import com.actiknow.liveaudit.utils.CustomViewPager;
-import com.actiknow.liveaudit.utils.NetworkConnection;
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 
 
 public class ViewPagerActivity extends AppCompatActivity {
@@ -38,12 +25,16 @@ public class ViewPagerActivity extends AppCompatActivity {
     public static boolean flag = false;
 
     //    ViewPager vpPager;
-    CustomViewPager vpPager;
+    static CustomViewPager vpPager;
 
     //   InkPageIndicator inkPageIndicator;
     List<Response> responses = new ArrayList<Response> ();
     private SmartFragmentStatePagerAdapter adapterViewPager;
     private Button btNext;
+
+    public static void nextPage () {
+        vpPager.setCurrentItem (vpPager.getCurrentItem () + 1);
+    }
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -55,6 +46,7 @@ public class ViewPagerActivity extends AppCompatActivity {
 
         Constants.count = 0;
         Constants.final_rating = 0;
+        Constants.responseList.clear ();
 
         adapterViewPager = new MyPagerAdapter (getSupportFragmentManager ());
         vpPager.setAdapter (adapterViewPager);
@@ -127,71 +119,9 @@ public class ViewPagerActivity extends AppCompatActivity {
                 //               onNextPressed ();
 
 
-                if (NetworkConnection.isNetworkAvailable (ViewPagerActivity.this)) {
-                    Log.d ("URL", AppConfigURL.URL_SUBMITRESPONSE);
-                    StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRESPONSE,
-                            new com.android.volley.Response.Listener<String> () {
-                                @Override
-                                public void onResponse (String response) {
-                                    Log.d ("SERVER RESPONSE", response);
-                                    if (response != null) {
-                                        try {
-                                            JSONObject jsonObj = new JSONObject (response);
-                                        } catch (JSONException e) {
-                                            e.printStackTrace ();
-                                        }
-                                    } else {
-                                        Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
-                                    }
-                                }
-                            },
-                            new com.android.volley.Response.ErrorListener () {
-                                @Override
-                                public void onErrorResponse (VolleyError error) {
-                                    Log.d ("TAG", error.toString ());
-                                }
-                            }) {
-                        @Override
-                        protected Map<String, String> getParams () throws AuthFailureError {
-                            //Converting Bitmap to String
-//                            String image = getStringImage (bitmap);
-
-                            //Getting Image Name
-//                            String name = editTextName.getText ().toString ().trim ();
-
-                            //Creating parameters
-                            Map<String, String> params = new Hashtable<String, String> ();
-
-                            //Adding parameters
-                            params.put (AppConfigTags.ATM_UNIQUE_ID, "1");
-                            params.put (AppConfigTags.AUDITOR_ID, "2");
-                            params.put (AppConfigTags.QUESTION_ID, "1");
-                            params.put (AppConfigTags.SWITCH_FLAG, "1");
-                            params.put (AppConfigTags.COMMENT, "comment");
-                            params.put (AppConfigTags.IMAGE1, "image1.png");
-                            params.put (AppConfigTags.IMAGE2, "image2.png");
-                            //returning parameters
-                            return params;
-                        }
-                    };
-                    AppController.getInstance ().addToRequestQueue (strRequest1);
-                } else {
-                    Log.d ("Response", "Response to be done in no internet connection");
-                }
 
 
-                //      if(BaseFragment.flag)
                 vpPager.setCurrentItem (vpPager.getCurrentItem () + 1);
-                //       else {
-                //          Toast.makeText (ViewPagerActivity.this, "Please fill the comment", Toast.LENGTH_SHORT).show ();
-                //           Log.e ("karman", "please fill the comment");
-                //       }
-
-                //vpPager.getAdapter ().notifyDataSetChanged ();
-
-
-                //              BaseFragment.addResponse();
-
 
                 Constants.final_rating = ((Constants.count * 100) / Constants.questionsList.size ());
 
@@ -204,12 +134,10 @@ public class ViewPagerActivity extends AppCompatActivity {
 //                    adapterViewPager.notifyDataSetChanged ();
 
                 }
-
                 if (vpPager.getCurrentItem () == Constants.questionsList.size ())
                     btNext.setText ("SUBMIT");
                 else
                     btNext.setText ("NEXT");
-
             }
         });
 

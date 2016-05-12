@@ -44,5 +44,11 @@ public class AppConfigTags {
     public static final String IMAGE1 = "image1";
     public static final String IMAGE2 = "image2";
 
+    public static final String LOGIN = "login";
+    public static final String EMAIL = "email";
+    public static final String PASSWORD = "password";
+    public static final String AUDITOR_NAME = "auditor_name";
+    public static final String AUDITOR_EMAIL = "auditor_email";
+    public static final String AUDITOR_PASSWORD = "auditor_password";
 
 }

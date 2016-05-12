@@ -4,7 +4,7 @@ import android.util.Log;
 
 public class Response {
     private int response_id, response_auditor_id, response_switch_flag, response_question_id;
-    private String response_atm_unique_id, response_comment, response_image1, response_image2;
+    private String response_atm_unique_id, response_question, response_comment, response_image1, response_image2;
 
     public Response () {
     }
@@ -63,6 +63,15 @@ public class Response {
     public void setResponse_switch_flag (int response_switch_flag) {
         this.response_switch_flag = response_switch_flag;
         Log.d ("response_switch_flag", "" + response_switch_flag);
+    }
+
+    public String getResponse_question () {
+        return response_question;
+    }
+
+    public void setResponse_question (String response_question) {
+        this.response_question = response_question;
+        Log.d ("response_question", response_question);
     }
 
     public String getResponse_comment () {

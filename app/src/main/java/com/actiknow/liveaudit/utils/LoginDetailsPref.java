@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 public class LoginDetailsPref {
+    public static String AUDITOR_NAME = "auditor_name";
     public static String USERNAME = "username";
     public static String PASSWORD = "password";
     public static String AUDITOR_ID = "auditor_id";

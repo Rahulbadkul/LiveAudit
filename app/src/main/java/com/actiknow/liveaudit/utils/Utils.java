@@ -34,16 +34,20 @@ public class Utils {
         }
     }
 
-    public Bitmap base64ToBitmap (String b64) {
+    public static Bitmap base64ToBitmap (String b64) {
         byte[] imageAsBytes = Base64.decode (b64.getBytes (), Base64.DEFAULT);
         return BitmapFactory.decodeByteArray (imageAsBytes, 0, imageAsBytes.length);
     }
 
-    public String bitmapToBase64 (Bitmap bmp) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream ();
-        bmp.compress (Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] imageBytes = baos.toByteArray ();
-        String encodedImage = Base64.encodeToString (imageBytes, Base64.DEFAULT);
-        return encodedImage;
+    public static String bitmapToBase64 (Bitmap bmp) {
+        if (bmp != null) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream ();
+            bmp.compress (Bitmap.CompressFormat.JPEG, 100, baos);
+            byte[] imageBytes = baos.toByteArray ();
+            String encodedImage = Base64.encodeToString (imageBytes, Base64.DEFAULT);
+            return encodedImage;
+        } else {
+            return "";
+        }
     }
 }

@@ -9,6 +9,7 @@ import java.util.List;
 
 
 public class Constants {
+    public static String auditor_name = "";
     public static String username = "";
     public static String password = "";
     public static int auditor_id_main = 4;
