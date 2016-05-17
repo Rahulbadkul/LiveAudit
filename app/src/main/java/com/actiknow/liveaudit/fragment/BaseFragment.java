@@ -1,11 +1,14 @@
 package com.actiknow.liveaudit.fragment;
 
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +24,8 @@ import android.widget.TextView;
 import com.actiknow.liveaudit.R;
 import com.actiknow.liveaudit.activity.ViewPagerActivity;
 import com.actiknow.liveaudit.app.AppController;
+import com.actiknow.liveaudit.helper.DatabaseHandler;
+import com.actiknow.liveaudit.model.Rating;
 import com.actiknow.liveaudit.model.Response;
 import com.actiknow.liveaudit.utils.AppConfigTags;
 import com.actiknow.liveaudit.utils.AppConfigURL;
@@ -33,6 +38,7 @@ import com.android.volley.Request;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,6 +51,8 @@ public class BaseFragment extends android.support.v4.app.Fragment {
     private static final String IMAGE_RESOURCE = "image-resource";
     //    public static boolean flag = false;
     public static boolean isLast = false;
+    public static TextView tvRatingNumber;
+    public static SeekBar sbRating;
     final int CAMERA_ACTIVITY_1 = 1;
     final int CAMERA_ACTIVITY_2 = 2;
     RelativeLayout rlRequirements;
@@ -54,6 +62,9 @@ public class BaseFragment extends android.support.v4.app.Fragment {
     Bitmap bp1temp;
     Bitmap bp2temp;
     Response response;
+    DatabaseHandler db;
+    JSONArray jsonArray;
+    ProgressDialog pDialog;
     // Store instance variables
     private String question;
     private int question_id;
@@ -102,6 +113,7 @@ public class BaseFragment extends android.support.v4.app.Fragment {
     @Override
     public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view;
+        db = new DatabaseHandler (getActivity ());
         if (! isLast) {
             view = inflater.inflate (R.layout.fragment_first, container, false);
             final TextView tvQuestion = (TextView) view.findViewById (R.id.tvQuestion);
@@ -228,8 +240,10 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                 public void onClick (View v) {
                     if (switchYesNo.isChecked ()) {
                         switch_flag = 1;
+                        Constants.count++;
                     } else {
                         switch_flag = 0;
+                        Constants.count--;
                     }
 
                     if (switch_flag == 0) {
@@ -252,6 +266,7 @@ public class BaseFragment extends android.support.v4.app.Fragment {
 
                             Response response = new Response ();
                             response.setResponse_auditor_id (Constants.auditor_id_main);
+                            response.setResponse_agency_id (Constants.atm_agency_id);
                             response.setResponse_atm_unique_id (Constants.atm_unique_id);
                             response.setResponse_question_id (question_id);
                             response.setResponse_question (question);
@@ -260,59 +275,6 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                             response.setResponse_image1 (image1);
                             response.setResponse_image2 (image2);
                             Constants.responseList.add (page, response);
-
-                   /*
-
-                        if (NetworkConnection.isNetworkAvailable (getActivity ())) {
-                            Log.d ("URL", AppConfigURL.URL_SUBMITRESPONSE);
-                            StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRESPONSE,
-                                    new com.android.volley.Response.Listener<String> () {
-                                        @Override
-                                        public void onResponse (String response) {
-                                            Log.d ("SERVER RESPONSE", response);
-                                            if (response != null) {
-                                                try {
-                                                    JSONObject jsonObj = new JSONObject (response);
-                                                } catch (JSONException e) {
-                                                    e.printStackTrace ();
-                                                }
-                                            } else {
-                                                Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
-                                            }
-                                        }
-                                    },
-                                    new com.android.volley.Response.ErrorListener () {
-                                        @Override
-                                        public void onErrorResponse (VolleyError error) {
-                                            Log.d ("TAG", error.toString ());
-                                        }
-                                    }) {
-                                @Override
-                                protected Map<String, String> getParams () throws AuthFailureError {
-                                    //Converting Bitmap to String
-
-                                    //Creating parameters
-                                    Map<String, String> params = new Hashtable<String, String> ();
-
-                                    //Adding parameters
-                                    params.put (AppConfigTags.ATM_UNIQUE_ID, Constants.atm_unique_id);
-                                    params.put (AppConfigTags.AUDITOR_ID, String.valueOf (Constants.auditor_id_main));
-                                    params.put (AppConfigTags.QUESTION_ID, String.valueOf (question_id));
-                                    params.put (AppConfigTags.SWITCH_FLAG, String.valueOf (switch_flag));
-                                    params.put (AppConfigTags.COMMENT, etComments.getText ().toString ());
-                                    params.put (AppConfigTags.IMAGE1, image1);
-                                    params.put (AppConfigTags.IMAGE2, image2);
-                                    //returning parameters
-                                    Log.d ("Param sent to the server", "" + params);
-                                    return params;
-                                }
-                            };
-                            AppController.getInstance ().addToRequestQueue (strRequest1);
-                        } else {
-                            Log.d ("Response", "Response to be done in no internet connection");
-                        }
-
-                        */
                         } else {
                             etComments.setError ("Please fill in the comments");
                         }
@@ -325,6 +287,7 @@ public class BaseFragment extends android.support.v4.app.Fragment {
 
                         Log.e ("fragment number :", "" + page);
                         Log.e ("Auditor ID :", "" + Constants.auditor_id_main);
+                        Log.e ("Agency ID :", "" + Constants.atm_agency_id);
                         Log.e ("ATM Unique ID :", "" + Constants.atm_unique_id);
                         Log.e ("question id:", "" + question_id);
                         Log.e ("question :", "" + question);
@@ -335,6 +298,7 @@ public class BaseFragment extends android.support.v4.app.Fragment {
 
                         Response response = new Response ();
                         response.setResponse_auditor_id (Constants.auditor_id_main);
+                        response.setResponse_agency_id (Constants.atm_agency_id);
                         response.setResponse_atm_unique_id (Constants.atm_unique_id);
                         response.setResponse_question_id (question_id);
                         response.setResponse_question (question);
@@ -347,33 +311,16 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                 }
             });
 
-
-
-
-
-//        Log.d ("question ", "" + question);
-//        Log.d ("question_id ", "" + question_id);
-
         } else {
             view = inflater.inflate (R.layout.fragment_last, container, false);
-            final TextView tvRatingNumber = (TextView) view.findViewById (R.id.tvRatingNumber);
-            SeekBar sbRating = (SeekBar) view.findViewById (R.id.sbRating);
+            tvRatingNumber = (TextView) view.findViewById (R.id.tvRatingNumber);
+            sbRating = (SeekBar) view.findViewById (R.id.sbRating);
             Button btSubmit = (Button) view.findViewById (R.id.btSubmitInFragment);
 
             Typeface tf = SetTypeFace.getTypeface (getActivity ());
             SetTypeFace.applyTypeface (SetTypeFace.getParentView (tvRatingNumber), tf);
 
-            tvRatingNumber.setText ("" + (int) Constants.final_rating / 10);
-
-            sbRating.setProgress ((int) Constants.final_rating);
-
-
-            tvRatingNumber.setText ((Constants.count / Constants.total_questions) * 100);
-
-            sbRating.setProgress ((Constants.count / Constants.total_questions) * 100);
-
             sbRating.setOnSeekBarChangeListener (new SeekBar.OnSeekBarChangeListener () {
-
                 public void onStopTrackingTouch (SeekBar bar) {
                     int value = bar.getProgress (); // the value of the seekBar progress
                 }
@@ -390,12 +337,40 @@ public class BaseFragment extends android.support.v4.app.Fragment {
             btSubmit.setOnClickListener (new View.OnClickListener () {
                 @Override
                 public void onClick (View v) {
-
-                    Log.e ("Karman", "in the submit button");
-
+                    pDialog = new ProgressDialog (getActivity ());
+                    pDialog.setMessage ("Please Wait...");
+                    pDialog.setCancelable (true);
+                    pDialog.show ();
+/*
+                    try {
+                        jsonArray = new JSONArray (AppConfigTags.RESPONSES);
+                    } catch (JSONException e) {
+                        e.printStackTrace ();
+                    }
+*/
                     for (int i = 0; i < Constants.total_questions; i++) {
-                        Response response;
+                        final Response response;
                         response = Constants.responseList.get (i);
+
+/*
+                        JSONObject jsonObject = new JSONObject ();
+
+                        try {
+                            jsonObject.put (AppConfigTags.ATM_UNIQUE_ID, response.getResponse_atm_unique_id ());
+                            jsonObject.put (AppConfigTags.ATM_AGENCY_ID, String.valueOf (response.getResponse_agency_id ()));
+                            jsonObject.put (AppConfigTags.AUDITOR_ID, String.valueOf (response.getResponse_auditor_id ()));
+                            jsonObject.put (AppConfigTags.QUESTION_ID, String.valueOf (response.getResponse_question_id ()));
+                            jsonObject.put (AppConfigTags.QUESTION, response.getResponse_question ());
+                            jsonObject.put (AppConfigTags.SWITCH_FLAG, String.valueOf (response.getResponse_switch_flag ()));
+                            jsonObject.put (AppConfigTags.COMMENT, response.getResponse_comment ());
+                            jsonObject.put (AppConfigTags.IMAGE1, response.getResponse_image1 ());
+                            jsonObject.put (AppConfigTags.IMAGE2, response.getResponse_image2 ());
+                            jsonArray.put (jsonObject);
+                        } catch (JSONException e) {
+                            e.printStackTrace ();
+                        }
+
+                        */
 
 //                        Log.e ("fragment number :", "" + i);
 //                        Log.e ("Auditor ID :", "" + response.getResponse_auditor_id ());
@@ -410,6 +385,7 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                         if (NetworkConnection.isNetworkAvailable (getActivity ())) {
                             Log.d ("URL", AppConfigURL.URL_SUBMITRESPONSE);
                             final Response finalResponse = response;
+                            final int finalI = i;
                             StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRESPONSE,
                                     new com.android.volley.Response.Listener<String> () {
                                         @Override
@@ -417,6 +393,22 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                                             Log.d ("SERVER RESPONSE", response);
                                             if (response != null) {
                                                 try {
+                                                    if (finalI == Constants.total_questions - 1) {
+                                                        pDialog.dismiss ();
+                                                        AlertDialog.Builder builder = new AlertDialog.Builder (getActivity ());
+                                                        builder.setMessage ("Your responses have been uploaded successfully to the server")
+                                                                .setCancelable (false)
+                                                                .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
+                                                                    public void onClick (DialogInterface dialog, int id) {
+                                                                        getActivity ().finish ();
+                                                                        dialog.dismiss ();
+                                                                    }
+                                                                });
+                                                        AlertDialog alert = builder.create ();
+                                                        alert.show ();
+
+                                                    }
+
                                                     JSONObject jsonObj = new JSONObject (response);
                                                 } catch (JSONException e) {
                                                     e.printStackTrace ();
@@ -430,17 +422,30 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                                         @Override
                                         public void onErrorResponse (VolleyError error) {
                                             Log.d ("TAG", error.toString ());
+                                            if (finalI == Constants.total_questions - 1) {
+                                                pDialog.dismiss ();
+                                                AlertDialog.Builder builder2 = new AlertDialog.Builder (getActivity ());
+                                                builder2.setMessage ("Seems like there is an issue with the internet connection, your responses have been saved " +
+                                                        "and will be uploaded once you are online")
+                                                        .setCancelable (false)
+                                                        .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
+                                                            public void onClick (DialogInterface dialog, int id) {
+                                                                getActivity ().finish ();
+                                                                dialog.dismiss ();
+                                                            }
+                                                        });
+                                                AlertDialog alert2 = builder2.create ();
+                                                alert2.show ();
+                                            }
                                         }
                                     }) {
                                 @Override
                                 protected Map<String, String> getParams () throws AuthFailureError {
-                                    //Converting Bitmap to String
-
                                     //Creating parameters
                                     Map<String, String> params = new Hashtable<String, String> ();
-
                                     //Adding parameters
                                     params.put (AppConfigTags.ATM_UNIQUE_ID, finalResponse.getResponse_atm_unique_id ());
+                                    params.put (AppConfigTags.ATM_AGENCY_ID, String.valueOf (finalResponse.getResponse_agency_id ()));
                                     params.put (AppConfigTags.AUDITOR_ID, String.valueOf (finalResponse.getResponse_auditor_id ()));
                                     params.put (AppConfigTags.QUESTION_ID, String.valueOf (finalResponse.getResponse_question_id ()));
                                     params.put (AppConfigTags.QUESTION, finalResponse.getResponse_question ());
@@ -456,15 +461,80 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                             AppController.getInstance ().addToRequestQueue (strRequest1);
                         } else {
                             Log.d ("Response", "Response to be done in no internet connection");
+                            if (i == Constants.total_questions - 1) {
+                                pDialog.dismiss ();
+                                AlertDialog.Builder builder3 = new AlertDialog.Builder (getActivity ());
+                                builder3.setMessage ("Seems like there is no internet connection, your responses have been saved " +
+                                        "and will be uploaded once you are online")
+                                        .setCancelable (false)
+                                        .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
+                                            public void onClick (DialogInterface dialog, int id) {
+                                                getActivity ().finish ();
+                                                dialog.dismiss ();
+                                            }
+                                        });
+                                AlertDialog alert3 = builder3.create ();
+                                alert3.show ();
+                            }
+                            db.createResponse (response);
                         }
-
-
                     }
+
+                    final Rating rating = new Rating ();
+                    rating.setAtm_unique_id (Constants.atm_unique_id);
+                    rating.setAuditor_id (Constants.auditor_id_main);
+                    rating.setRating (sbRating.getProgress () / 10);
+
+                    if (NetworkConnection.isNetworkAvailable (getActivity ())) {
+                        Log.d ("URL", AppConfigURL.URL_SUBMITRATING);
+                        StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRATING,
+                                new com.android.volley.Response.Listener<String> () {
+                                    @Override
+                                    public void onResponse (String response) {
+                                        Log.d ("SERVER RESPONSE", response);
+                                        if (response != null) {
+                                            try {
+                                                JSONObject jsonObj = new JSONObject (response);
+                                            } catch (JSONException e) {
+                                                e.printStackTrace ();
+                                            }
+                                        } else {
+                                            Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                        }
+                                    }
+                                },
+                                new com.android.volley.Response.ErrorListener () {
+                                    @Override
+                                    public void onErrorResponse (VolleyError error) {
+                                        Log.d ("TAG", error.toString ());
+                                    }
+                                }) {
+                            @Override
+                            protected Map<String, String> getParams () throws AuthFailureError {
+                                //Creating parameters
+                                Map<String, String> params = new Hashtable<String, String> ();
+                                //Adding parameters
+                                params.put (AppConfigTags.ATM_UNIQUE_ID, rating.getAtm_unique_id ());
+                                params.put (AppConfigTags.AUDITOR_ID, String.valueOf (rating.getAuditor_id ()));
+                                params.put (AppConfigTags.RATING, String.valueOf (rating.getRating ()));
+                                //returning parameters
+                                Log.d ("Param sent to the server", "" + params);
+                                return params;
+                            }
+                        };
+                        AppController.getInstance ().addToRequestQueue (strRequest1);
+                    } else {
+                        Log.d ("Response", "Response to be done in no internet connection");
+                        db.createRating (rating);
+                    }
+
+
+//                    Log.d ("Jsonstring : ", jsonArray.toString ());
                 }
             });
-
-
         }
+
+        db.closeDB ();
         return view;
     }
 
@@ -509,6 +579,14 @@ public class BaseFragment extends android.support.v4.app.Fragment {
     @Override
     public void onDestroyView () {
         super.onDestroyView ();
+
+    }
+
+    @Override
+    public void onResume () {
+        super.onResume ();
+        Log.e ("karman", "asd");
+//        refresh ();
 
     }
 }

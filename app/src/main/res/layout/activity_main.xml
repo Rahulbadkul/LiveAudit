@@ -38,12 +38,12 @@
             android:id="@+id/lvAtmList"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_above="@+id/btEnterManually"
             android:layout_below="@+id/view"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:divider="@color/color_divider"
-            android:dividerHeight="1dp"
-            android:visibility="visible"/>
+            android:dividerHeight="1dp" android:visibility="visible"/>
 
         <ProgressBar
             android:id="@+id/progressbar"
@@ -92,6 +92,23 @@
             style="@style/Divider"
             android:layout_below="@+id/tvAuditStatus"
             android:layout_marginLeft="16dp" android:layout_marginRight="16dp"/>
+
+
+        <Button
+            android:id="@+id/btEnterManually"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentStart="true"
+            android:layout_margin="20dp"
+            android:background="@drawable/bg_button"
+            android:text="ENTER MANUALLY"
+            android:textColor="@color/text_color_white"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
 
 
     </RelativeLayout>

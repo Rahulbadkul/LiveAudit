@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.actiknow.liveaudit.model.Atms;
 import com.actiknow.liveaudit.model.Questions;
+import com.actiknow.liveaudit.model.Rating;
 import com.actiknow.liveaudit.model.Response;
 
 import java.text.SimpleDateFormat;
@@ -23,7 +24,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String LOG = DatabaseHandler.class.getName ();
 
     // Database Version
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 6;
 
     // Database Name
     private static final String DATABASE_NAME = "liveAudit";
@@ -32,6 +33,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String TABLE_QUESTIONS = "questions";
     private static final String TABLE_ATMS = "atms";
     private static final String TABLE_RESPONSES = "responses";
+    private static final String TABLE_RATINGS = "ratings";
 //    private static final String TABLE_TODO_TAG = "todo_tags";
 
     // Common column names
@@ -43,6 +45,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     // ATMS Table - column names
     private static final String KEY_ATM_ID = "atm_id";
+    private static final String KEY_AGENCY_ID = "agency_id";
     private static final String KEY_LAST_AUDIT_DATE = "last_audit_date";
     private static final String KEY_BANK_NAME = "bank_name";
     private static final String KEY_ADDRESS = "address";
@@ -57,27 +60,31 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_IMAGE1 = "image1";
     private static final String KEY_IMAGE2 = "image2";
 
-    // NOTE_TAGS Table - column names
-//    private static final String KEY_TODO_ID = "todo_id";
-//    private static final String KEY_TAG_ID = "tag_id";
+    // RATING Table - column names
+    private static final String KEY_RATING = "rating";
 
-    // Table Create Statements
+    // Question Table Create Statements
     // Todo table create statement
     private static final String CREATE_TABLE_QUESTIONS = "CREATE TABLE "
             + TABLE_QUESTIONS + "(" + KEY_ID + " INTEGER PRIMARY KEY," +KEY_QUESTION
             + " TEXT," + KEY_CREATED_AT + " DATETIME" + ")";
 
-    // Tag table create statement
+    // ATM table create statement
     private static final String CREATE_TABLE_ATMS = "CREATE TABLE " + TABLE_ATMS
-            + "(" + KEY_ID + " INTEGER PRIMARY KEY," + KEY_ATM_ID + " TEXT,"
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY," + KEY_AGENCY_ID + " INTEGER," + KEY_ATM_ID + " TEXT,"
             + KEY_LAST_AUDIT_DATE + " TEXT," + KEY_BANK_NAME + " TEXT," + KEY_ADDRESS + " TEXT," + KEY_CITY + " TEXT,"
             + KEY_PINCODE + " TEXT," + KEY_CREATED_AT + " DATETIME" + ")";
 
-    // Tag table create statement
-    private static final String CREATE_TABLE_RESPONSE = "CREATE TABLE " + TABLE_ATMS
-            + "(" + KEY_ID + " INTEGER PRIMARY KEY," + KEY_ATM_ID + " TEXT,"
-            + KEY_AUDITOR_ID + " INTEGER," + KEY_QUESTION_ID + " INTEGER," + KEY_SWITCH_FLAG + " INTEGER," + KEY_COMMENT + " TEXT,"
-            + KEY_IMAGE1 + " TEXT," + KEY_IMAGE2 + " TEXT," + KEY_CREATED_AT + " DATETIME" + ")";
+    // Response table create statement
+    private static final String CREATE_TABLE_RESPONSE = "CREATE TABLE " + TABLE_RESPONSES
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_ATM_ID + " TEXT," + KEY_AGENCY_ID + " INTEGER,"
+            + KEY_AUDITOR_ID + " INTEGER," + KEY_QUESTION_ID + " INTEGER," + KEY_SWITCH_FLAG + " INTEGER,"
+            + KEY_COMMENT + " TEXT," + KEY_IMAGE1 + " TEXT," + KEY_IMAGE2 + " TEXT," + KEY_CREATED_AT + " DATETIME" + ")";
+
+    // Rating table create statement
+    private static final String CREATE_TABLE_RATING = "CREATE TABLE " + TABLE_RATINGS
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_ATM_ID + " TEXT," + KEY_AUDITOR_ID + " INTEGER,"
+            + KEY_RATING + " INTEGER," + KEY_CREATED_AT + " DATETIME" + ")";
 
 
     // todo_tag table create statement
@@ -90,7 +97,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public DatabaseHandler (Context context) {
         super (context, DATABASE_NAME, null, DATABASE_VERSION);
-
     }
 
     @Override
@@ -98,7 +104,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         // creating required tables
         db.execSQL (CREATE_TABLE_QUESTIONS);
         db.execSQL (CREATE_TABLE_ATMS);
-//        db.execSQL (CREATE_TABLE_TODO_TAG);
+        db.execSQL (CREATE_TABLE_RESPONSE);
+        db.execSQL (CREATE_TABLE_RATING);
     }
 
     @Override
@@ -106,8 +113,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         // on upgrade drop older tables
         db.execSQL ("DROP TABLE IF EXISTS " + TABLE_QUESTIONS);
         db.execSQL ("DROP TABLE IF EXISTS " + TABLE_ATMS);
-//        db.execSQL ("DROP TABLE IF EXISTS " + TABLE_TODO_TAG);
-
+        db.execSQL ("DROP TABLE IF EXISTS " + TABLE_RESPONSES);
         // create new tables
         onCreate (db);
     }
@@ -216,8 +222,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
         values.put (KEY_ID, atm.getAtm_id ());
+        values.put (KEY_AGENCY_ID, atm.getAtm_agency_id ());
         values.put (KEY_ATM_ID, atm.getAtm_unique_id ());
-        values.put (KEY_LAST_AUDIT_DATE, atm.getAtm_unique_id ());
+        values.put (KEY_LAST_AUDIT_DATE, atm.getAtm_last_audit_date ());
         values.put (KEY_BANK_NAME, atm.getAtm_bank_name ());
         values.put (KEY_ADDRESS, atm.getAtm_address ());
         values.put (KEY_CITY, atm.getAtm_city ());
@@ -239,6 +246,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             c.moveToFirst ();
         Atms atm = new Atms ();
         atm.setAtm_id (c.getInt (c.getColumnIndex (KEY_ID)));
+        atm.setAtm_agency_id (c.getInt (c.getColumnIndex (KEY_AGENCY_ID)));
         atm.setAtm_unique_id (c.getString (c.getColumnIndex (KEY_ATM_ID)));
         atm.setAtm_last_audit_date (c.getString (c.getColumnIndex (KEY_LAST_AUDIT_DATE)));
         atm.setAtm_bank_name (c.getString (c.getColumnIndex (KEY_BANK_NAME)));
@@ -262,6 +270,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             do {
                 Atms atm = new Atms ();
                 atm.setAtm_id (c.getInt (c.getColumnIndex (KEY_ID)));
+                atm.setAtm_agency_id (c.getInt (c.getColumnIndex (KEY_AGENCY_ID)));
                 atm.setAtm_unique_id (c.getString (c.getColumnIndex (KEY_ATM_ID)));
                 atm.setAtm_last_audit_date (c.getString (c.getColumnIndex (KEY_LAST_AUDIT_DATE)));
                 atm.setAtm_bank_name (c.getString (c.getColumnIndex (KEY_BANK_NAME)));
@@ -294,6 +303,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
         values.put (KEY_ATM_ID, atm.getAtm_unique_id ());
+        values.put (KEY_AGENCY_ID, atm.getAtm_agency_id ());
         values.put (KEY_LAST_AUDIT_DATE, atm.getAtm_last_audit_date ());
         values.put (KEY_BANK_NAME, atm.getAtm_bank_name ());
         values.put (KEY_ADDRESS, atm.getAtm_address ());
@@ -330,8 +340,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public long createResponse (Response response) {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
-        values.put (KEY_ID, response.getResponse_id ());
+        Log.d ("Response", "Response inserted successfully in the database");
         values.put (KEY_ATM_ID, response.getResponse_atm_unique_id ());
+        values.put (KEY_AGENCY_ID, response.getResponse_agency_id ());
         values.put (KEY_AUDITOR_ID, response.getResponse_auditor_id ());
         values.put (KEY_QUESTION_ID, response.getResponse_question_id ());
         values.put (KEY_SWITCH_FLAG, response.getResponse_switch_flag ());
@@ -355,6 +366,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             c.moveToFirst ();
         Response response = new Response ();
         response.setResponse_id (c.getInt (c.getColumnIndex (KEY_ID)));
+        response.setResponse_agency_id (c.getInt (c.getColumnIndex (KEY_AGENCY_ID)));
         response.setResponse_atm_unique_id (c.getString (c.getColumnIndex (KEY_ATM_ID)));
         response.setResponse_auditor_id (c.getInt (c.getColumnIndex (KEY_AUDITOR_ID)));
         response.setResponse_question_id (c.getInt (c.getColumnIndex (KEY_QUESTION_ID)));
@@ -379,6 +391,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             do {
                 Response response = new Response ();
                 response.setResponse_id (c.getInt (c.getColumnIndex (KEY_ID)));
+                response.setResponse_agency_id (c.getInt (c.getColumnIndex (KEY_AGENCY_ID)));
                 response.setResponse_atm_unique_id (c.getString (c.getColumnIndex (KEY_ATM_ID)));
                 response.setResponse_auditor_id (c.getInt (c.getColumnIndex (KEY_AUDITOR_ID)));
                 response.setResponse_question_id (c.getInt (c.getColumnIndex (KEY_QUESTION_ID)));
@@ -412,6 +425,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
         values.put (KEY_ATM_ID, response.getResponse_atm_unique_id ());
+        values.put (KEY_AGENCY_ID, response.getResponse_agency_id ());
         values.put (KEY_AUDITOR_ID, response.getResponse_auditor_id ());
         values.put (KEY_QUESTION_ID, response.getResponse_question_id ());
         values.put (KEY_SWITCH_FLAG, response.getResponse_switch_flag ());
@@ -438,6 +452,110 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void deleteAllResponses () {
         SQLiteDatabase db = this.getWritableDatabase ();
         db.execSQL ("delete from " + TABLE_RESPONSES);
+    }
+
+
+    // ------------------------ "rating" table methods ----------------//
+
+    /**
+     * Creating a question
+     */
+    public long createRating (Rating rating) {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        ContentValues values = new ContentValues ();
+        Log.d ("Rating", "Rating inserted successfully in the database");
+        values.put (KEY_ATM_ID, rating.getAtm_unique_id ());
+        values.put (KEY_AUDITOR_ID, rating.getAuditor_id ());
+        values.put (KEY_RATING, rating.getRating ());
+        values.put (KEY_CREATED_AT, getDateTime ());
+        long rating_id = db.insert (TABLE_RATINGS, null, values);
+        return rating_id;
+    }
+
+    /**
+     * get single question
+     */
+    public Rating getRating (long rating_id) {
+        SQLiteDatabase db = this.getReadableDatabase ();
+        String selectQuery = "SELECT  * FROM " + TABLE_RATINGS + " WHERE " + KEY_ID + " = " + rating_id;
+        Log.e (LOG, selectQuery);
+        Cursor c = db.rawQuery (selectQuery, null);
+        if (c != null)
+            c.moveToFirst ();
+        Rating rating = new Rating ();
+        rating.setRating_id (c.getInt (c.getColumnIndex (KEY_ID)));
+        rating.setAuditor_id (c.getInt (c.getColumnIndex (KEY_AUDITOR_ID)));
+        rating.setRating (c.getInt (c.getColumnIndex (KEY_RATING)));
+        rating.setAtm_unique_id ((c.getString (c.getColumnIndex (KEY_ATM_ID))));
+        return rating;
+    }
+
+    /**
+     * getting all questions
+     */
+    public List<Rating> getAllRatings () {
+        List<Rating> ratings = new ArrayList<Rating> ();
+        String selectQuery = "SELECT  * FROM " + TABLE_RATINGS;
+//        Log.e (LOG, selectQuery);
+        SQLiteDatabase db = this.getReadableDatabase ();
+        Cursor c = db.rawQuery (selectQuery, null);
+        // looping through all rows and adding to list
+        if (c.moveToFirst ()) {
+            do {
+                Rating rating = new Rating ();
+                rating.setRating_id (c.getInt (c.getColumnIndex (KEY_ID)));
+                rating.setAuditor_id (c.getInt (c.getColumnIndex (KEY_AUDITOR_ID)));
+                rating.setRating (c.getInt (c.getColumnIndex (KEY_RATING)));
+                rating.setAtm_unique_id ((c.getString (c.getColumnIndex (KEY_ATM_ID))));
+                // adding to question list
+                ratings.add (rating);
+            } while (c.moveToNext ());
+        }
+        return ratings;
+    }
+
+    /**
+     * getting questions count
+     */
+    public int getRatingCount () {
+        String countQuery = "SELECT  * FROM " + TABLE_RATINGS;
+//        Log.e (LOG, countQuery);
+        SQLiteDatabase db = this.getReadableDatabase ();
+        Cursor cursor = db.rawQuery (countQuery, null);
+        int count = cursor.getCount ();
+        cursor.close ();
+        return count;
+    }
+
+    /**
+     * Updating a question
+     */
+    public int updateRating (Rating rating) {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        ContentValues values = new ContentValues ();
+        values.put (KEY_AUDITOR_ID, rating.getAuditor_id ());
+        values.put (KEY_ATM_ID, rating.getAtm_unique_id ());
+        values.put (KEY_RATING, rating.getRating ());
+        // updating row
+        return db.update (TABLE_RATINGS, values, KEY_ID + " = ?",
+                new String[] {String.valueOf (rating.getRating_id ())});
+    }
+
+    /**
+     * Deleting a question
+     */
+    public void deleteRating (long rating_id) {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        db.delete (TABLE_RATINGS, KEY_ID + " = ?",
+                new String[] {String.valueOf (rating_id)});
+    }
+
+    /**
+     * Deleting all questions
+     */
+    public void deleteAllRating () {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        db.execSQL ("delete from " + TABLE_RATINGS);
     }
 
 

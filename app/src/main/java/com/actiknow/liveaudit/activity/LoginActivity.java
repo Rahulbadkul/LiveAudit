@@ -1,5 +1,6 @@
 package com.actiknow.liveaudit.activity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -43,6 +44,7 @@ public class LoginActivity extends AppCompatActivity {
 
     Button btLogin;
 
+    ProgressDialog progressDialog;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -88,6 +90,11 @@ public class LoginActivity extends AppCompatActivity {
 
                     if (NetworkConnection.isNetworkAvailable (LoginActivity.this)) {
                         Log.d ("URL", AppConfigURL.URL_LOGIN);
+                        progressDialog = new ProgressDialog (LoginActivity.this);
+                        progressDialog.setMessage ("Please Wait...");
+                        progressDialog.setCancelable (true);
+                        progressDialog.show ();
+
                         StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_LOGIN,
                                 new com.android.volley.Response.Listener<String> () {
                                     @Override
@@ -95,24 +102,25 @@ public class LoginActivity extends AppCompatActivity {
                                         Log.d ("SERVER RESPONSE", response);
                                         if (response != null) {
                                             try {
+                                                progressDialog.dismiss ();
+
                                                 JSONObject jsonObj = new JSONObject (response);
                                                 int status = jsonObj.getInt (AppConfigTags.STATUS);
                                                 if (status == 1) {
                                                     Constants.auditor_id_main = jsonObj.getInt (AppConfigTags.AUDITOR_ID);
                                                     Constants.username = jsonObj.getString (AppConfigTags.AUDITOR_EMAIL);
-                                                    Constants.password = jsonObj.getString (AppConfigTags.AUDITOR_PASSWORD);
                                                     Constants.auditor_name = jsonObj.getString (AppConfigTags.AUDITOR_NAME);
 
                                                     LoginDetailsPref loginDetailsPref = LoginDetailsPref.getInstance ();
                                                     loginDetailsPref.putStringPref (LoginActivity.this, LoginDetailsPref.AUDITOR_NAME, Constants.auditor_name);
                                                     loginDetailsPref.putStringPref (LoginActivity.this, LoginDetailsPref.USERNAME, Constants.username);
-                                                    loginDetailsPref.putStringPref (LoginActivity.this, LoginDetailsPref.PASSWORD, Constants.password);
                                                     loginDetailsPref.putIntPref (LoginActivity.this, LoginDetailsPref.AUDITOR_ID, Constants.auditor_id_main);
                                                     Intent intent = new Intent (LoginActivity.this, MainActivity.class);
                                                     intent.setFlags (Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                                     startActivity (intent);
 
                                                 } else {
+                                                    progressDialog.dismiss ();
 //                                                    final Snackbar snackbar = Snackbar
 //                                                            .make (coordinatorLayout, "INVALID LOGIN CREDENTIALS ", Snackbar.LENGTH_LONG)
 //                                                            .setAction ("DISMISS", new View.OnClickListener () {
@@ -155,7 +163,9 @@ public class LoginActivity extends AppCompatActivity {
                         };
                         AppController.getInstance ().addToRequestQueue (strRequest1);
                     } else {
+                        progressDialog.dismiss ();
                         Log.d ("Response", "Response to be done in no internet connection");
+                        Toast.makeText (LoginActivity.this, "Please check your network connection", Toast.LENGTH_SHORT).show ();
                     }
 
 /*

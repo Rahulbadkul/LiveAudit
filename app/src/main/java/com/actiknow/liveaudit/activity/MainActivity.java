@@ -1,15 +1,18 @@
+
 package com.actiknow.liveaudit.activity;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -19,6 +22,8 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -37,6 +42,8 @@ import com.actiknow.liveaudit.utils.Constants;
 import com.actiknow.liveaudit.utils.LoginDetailsPref;
 import com.actiknow.liveaudit.utils.NetworkConnection;
 import com.actiknow.liveaudit.utils.SetTypeFace;
+import com.actiknow.liveaudit.utils.Utils;
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -50,7 +57,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity {//implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -58,10 +67,12 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
     TextView tvNoInternetConnection;
     ProgressBar progressBar;
     ListView listViewAllAtms;
+    Button btEnterManually;
 
     GoogleApiClient client;
 //    GoogleApiClient googleApiClient;
-    Dialog splash;
+//    Dialog dialogSplash;
+Dialog dialogEnterManually;
     DatabaseHandler db;
     // Action Bar components
     private List<Atms> atmsList = new ArrayList<Atms> ();
@@ -92,25 +103,27 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
         listViewAllAtms.setAdapter (adapter);
 
         client = new GoogleApiClient.Builder (this).addApi (AppIndex.API).build ();
+//        dialogSplash = new Dialog (this, R.style.full_screen);
 
-        if (Constants.splash_screen_first_time == 0) {
+
+        if (Constants.splash_screen_first_time == 0 && Constants.auditor_id_main != 0) {
             Log.d ("HELLO", "splash screen first time");
 
             Constants.splash_screen_first_time = 1;
-            splash = new Dialog (this, R.style.full_screen);
-            splash.setContentView (R.layout.dialog_splash);
-            splash.setCancelable (false);
-            splash.show ();
+//            dialogSplash.setContentView (R.layout.dialog_splash);
+//            dialogSplash.setCancelable (false);
+//            dialogSplash.show ();
+
+//            final Handler handler = new Handler ();
+//            handler.postDelayed (new Runnable () {
+//                @Override
+//                public void run () {
+//                    if (dialogSplash != null)
+//                        dialogSplash.dismiss ();
+//                }
+//            }, 5000);
         }
 
-        final Handler handler = new Handler ();
-        handler.postDelayed (new Runnable () {
-            @Override
-            public void run () {
-                if (splash != null)
-                    splash.dismiss ();
-            }
-        }, 3000);
 
         initPref ();
         isLogin ();
@@ -119,198 +132,331 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
             finish ();
 
 
-        if (NetworkConnection.isNetworkAvailable (this)) {
-            Log.d ("URL", AppConfigURL.URL_GETALLQUESTIONS);
-            StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_GETALLQUESTIONS,
-                    new Response.Listener<String> () {
-                        @Override
-                        public void onResponse (String response) {
-                            Log.d ("SERVER RESPONSE", response);
-                            if (response != null) {
-                                try {
-                                    JSONObject jsonObj = new JSONObject (response);
-                                    JSONArray jsonArray = jsonObj.getJSONArray (AppConfigTags.QUESTIONS);
-                                    Constants.total_questions = jsonArray.length ();
+        btEnterManually.setOnClickListener (new View.OnClickListener () {
+            @Override
+            public void onClick (View v) {
+                Button btEnterManuallyContinue;
+                final EditText etEnterManuallyAtmId;
 
-                                    if(db.getQuestionCount () != jsonArray.length ()) {
-                                        db.deleteAllQuestion ();
-                                    }
-
-                                    for (int i = 0; i < Constants.total_questions; i++) {
-                                        JSONObject jsonObject = jsonArray.getJSONObject (i);
-                                        Questions question = new Questions ();
-                                        question.setQuestion_id (jsonObject.getInt (AppConfigTags.QUESTION_ID));
-                                        question.setQuestion (jsonObject.getString (AppConfigTags.QUESTION));
-                                        Constants.questionsList.add (question);
-                                        if (db.getQuestionCount () != jsonArray.length ()) {
-                                            db.createQuestion (question);
-                                        }
-                                    }
-                                } catch (JSONException e) {
-                                    e.printStackTrace ();
-                                }
-                            } else {
-                                Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
-                            }
+                dialogEnterManually = new Dialog (MainActivity.this);
+                dialogEnterManually.setContentView (R.layout.dialog_enter_manually);
+                dialogEnterManually.setCancelable (true);
+                btEnterManuallyContinue = (Button) dialogEnterManually.findViewById (R.id.btEnterManuallyContinue);
+                etEnterManuallyAtmId = (EditText) dialogEnterManually.findViewById (R.id.etEnterManuallyAtmId);
+                Typeface tf = SetTypeFace.getTypeface (MainActivity.this);
+                SetTypeFace.applyTypeface (SetTypeFace.getParentView (etEnterManuallyAtmId), tf);
+                dialogEnterManually.getWindow ().setBackgroundDrawable (new ColorDrawable (android.graphics.Color.TRANSPARENT));
+                dialogEnterManually.show ();
+                btEnterManuallyContinue.setOnClickListener (new View.OnClickListener () {
+                    @Override
+                    public void onClick (View v) {
+                        if (etEnterManuallyAtmId.getText ().toString ().length () == 0)
+                            etEnterManuallyAtmId.setError ("Please enter the ATM ID");
+                        else {
+                            Constants.atm_unique_id = etEnterManuallyAtmId.getText ().toString ().toUpperCase ();
+                            Intent intent = new Intent (MainActivity.this, ViewPagerActivity.class);
+                            MainActivity.this.startActivity (intent);
+                            MainActivity.this.overridePendingTransition (R.anim.slide_in_right, R.anim.slide_out_left);
+                            dialogEnterManually.dismiss ();
                         }
-                    },
-                    new Response.ErrorListener () {
-                        @Override
-                        public void onErrorResponse (VolleyError error) {
-                            Log.d ("TAG", error.toString ());
-                            Log.d ("Get AllQuestions", "Getting All Questions");
-                            List<Questions> allQuestions = db.getAllQuestions ();
-                            for (Questions question : allQuestions) {
-                                Constants.questionsList.add (question);
-                                Log.d ("Question", question.getQuestion ());
-                            }
+                    }
+                });
 
-                        }
-                    });
-            AppController.getInstance ().addToRequestQueue (strRequest1);
-        } else {
-            // Getting all Questions
-            Log.d ("Get AllQuestions", "Getting All Questions from database");
-            List<Questions> allQuestions = db.getAllQuestions ();
-            for (Questions question : allQuestions) {
-                Constants.questionsList.add (question);
-                Log.d ("Question", question.getQuestion ());
             }
-        }
+        });
 
 
+        if (Constants.auditor_id_main != 0) {
+            if (NetworkConnection.isNetworkAvailable (this)) {
+                Log.d ("URL", AppConfigURL.URL_GETALLATMS);
+                StringRequest strRequest = new StringRequest (Request.Method.POST, AppConfigURL.URL_GETALLATMS,
+                        new Response.Listener<String> () {
+                            @Override
+                            public void onResponse (String response) {
+                                int is_data_received = 0;
+                                int json_array_len = 0;
 
-
-        if (NetworkConnection.isNetworkAvailable (this)) {
-            Log.d ("URL", AppConfigURL.URL_GETALLATMS);
-            StringRequest strRequest = new StringRequest (Request.Method.POST, AppConfigURL.URL_GETALLATMS,
-                    new Response.Listener<String> () {
-                        @Override
-                        public void onResponse (String response) {
-                            int is_data_received = 0;
-                            int json_array_len = 0;
-
-                            Log.d ("SERVER RESPONSE", response);
-                            if (response != null) {
-                                is_data_received = 1;
-                                try {
-                                    JSONObject jsonObj = new JSONObject (response);
-                                    JSONArray jsonArray = jsonObj.getJSONArray (AppConfigTags.ATMS);
-                                    if (db.getAtmCount () != jsonArray.length ()) {
+                                Log.d ("SERVER RESPONSE", response);
+                                if (response != null) {
+                                    is_data_received = 1;
+                                    try {
+                                        JSONObject jsonObj = new JSONObject (response);
+                                        JSONArray jsonArray = jsonObj.getJSONArray (AppConfigTags.ATMS);
+                                        //           if (db.getAtmCount () != jsonArray.length ()) {
                                         db.deleteAllAtms ();
-                                    }
-                                    json_array_len = jsonArray.length ();
-                                    for (int i = 0; i < json_array_len; i++) {
-                                        JSONObject jsonObject = jsonArray.getJSONObject (i);
-                                        Atms atm = new Atms ();
-                                        atm.setAtm_id (jsonObject.getInt (AppConfigTags.ATM_ID));
-                                        atm.setAtm_unique_id (jsonObject.getString (AppConfigTags.ATM_UNIQUE_ID));
-                                        atm.setAtm_last_audit_date (jsonObject.getString (AppConfigTags.ATM_LAST_AUDIT_DATE));
-                                        atm.setAtm_bank_name (jsonObject.getString (AppConfigTags.ATM_BANK_NAME));
-                                        atm.setAtm_address (jsonObject.getString (AppConfigTags.ATM_ADDRESS));
-                                        atm.setAtm_city (jsonObject.getString (AppConfigTags.ATM_CITY));
-                                        atm.setAtm_pincode (jsonObject.getString (AppConfigTags.ATM_PINCODE));
-                                        atmsList.add (atm);
-                                        if (db.getAtmCount () != jsonArray.length ()) {
+                                        //           }
+                                        json_array_len = jsonArray.length ();
+                                        for (int i = 0; i < json_array_len; i++) {
+                                            JSONObject jsonObject = jsonArray.getJSONObject (i);
+                                            Atms atm = new Atms ();
+                                            atm.setAtm_id (jsonObject.getInt (AppConfigTags.ATM_ID));
+                                            atm.setAtm_unique_id (jsonObject.getString (AppConfigTags.ATM_UNIQUE_ID));
+                                            atm.setAtm_agency_id (jsonObject.getInt (AppConfigTags.ATM_AGENCY_ID));
+                                            atm.setAtm_last_audit_date (Utils.convertTimeFormat (jsonObject.getString (AppConfigTags.ATM_LAST_AUDIT_DATE)));
+                                            atm.setAtm_bank_name (jsonObject.getString (AppConfigTags.ATM_BANK_NAME));
+                                            atm.setAtm_address (jsonObject.getString (AppConfigTags.ATM_ADDRESS));
+                                            atm.setAtm_city (jsonObject.getString (AppConfigTags.ATM_CITY));
+                                            atm.setAtm_pincode (jsonObject.getString (AppConfigTags.ATM_PINCODE));
+                                            atmsList.add (atm);
+                                            //               if (db.getAtmCount () != jsonArray.length ()) {
                                             db.createAtm (atm);
+                                            //               }
                                         }
+
+//                                        if (dialogSplash != null)
+//                                            dialogSplash.dismiss ();
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace ();
                                     }
-                                } catch (JSONException e) {
-                                    e.printStackTrace ();
+                                } else {
+                                    Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
                                 }
-                            } else {
-                                Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                adapter.notifyDataSetChanged ();
+                                if (is_data_received != 0 && json_array_len != 0) {
+                                    progressBar.setVisibility (View.GONE);
+                                    listViewAllAtms.setVisibility (View.VISIBLE);
+                                    tvNoInternetConnection.setVisibility (View.GONE);
+                                } else if (is_data_received != 0 && json_array_len == 0) {
+                                    tvNoInternetConnection.setVisibility (View.VISIBLE);
+                                    progressBar.setVisibility (View.GONE);
+                                    listViewAllAtms.setVisibility (View.GONE);
+                                }
+                                if (is_data_received == 0) {
+                                    progressBar.setVisibility (View.VISIBLE);
+                                    listViewAllAtms.setVisibility (View.GONE);
+                                    tvNoInternetConnection.setVisibility (View.GONE);
+                                }
                             }
-                            adapter.notifyDataSetChanged ();
-                            if (is_data_received != 0 && json_array_len != 0) {
+                        },
+                        new Response.ErrorListener () {
+                            @Override
+                            public void onErrorResponse (VolleyError error) {
+                                Log.d ("TAG", error.toString ());
                                 progressBar.setVisibility (View.GONE);
                                 listViewAllAtms.setVisibility (View.VISIBLE);
-                                tvNoInternetConnection.setVisibility (View.GONE);
-                            } else if (is_data_received != 0 && json_array_len == 0) {
-                                tvNoInternetConnection.setVisibility (View.VISIBLE);
-                                progressBar.setVisibility (View.GONE);
-                                listViewAllAtms.setVisibility (View.GONE);
-                            }
-                            if (is_data_received == 0) {
-                                progressBar.setVisibility (View.VISIBLE);
-                                listViewAllAtms.setVisibility (View.GONE);
-                                tvNoInternetConnection.setVisibility (View.GONE);
-                            }
-                        }
-                    },
-                    new Response.ErrorListener () {
-                        @Override
-                        public void onErrorResponse (VolleyError error) {
-                            Log.d ("TAG", error.toString ());
-                            progressBar.setVisibility (View.GONE);
-                            listViewAllAtms.setVisibility (View.VISIBLE);
-                            atmsList.clear ();
+                                atmsList.clear ();
+                                // Getting all Atms
+                                Log.d ("Get All Atms", "Getting All Atms");
+                                List<Atms> allAtms = db.getAllAtms ();
+                                for (Atms atms : allAtms) {
+                                    atmsList.add (atms);
+                                    Log.d ("Atm ID", atms.getAtm_unique_id ());
+                                }
+                                adapter.notifyDataSetChanged ();
 
-                            // Getting all Atms
-                            Log.d ("Get All Atms", "Getting All Atms");
-                            List<Atms> allAtms = db.getAllAtms ();
-                            for (Atms atms : allAtms) {
-                                atmsList.add (atms);
-                                Log.d ("Atm ID", atms.getAtm_unique_id ());
+//                                if (dialogSplash != null)
+//                                    dialogSplash.dismiss ();
+
+
                             }
-                            adapter.notifyDataSetChanged ();
-                        }
-                    });
-            AppController.getInstance ().addToRequestQueue (strRequest);
-        } else {
-            progressBar.setVisibility (View.GONE);
-            listViewAllAtms.setVisibility (View.VISIBLE);
-            atmsList.clear ();
-            // Getting all Atms
-            Log.d ("Get All Atms", "Getting All Atms from database");
-            List<Atms> allAtms = db.getAllAtms ();
-            for (Atms atms : allAtms) {
-                atmsList.add (atms);
-                Log.d ("Atm ID", atms.getAtm_unique_id ());
+                        });
+                AppController.getInstance ().addToRequestQueue (strRequest);
+            } else {
+                progressBar.setVisibility (View.GONE);
+                listViewAllAtms.setVisibility (View.VISIBLE);
+                atmsList.clear ();
+                // Getting all Atms
+                Log.d ("Get All Atms", "Getting All Atms from database");
+                List<Atms> allAtms = db.getAllAtms ();
+                for (Atms atms : allAtms) {
+                    atmsList.add (atms);
+                    Log.d ("Atm ID", atms.getAtm_unique_id ());
+                }
+                adapter.notifyDataSetChanged ();
+
+                AlertDialog.Builder builder3 = new AlertDialog.Builder (MainActivity.this);
+                builder3.setMessage ("Seems like there is no internet connection, the app will continue in Offline mode")
+                        .setCancelable (false)
+                        .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
+                            public void onClick (DialogInterface dialog, int id) {
+                                dialog.dismiss ();
+                            }
+                        });
+                AlertDialog alert3 = builder3.create ();
+                alert3.show ();
+
+//                if (dialogSplash != null)
+//                    dialogSplash.dismiss ();
+
             }
 
-            adapter.notifyDataSetChanged ();
+            if (NetworkConnection.isNetworkAvailable (this)) {
+                Log.d ("URL", AppConfigURL.URL_GETALLQUESTIONS);
+                StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_GETALLQUESTIONS,
+                        new Response.Listener<String> () {
+                            @Override
+                            public void onResponse (String response) {
+                                Log.d ("SERVER RESPONSE", response);
+                                if (response != null) {
+                                    try {
+                                        JSONObject jsonObj = new JSONObject (response);
+                                        JSONArray jsonArray = jsonObj.getJSONArray (AppConfigTags.QUESTIONS);
+                                        Constants.total_questions = jsonArray.length ();
+                                        if (db.getQuestionCount () != jsonArray.length ()) {
+                                            db.deleteAllQuestion ();
+                                        }
+                                        for (int i = 0; i < Constants.total_questions; i++) {
+                                            JSONObject jsonObject = jsonArray.getJSONObject (i);
+                                            Questions question = new Questions ();
+                                            question.setQuestion_id (jsonObject.getInt (AppConfigTags.QUESTION_ID));
+                                            question.setQuestion (jsonObject.getString (AppConfigTags.QUESTION));
+                                            Constants.questionsList.add (question);
+                                            if (db.getQuestionCount () != jsonArray.length ()) {
+                                                db.createQuestion (question);
+                                            }
+                                        }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace ();
+                                    }
+                                } else {
+                                    Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                }
+                            }
+                        },
+                        new Response.ErrorListener () {
+                            @Override
+                            public void onErrorResponse (VolleyError error) {
+                                Log.d ("TAG", error.toString ());
+                                Log.d ("Get AllQuestions", "Getting All Questions");
+                                List<Questions> allQuestions = db.getAllQuestions ();
+                                for (Questions question : allQuestions) {
+                                    Constants.questionsList.add (question);
+                                    Log.d ("Question", question.getQuestion ());
+                                }
+                                Constants.total_questions = Constants.questionsList.size ();
 
-            /*
-
-            AlertDialog.Builder alertDialog = new AlertDialog.Builder (MainActivity.this);
-
-            // Setting Dialog Title
-            alertDialog.setTitle ("Network Issue");
-
-            // Setting Dialog Message
-            alertDialog.setMessage ("You are currently not in the network, would you like to continue offline");
-
-            // Setting Icon to Dialog
-            alertDialog.setIcon (R.mipmap.ic_launcher);
-
-            // Setting Positive "Yes" Button
-            alertDialog.setPositiveButton ("YES", new DialogInterface.OnClickListener () {
-                public void onClick (DialogInterface dialog, int which) {
-                    dialog.cancel ();
-                    Intent intent = new Intent (MainActivity.this, OfflineActivity.class);
-                    startActivity (intent);
-                    overridePendingTransition (R.anim.slide_in_right, R.anim.slide_out_left);
+                            }
+                        });
+                AppController.getInstance ().addToRequestQueue (strRequest1);
+            } else {
+                // Getting all Questions
+                Log.d ("Get AllQuestions", "Getting All Questions from database");
+                List<Questions> allQuestions = db.getAllQuestions ();
+                for (Questions question : allQuestions) {
+                    Constants.questionsList.add (question);
+                    Log.d ("Question", question.getQuestion ());
                 }
-            });
+                Constants.total_questions = Constants.questionsList.size ();
+            }
 
-            // Setting Negative "NO" Button
-            alertDialog.setNegativeButton ("NO", new DialogInterface.OnClickListener () {
-                public void onClick (DialogInterface dialog, int which) {
-                    // Write your code here to invoke NO event
-                    dialog.cancel ();
+
+            if (db.getResponseCount () > 0) {
+                Constants.responseListOffline = db.getAllResponse ();
+                Log.d ("Get All Response", "Getting All responses from database");
+                List<com.actiknow.liveaudit.model.Response> allResponses = db.getAllResponse ();
+                for (final com.actiknow.liveaudit.model.Response responses : allResponses) {
+                    Log.d ("URL", AppConfigURL.URL_SUBMITRESPONSE);
+                    final com.actiknow.liveaudit.model.Response finalResponse = responses;
+                    if (NetworkConnection.isNetworkAvailable (this)) {
+                        StringRequest strRequest2 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRESPONSE,
+                                new com.android.volley.Response.Listener<String> () {
+                                    @Override
+                                    public void onResponse (String response) {
+                                        Log.d ("SERVER RESPONSE", response);
+                                        if (response != null) {
+//                                            try {
+//                                                JSONObject jsonObj = new JSONObject (response);
+                                            db.deleteResponse (responses.getResponse_id ());
+//                                            } catch (JSONException e) {
+//                                                e.printStackTrace ();
+//                                            }
+                                        } else {
+                                            Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                        }
+                                    }
+                                },
+                                new com.android.volley.Response.ErrorListener () {
+                                    @Override
+                                    public void onErrorResponse (VolleyError error) {
+                                        Log.d ("TAG", error.toString ());
+                                    }
+                                }) {
+                            @Override
+                            protected Map<String, String> getParams () throws AuthFailureError {
+                                //Creating parameters
+                                Map<String, String> params = new Hashtable<String, String> ();
+                                //Adding parameters
+                                params.put (AppConfigTags.ATM_UNIQUE_ID, finalResponse.getResponse_atm_unique_id ());
+                                params.put (AppConfigTags.ATM_AGENCY_ID, String.valueOf (finalResponse.getResponse_agency_id ()));
+                                params.put (AppConfigTags.AUDITOR_ID, String.valueOf (finalResponse.getResponse_auditor_id ()));
+                                params.put (AppConfigTags.QUESTION_ID, String.valueOf (finalResponse.getResponse_question_id ()));
+//                                params.put (AppConfigTags.QUESTION, finalResponse.getResponse_question ());
+                                params.put (AppConfigTags.SWITCH_FLAG, String.valueOf (finalResponse.getResponse_switch_flag ()));
+                                params.put (AppConfigTags.COMMENT, finalResponse.getResponse_comment ());
+                                params.put (AppConfigTags.IMAGE1, finalResponse.getResponse_image1 ());
+                                params.put (AppConfigTags.IMAGE2, finalResponse.getResponse_image2 ());
+                                //returning parameters
+                                Log.d ("Param sent to the server", "" + params);
+                                return params;
+                            }
+                        };
+                        AppController.getInstance ().addToRequestQueue (strRequest2);
+                    } else {
+                        Log.d ("karman", "in offline response if no internet");
+                    }
                 }
-            });
+//                db.deleteAllResponses ();
+                Constants.responseListOffline.clear ();
+            }
 
-            // Showing Alert Message
-            alertDialog.show ();
-*/
+
+            if (db.getRatingCount () > 0) {
+                Log.d ("Get All Rating", "Getting All ratings from database");
+                List<com.actiknow.liveaudit.model.Rating> allRatings = db.getAllRatings ();
+                for (com.actiknow.liveaudit.model.Rating ratings : allRatings) {
+                    Log.d ("URL", AppConfigURL.URL_SUBMITRATING);
+                    final com.actiknow.liveaudit.model.Rating finalRating = ratings;
+                    if (NetworkConnection.isNetworkAvailable (this)) {
+                        StringRequest strRequest3 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRATING,
+                                new com.android.volley.Response.Listener<String> () {
+                                    @Override
+                                    public void onResponse (String response) {
+                                        Log.d ("SERVER RESPONSE", response);
+                                        if (response != null) {
+//                                            try {
+//                                                JSONObject jsonObj = new JSONObject (response);
+                                            db.deleteRating (finalRating.getRating_id ());
+//                                            } catch (JSONException e) {
+//                                                e.printStackTrace ();
+//                                            }
+                                        } else {
+                                            Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                        }
+                                    }
+                                },
+                                new com.android.volley.Response.ErrorListener () {
+                                    @Override
+                                    public void onErrorResponse (VolleyError error) {
+                                        Log.d ("TAG", error.toString ());
+                                    }
+                                }) {
+                            @Override
+                            protected Map<String, String> getParams () throws AuthFailureError {
+                                //Creating parameters
+                                Map<String, String> params = new Hashtable<String, String> ();
+                                //Adding parameters
+                                params.put (AppConfigTags.ATM_UNIQUE_ID, finalRating.getAtm_unique_id ());
+                                params.put (AppConfigTags.AUDITOR_ID, String.valueOf (finalRating.getAuditor_id ()));
+                                params.put (AppConfigTags.RATING, String.valueOf (finalRating.getRating ()));
+                                //returning parameters
+                                Log.d ("Param sent to the server", "" + params);
+                                return params;
+                            }
+                        };
+                        AppController.getInstance ().addToRequestQueue (strRequest3);
+                    } else {
+                        Log.d ("karman", "in offline response if no internet");
+                    }
+                }
+            }
         }
+
         db.closeDB ();
     }
 
     private void isLogin () {
-        if (Constants.username == "" || Constants.password == "" || Constants.auditor_id_main == 0 || Constants.auditor_name == "") {
+        if (Constants.username == "" || Constants.auditor_id_main == 0 || Constants.auditor_name == "") {
             Intent myIntent = new Intent (this, LoginActivity.class);
             startActivity (myIntent);
         }
@@ -322,7 +468,6 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
         LoginDetailsPref loginDetailsPref = LoginDetailsPref.getInstance ();
         Constants.auditor_name = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.AUDITOR_NAME);
         Constants.username = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.USERNAME);
-        Constants.password = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.PASSWORD);
         Constants.auditor_id_main = loginDetailsPref.getIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_ID);
     }
 
@@ -331,6 +476,7 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
         listViewAllAtms = (ListView) findViewById (R.id.lvAtmList);
         tvNoInternetConnection = (TextView) findViewById (R.id.tvNoIternetConnection);
         progressBar = (ProgressBar) findViewById (R.id.progressbar);
+        btEnterManually = (Button) findViewById (R.id.btEnterManually);
     }
 
     @Override
@@ -385,6 +531,9 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
 
     private void setUpNavigationDrawer () {
         Toolbar toolbar = (Toolbar) findViewById (R.id.toolbar1);
+        toolbar.showOverflowMenu ();
+
+
         setSupportActionBar (toolbar);
         ActionBar actionBar = getSupportActionBar ();
         try {
@@ -429,12 +578,23 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
 
     @Override
     public boolean onCreateOptionsMenu (Menu menu) {
-        getMenuInflater ().inflate (R.menu.menu_rest, menu);
+        getMenuInflater ().inflate (R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected (MenuItem item) {
+/*
+
+        switch (item.getItemId ()) {
+            case R.id.action_enter_manually:
+                Log.e ("Karman", "manually clicked");
+                Toast.makeText (MainActivity.this, "manually clicked", Toast.LENGTH_SHORT).show ();
+                return true;
+        }
+
+        */
+
         View view2 = this.getCurrentFocus ();
         if (view2 != null) {
             InputMethodManager imm = (InputMethodManager) this.getSystemService (Context.INPUT_METHOD_SERVICE);

@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.actiknow.liveaudit.R;
 import com.actiknow.liveaudit.adapter.MyPagerAdapter;
 import com.actiknow.liveaudit.adapter.SmartFragmentStatePagerAdapter;
+import com.actiknow.liveaudit.fragment.BaseFragment;
 import com.actiknow.liveaudit.model.Response;
 import com.actiknow.liveaudit.utils.Constants;
 import com.actiknow.liveaudit.utils.CustomViewPager;
@@ -45,7 +46,6 @@ public class ViewPagerActivity extends AppCompatActivity {
         initAdapter ();
 
         Constants.count = 0;
-        Constants.final_rating = 0;
         Constants.responseList.clear ();
 
         adapterViewPager = new MyPagerAdapter (getSupportFragmentManager ());
@@ -89,6 +89,32 @@ public class ViewPagerActivity extends AppCompatActivity {
                 //             "Selected page position: " + position, Toast.LENGTH_SHORT).show ();
 
 
+                if (position == Constants.total_questions) {
+//                    BaseFragment.refresh ();
+                    Log.e ("karman.singh asd", "asd in onpageselected");
+                    BaseFragment fragment = (BaseFragment) adapterViewPager.getRegisteredFragment (position);
+
+
+                    int count = 0;
+
+//                    for (int i=0; i<Constants.total_questions; i++){
+//                        Response response;
+//                        response = Constants.responseList.get (i);
+//                        count = count +response.getResponse_switch_flag ();
+//                    }
+
+                    Log.d ("count in local", "asd" + count);
+                    Log.e ("count", "asd" + Constants.count);
+                    Log.e ("total question", "asd" + Constants.total_questions);
+
+                    int rating = (Constants.count * 100) / Constants.total_questions;
+
+                    Log.e ("rating", "asd" + rating);
+
+//                    fragment.tvRatingNumber.setText (String.valueOf (rating));
+//                    fragment.sbRating.setProgress (rating);
+
+                }
             }
 
             // This method will be invoked when the current page is scrolled
@@ -123,9 +149,6 @@ public class ViewPagerActivity extends AppCompatActivity {
 
                 vpPager.setCurrentItem (vpPager.getCurrentItem () + 1);
 
-                Constants.final_rating = ((Constants.count * 100) / Constants.questionsList.size ());
-
-                Log.e ("rating :", "a " + Constants.final_rating);
 
 
                 if (vpPager.getCurrentItem () == Constants.questionsList.size ()) {

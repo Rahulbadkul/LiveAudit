@@ -8,12 +8,14 @@ public class AppConfigTags {
     public static final String SERVICE_CITY_LOCALITY_ID = "service_city_locality_id";
     public static final String ATMS = "atms";
     public static final String QUESTIONS = "questions";
+    public static final String RESPONSES = "responses";
     public static final String SERVER_RESPONSE = "SERVER RESPONSE";
     public static final String DIDNT_RECEIVE_ANY_DATA_FROM_SERVER = "DIDNT RECEIVE ANY DATA FROM SERVER";
 
 
     public static final String ATM_ID = "atm_id";
     public static final String ATM_UNIQUE_ID = "atm_unique_id";
+    public static final String ATM_AGENCY_ID = "agency_id";
     public static final String ATM_LAST_AUDIT_DATE = "atm_last_audit_date";
     public static final String ATM_BANK_NAME = "atm_bank_name";
     public static final String ATM_ADDRESS = "atm_address";
@@ -43,6 +45,7 @@ public class AppConfigTags {
     public static final String COMMENT = "comment";
     public static final String IMAGE1 = "image1";
     public static final String IMAGE2 = "image2";
+    public static final String RATING = "rating";
 
     public static final String LOGIN = "login";
     public static final String EMAIL = "email";

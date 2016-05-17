@@ -6,6 +6,8 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by Admin on 23-12-2015.
@@ -48,6 +50,23 @@ public class Utils {
             return encodedImage;
         } else {
             return "";
+        }
+    }
+
+    public static String convertTimeFormat (String OrigFormat) {
+        if (OrigFormat != "null") {
+            SimpleDateFormat sdf = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss");
+            Date testDate = null;
+            try {
+                testDate = sdf.parse (OrigFormat);
+            } catch (Exception ex) {
+                ex.printStackTrace ();
+            }
+            SimpleDateFormat formatter = new SimpleDateFormat ("dd/MM/yyyy");
+            String newFormat = formatter.format (testDate);
+            return newFormat;
+        } else {
+            return "Unavailable";
         }
     }
 }

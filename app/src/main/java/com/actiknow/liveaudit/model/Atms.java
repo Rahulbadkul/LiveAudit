@@ -3,14 +3,15 @@ package com.actiknow.liveaudit.model;
 import android.util.Log;
 
 public class Atms {
-    private int atm_id;
+    private int atm_id, atm_agency_id;
     private String atm_unique_id, atm_last_audit_date, atm_bank_name, atm_address, atm_city, atm_pincode;
 
     public Atms () {
     }
 
-    public Atms (int atm_id, String atm_unique_id, String atm_last_audit_date, String atm_bank_name, String atm_address, String atm_city, String atm_pincode) {
+    public Atms (int atm_id, int atm_agency_id, String atm_unique_id, String atm_last_audit_date, String atm_bank_name, String atm_address, String atm_city, String atm_pincode) {
         this.atm_id = atm_id;
+        this.atm_agency_id = atm_agency_id;
         this.atm_unique_id = atm_unique_id;
         this.atm_last_audit_date = atm_last_audit_date;
         this.atm_bank_name = atm_bank_name;
@@ -19,13 +20,22 @@ public class Atms {
         this.atm_pincode = atm_pincode;
     }
 
-    public int getAtm_id() {
+    public int getAtm_id () {
         return atm_id;
     }
 
     public void setAtm_id (int atm_id) {
         this.atm_id = atm_id;
         Log.d ("atm_id", "" + atm_id);
+    }
+
+    public int getAtm_agency_id () {
+        return atm_agency_id;
+    }
+
+    public void setAtm_agency_id (int atm_agency_id) {
+        this.atm_agency_id = atm_agency_id;
+        Log.d ("atm_agency_id", "" + atm_agency_id);
     }
 
     public String getAtm_unique_id () {

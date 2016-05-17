@@ -47,4 +47,9 @@ public class MyPagerAdapter extends SmartFragmentStatePagerAdapter {
     public CharSequence getPageTitle (int position) {
         return "Page " + position;
     }
+
+    @Override
+    public int getItemPosition (Object object) {
+        return POSITION_NONE;
+    }
 }

@@ -80,6 +80,7 @@ public class AllAtmAdapter extends BaseAdapter {
 			@Override
 			public void onClick (View arg0) {
 				Constants.atm_unique_id = atm.getAtm_unique_id ().toUpperCase ();
+				Constants.atm_agency_id = atm.getAtm_agency_id ();
 				Intent intent = new Intent (activity, ViewPagerActivity.class);
 				activity.startActivity (intent);
 				activity.overridePendingTransition (R.anim.slide_in_right, R.anim.slide_out_left);
