@@ -1,6 +1,7 @@
 package com.actiknow.liveaudit.fragment;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -238,6 +240,13 @@ public class BaseFragment extends android.support.v4.app.Fragment {
             btNext.setOnClickListener (new View.OnClickListener () {
                 @Override
                 public void onClick (View v) {
+
+                    View view = getActivity ().getCurrentFocus ();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager) getActivity ().getSystemService (Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow (view.getWindowToken (), 0);
+                    }
+
                     if (switchYesNo.isChecked ()) {
                         switch_flag = 1;
                         Constants.count++;
@@ -271,7 +280,10 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                             response.setResponse_question_id (question_id);
                             response.setResponse_question (question);
                             response.setResponse_switch_flag (switch_flag);
-                            response.setResponse_comment (etComments.getText ().toString ());
+                            if (page == 0)
+                                response.setResponse_comment (etComments.getText ().toString () + " " + Constants.atm_location_in_manual);
+                            else
+                                response.setResponse_comment (etComments.getText ().toString ());
                             response.setResponse_image1 (image1);
                             response.setResponse_image2 (image2);
                             Constants.responseList.add (page, response);
@@ -303,7 +315,10 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                         response.setResponse_question_id (question_id);
                         response.setResponse_question (question);
                         response.setResponse_switch_flag (switch_flag);
-                        response.setResponse_comment (etComments.getText ().toString ());
+                        if (page == 0)
+                            response.setResponse_comment (etComments.getText ().toString () + " " + Constants.atm_location_in_manual);
+                        else
+                            response.setResponse_comment (etComments.getText ().toString ());
                         response.setResponse_image1 (image1);
                         response.setResponse_image2 (image2);
                         Constants.responseList.add (page, response);
@@ -400,8 +415,9 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                                                                 .setCancelable (false)
                                                                 .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
                                                                     public void onClick (DialogInterface dialog, int id) {
-                                                                        getActivity ().finish ();
                                                                         dialog.dismiss ();
+                                                                        getActivity ().finish ();
+                                                                        getActivity ().overridePendingTransition (R.anim.slide_in_left, R.anim.slide_out_right);
                                                                     }
                                                                 });
                                                         AlertDialog alert = builder.create ();
@@ -430,12 +446,14 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                                                         .setCancelable (false)
                                                         .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
                                                             public void onClick (DialogInterface dialog, int id) {
-                                                                getActivity ().finish ();
                                                                 dialog.dismiss ();
+                                                                getActivity ().finish ();
+                                                                getActivity ().overridePendingTransition (R.anim.slide_in_left, R.anim.slide_out_right);
                                                             }
                                                         });
                                                 AlertDialog alert2 = builder2.create ();
                                                 alert2.show ();
+                                                db.createResponse (response);
                                             }
                                         }
                                     }) {
@@ -469,8 +487,9 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                                         .setCancelable (false)
                                         .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
                                             public void onClick (DialogInterface dialog, int id) {
-                                                getActivity ().finish ();
                                                 dialog.dismiss ();
+                                                getActivity ().finish ();
+                                                getActivity ().overridePendingTransition (R.anim.slide_in_left, R.anim.slide_out_right);
                                             }
                                         });
                                 AlertDialog alert3 = builder3.create ();

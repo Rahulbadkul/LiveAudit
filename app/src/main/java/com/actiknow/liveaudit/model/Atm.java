@@ -2,14 +2,14 @@ package com.actiknow.liveaudit.model;
 
 import android.util.Log;
 
-public class Atms {
+public class Atm {
     private int atm_id, atm_agency_id;
     private String atm_unique_id, atm_last_audit_date, atm_bank_name, atm_address, atm_city, atm_pincode;
 
-    public Atms () {
+    public Atm () {
     }
 
-    public Atms (int atm_id, int atm_agency_id, String atm_unique_id, String atm_last_audit_date, String atm_bank_name, String atm_address, String atm_city, String atm_pincode) {
+    public Atm (int atm_id, int atm_agency_id, String atm_unique_id, String atm_last_audit_date, String atm_bank_name, String atm_address, String atm_city, String atm_pincode) {
         this.atm_id = atm_id;
         this.atm_agency_id = atm_agency_id;
         this.atm_unique_id = atm_unique_id;

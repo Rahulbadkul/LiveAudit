@@ -7,8 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.actiknow.liveaudit.model.Atms;
-import com.actiknow.liveaudit.model.Questions;
+import com.actiknow.liveaudit.model.Atm;
+import com.actiknow.liveaudit.model.Question;
 import com.actiknow.liveaudit.model.Rating;
 import com.actiknow.liveaudit.model.Response;
 
@@ -123,7 +123,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     /**
      * Creating a question
      */
-    public long createQuestion (Questions question) {
+    public long createQuestion (Question question) {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
         values.put (KEY_ID, question.getQuestion_id ());
@@ -136,14 +136,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     /**
      * get single question
      */
-    public Questions getQuestion (long question_id) {
+    public Question getQuestion (long question_id) {
         SQLiteDatabase db = this.getReadableDatabase ();
         String selectQuery = "SELECT  * FROM " + TABLE_QUESTIONS + " WHERE " + KEY_ID + " = " + question_id;
         Log.e (LOG, selectQuery);
         Cursor c = db.rawQuery (selectQuery, null);
         if (c != null)
             c.moveToFirst ();
-        Questions question = new Questions ();
+        Question question = new Question ();
         question.setQuestion_id (c.getInt (c.getColumnIndex (KEY_ID)));
         question.setQuestion ((c.getString (c.getColumnIndex (KEY_QUESTION))));
         return question;
@@ -152,8 +152,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     /**
      * getting all questions
      */
-    public List<Questions> getAllQuestions () {
-        List<Questions> questions = new ArrayList<Questions> ();
+    public List<Question> getAllQuestions () {
+        List<Question> questions = new ArrayList<Question> ();
         String selectQuery = "SELECT  * FROM " + TABLE_QUESTIONS;
 //        Log.e (LOG, selectQuery);
         SQLiteDatabase db = this.getReadableDatabase ();
@@ -161,7 +161,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (c.moveToFirst ()) {
             do {
-                Questions question = new Questions ();
+                Question question = new Question ();
                 question.setQuestion_id (c.getInt ((c.getColumnIndex (KEY_ID))));
                 question.setQuestion ((c.getString (c.getColumnIndex (KEY_QUESTION))));
                 // adding to question list
@@ -186,7 +186,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     /**
      * Updating a question
      */
-    public int updateQuestion (Questions question) {
+    public int updateQuestion (Question question) {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
         values.put (KEY_QUESTION, question.getQuestion ());
@@ -218,7 +218,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     /**
      * Creating a atm
      */
-    public long createAtm (Atms atm) {
+    public long createAtm (Atm atm) {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
         values.put (KEY_ID, atm.getAtm_id ());
@@ -237,14 +237,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     /**
      * get single question
      */
-    public Atms getAtm (long atm_id) {
+    public Atm getAtm (long atm_id) {
         SQLiteDatabase db = this.getReadableDatabase ();
         String selectQuery = "SELECT  * FROM " + TABLE_ATMS + " WHERE " + KEY_ID + " = " + atm_id;
         Log.e (LOG, selectQuery);
         Cursor c = db.rawQuery (selectQuery, null);
         if (c != null)
             c.moveToFirst ();
-        Atms atm = new Atms ();
+        Atm atm = new Atm ();
         atm.setAtm_id (c.getInt (c.getColumnIndex (KEY_ID)));
         atm.setAtm_agency_id (c.getInt (c.getColumnIndex (KEY_AGENCY_ID)));
         atm.setAtm_unique_id (c.getString (c.getColumnIndex (KEY_ATM_ID)));
@@ -259,8 +259,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     /**
      * getting all atms
      */
-    public List<Atms> getAllAtms () {
-        List<Atms> atms = new ArrayList<Atms> ();
+    public List<Atm> getAllAtms () {
+        List<Atm> atms = new ArrayList<Atm> ();
         String selectQuery = "SELECT  * FROM " + TABLE_ATMS;
 //        Log.e (LOG, selectQuery);
         SQLiteDatabase db = this.getReadableDatabase ();
@@ -268,7 +268,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (c.moveToFirst ()) {
             do {
-                Atms atm = new Atms ();
+                Atm atm = new Atm ();
                 atm.setAtm_id (c.getInt (c.getColumnIndex (KEY_ID)));
                 atm.setAtm_agency_id (c.getInt (c.getColumnIndex (KEY_AGENCY_ID)));
                 atm.setAtm_unique_id (c.getString (c.getColumnIndex (KEY_ATM_ID)));
@@ -299,7 +299,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     /**
      * Updating an atm
      */
-    public int updateAtm (Atms atm) {
+    public int updateAtm (Atm atm) {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
         values.put (KEY_ATM_ID, atm.getAtm_unique_id ());

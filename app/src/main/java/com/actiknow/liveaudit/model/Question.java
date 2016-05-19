@@ -2,14 +2,14 @@ package com.actiknow.liveaudit.model;
 
 import android.util.Log;
 
-public class Questions {
+public class Question {
     private int question_id;
     private String question;
 
-    public Questions () {
+    public Question () {
     }
 
-    public Questions (int question_id, String question) {
+    public Question (int question_id, String question) {
         this.question_id = question_id;
         this.question = question;
     }

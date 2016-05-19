@@ -2,13 +2,12 @@
 package com.actiknow.liveaudit.activity;
 
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -19,7 +18,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -34,14 +32,13 @@ import com.actiknow.liveaudit.adapter.AllAtmAdapter;
 import com.actiknow.liveaudit.adapter.NavDrawerAdapter;
 import com.actiknow.liveaudit.app.AppController;
 import com.actiknow.liveaudit.helper.DatabaseHandler;
-import com.actiknow.liveaudit.model.Atms;
-import com.actiknow.liveaudit.model.Questions;
+import com.actiknow.liveaudit.model.Atm;
+import com.actiknow.liveaudit.model.Question;
 import com.actiknow.liveaudit.utils.AppConfigTags;
 import com.actiknow.liveaudit.utils.AppConfigURL;
 import com.actiknow.liveaudit.utils.Constants;
 import com.actiknow.liveaudit.utils.LoginDetailsPref;
 import com.actiknow.liveaudit.utils.NetworkConnection;
-import com.actiknow.liveaudit.utils.SetTypeFace;
 import com.actiknow.liveaudit.utils.Utils;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -66,16 +63,15 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
 
     TextView tvNoInternetConnection;
     ProgressBar progressBar;
-    ListView listViewAllAtms;
+    ListView listViewAllAtm;
     Button btEnterManually;
 
     GoogleApiClient client;
-//    GoogleApiClient googleApiClient;
-//    Dialog dialogSplash;
-Dialog dialogEnterManually;
+    Dialog dialogSplash;
+    Dialog dialogEnterManually;
     DatabaseHandler db;
     // Action Bar components
-    private List<Atms> atmsList = new ArrayList<Atms> ();
+    private List<Atm> atmList = new ArrayList<> ();
     private AllAtmAdapter adapter;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
@@ -85,374 +81,44 @@ Dialog dialogEnterManually;
     protected void onCreate (Bundle savedInstanceState) {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_main);
-
         initView ();
-
-        db = new DatabaseHandler (getApplicationContext ());
-//        db.getWritableDatabase ();
-
-
-        Typeface tf = SetTypeFace.getTypeface (MainActivity.this);
-        SetTypeFace.applyTypeface (SetTypeFace.getParentView (tvNoInternetConnection), tf);
-
-
+        initPref ();
+        isLogin ();
+        initListener ();
+        initData ();
         setUpNavigationDrawer ();
 //        initLocationSettings ();
 
-        adapter = new AllAtmAdapter (this, atmsList);
-        listViewAllAtms.setAdapter (adapter);
+        if (Constants.splash_screen_first_time == 0 && Constants.auditor_id_main != 0)
+            showSplashScreen ();
 
-        client = new GoogleApiClient.Builder (this).addApi (AppIndex.API).build ();
-//        dialogSplash = new Dialog (this, R.style.full_screen);
-
-
-        if (Constants.splash_screen_first_time == 0 && Constants.auditor_id_main != 0) {
-            Log.d ("HELLO", "splash screen first time");
-
-            Constants.splash_screen_first_time = 1;
-//            dialogSplash.setContentView (R.layout.dialog_splash);
-//            dialogSplash.setCancelable (false);
-//            dialogSplash.show ();
-
-//            final Handler handler = new Handler ();
-//            handler.postDelayed (new Runnable () {
-//                @Override
-//                public void run () {
-//                    if (dialogSplash != null)
-//                        dialogSplash.dismiss ();
-//                }
-//            }, 5000);
+        if (Constants.auditor_id_main != 0) {
+            getAtmListFromServer ();
+            getQuestionListFromServer ();
+            if (db.getResponseCount () > 0)
+                uploadStoredResponseToServer ();
+            if (db.getRatingCount () > 0)
+                uploadStoredRatingToServer ();
         }
+        db.closeDB ();
+    }
 
+    private void initData () {
+        db = new DatabaseHandler (getApplicationContext ());
+        Utils.setTypefaceToAllViews (this, tvNoInternetConnection);
+        adapter = new AllAtmAdapter (this, atmList);
+        listViewAllAtm.setAdapter (adapter);
+        client = new GoogleApiClient.Builder (this).addApi (AppIndex.API).build ();
+        dialogSplash = new Dialog (this, R.style.full_screen);
+    }
 
-        initPref ();
-        isLogin ();
-
-        if (Constants.auditor_id_main == 0)
-            finish ();
-
-
+    private void initListener () {
         btEnterManually.setOnClickListener (new View.OnClickListener () {
             @Override
             public void onClick (View v) {
-                Button btEnterManuallyContinue;
-                final EditText etEnterManuallyAtmId;
-
-                dialogEnterManually = new Dialog (MainActivity.this);
-                dialogEnterManually.setContentView (R.layout.dialog_enter_manually);
-                dialogEnterManually.setCancelable (true);
-                btEnterManuallyContinue = (Button) dialogEnterManually.findViewById (R.id.btEnterManuallyContinue);
-                etEnterManuallyAtmId = (EditText) dialogEnterManually.findViewById (R.id.etEnterManuallyAtmId);
-                Typeface tf = SetTypeFace.getTypeface (MainActivity.this);
-                SetTypeFace.applyTypeface (SetTypeFace.getParentView (etEnterManuallyAtmId), tf);
-                dialogEnterManually.getWindow ().setBackgroundDrawable (new ColorDrawable (android.graphics.Color.TRANSPARENT));
-                dialogEnterManually.show ();
-                btEnterManuallyContinue.setOnClickListener (new View.OnClickListener () {
-                    @Override
-                    public void onClick (View v) {
-                        if (etEnterManuallyAtmId.getText ().toString ().length () == 0)
-                            etEnterManuallyAtmId.setError ("Please enter the ATM ID");
-                        else {
-                            Constants.atm_unique_id = etEnterManuallyAtmId.getText ().toString ().toUpperCase ();
-                            Intent intent = new Intent (MainActivity.this, ViewPagerActivity.class);
-                            MainActivity.this.startActivity (intent);
-                            MainActivity.this.overridePendingTransition (R.anim.slide_in_right, R.anim.slide_out_left);
-                            dialogEnterManually.dismiss ();
-                        }
-                    }
-                });
-
+                showEnterManuallyDialog ();
             }
         });
-
-
-        if (Constants.auditor_id_main != 0) {
-            if (NetworkConnection.isNetworkAvailable (this)) {
-                Log.d ("URL", AppConfigURL.URL_GETALLATMS);
-                StringRequest strRequest = new StringRequest (Request.Method.POST, AppConfigURL.URL_GETALLATMS,
-                        new Response.Listener<String> () {
-                            @Override
-                            public void onResponse (String response) {
-                                int is_data_received = 0;
-                                int json_array_len = 0;
-
-                                Log.d ("SERVER RESPONSE", response);
-                                if (response != null) {
-                                    is_data_received = 1;
-                                    try {
-                                        JSONObject jsonObj = new JSONObject (response);
-                                        JSONArray jsonArray = jsonObj.getJSONArray (AppConfigTags.ATMS);
-                                        //           if (db.getAtmCount () != jsonArray.length ()) {
-                                        db.deleteAllAtms ();
-                                        //           }
-                                        json_array_len = jsonArray.length ();
-                                        for (int i = 0; i < json_array_len; i++) {
-                                            JSONObject jsonObject = jsonArray.getJSONObject (i);
-                                            Atms atm = new Atms ();
-                                            atm.setAtm_id (jsonObject.getInt (AppConfigTags.ATM_ID));
-                                            atm.setAtm_unique_id (jsonObject.getString (AppConfigTags.ATM_UNIQUE_ID));
-                                            atm.setAtm_agency_id (jsonObject.getInt (AppConfigTags.ATM_AGENCY_ID));
-                                            atm.setAtm_last_audit_date (Utils.convertTimeFormat (jsonObject.getString (AppConfigTags.ATM_LAST_AUDIT_DATE)));
-                                            atm.setAtm_bank_name (jsonObject.getString (AppConfigTags.ATM_BANK_NAME));
-                                            atm.setAtm_address (jsonObject.getString (AppConfigTags.ATM_ADDRESS));
-                                            atm.setAtm_city (jsonObject.getString (AppConfigTags.ATM_CITY));
-                                            atm.setAtm_pincode (jsonObject.getString (AppConfigTags.ATM_PINCODE));
-                                            atmsList.add (atm);
-                                            //               if (db.getAtmCount () != jsonArray.length ()) {
-                                            db.createAtm (atm);
-                                            //               }
-                                        }
-
-//                                        if (dialogSplash != null)
-//                                            dialogSplash.dismiss ();
-
-                                    } catch (JSONException e) {
-                                        e.printStackTrace ();
-                                    }
-                                } else {
-                                    Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
-                                }
-                                adapter.notifyDataSetChanged ();
-                                if (is_data_received != 0 && json_array_len != 0) {
-                                    progressBar.setVisibility (View.GONE);
-                                    listViewAllAtms.setVisibility (View.VISIBLE);
-                                    tvNoInternetConnection.setVisibility (View.GONE);
-                                } else if (is_data_received != 0 && json_array_len == 0) {
-                                    tvNoInternetConnection.setVisibility (View.VISIBLE);
-                                    progressBar.setVisibility (View.GONE);
-                                    listViewAllAtms.setVisibility (View.GONE);
-                                }
-                                if (is_data_received == 0) {
-                                    progressBar.setVisibility (View.VISIBLE);
-                                    listViewAllAtms.setVisibility (View.GONE);
-                                    tvNoInternetConnection.setVisibility (View.GONE);
-                                }
-                            }
-                        },
-                        new Response.ErrorListener () {
-                            @Override
-                            public void onErrorResponse (VolleyError error) {
-                                Log.d ("TAG", error.toString ());
-                                progressBar.setVisibility (View.GONE);
-                                listViewAllAtms.setVisibility (View.VISIBLE);
-                                atmsList.clear ();
-                                // Getting all Atms
-                                Log.d ("Get All Atms", "Getting All Atms");
-                                List<Atms> allAtms = db.getAllAtms ();
-                                for (Atms atms : allAtms) {
-                                    atmsList.add (atms);
-                                    Log.d ("Atm ID", atms.getAtm_unique_id ());
-                                }
-                                adapter.notifyDataSetChanged ();
-
-//                                if (dialogSplash != null)
-//                                    dialogSplash.dismiss ();
-
-
-                            }
-                        });
-                AppController.getInstance ().addToRequestQueue (strRequest);
-            } else {
-                progressBar.setVisibility (View.GONE);
-                listViewAllAtms.setVisibility (View.VISIBLE);
-                atmsList.clear ();
-                // Getting all Atms
-                Log.d ("Get All Atms", "Getting All Atms from database");
-                List<Atms> allAtms = db.getAllAtms ();
-                for (Atms atms : allAtms) {
-                    atmsList.add (atms);
-                    Log.d ("Atm ID", atms.getAtm_unique_id ());
-                }
-                adapter.notifyDataSetChanged ();
-
-                AlertDialog.Builder builder3 = new AlertDialog.Builder (MainActivity.this);
-                builder3.setMessage ("Seems like there is no internet connection, the app will continue in Offline mode")
-                        .setCancelable (false)
-                        .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
-                            public void onClick (DialogInterface dialog, int id) {
-                                dialog.dismiss ();
-                            }
-                        });
-                AlertDialog alert3 = builder3.create ();
-                alert3.show ();
-
-//                if (dialogSplash != null)
-//                    dialogSplash.dismiss ();
-
-            }
-
-            if (NetworkConnection.isNetworkAvailable (this)) {
-                Log.d ("URL", AppConfigURL.URL_GETALLQUESTIONS);
-                StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_GETALLQUESTIONS,
-                        new Response.Listener<String> () {
-                            @Override
-                            public void onResponse (String response) {
-                                Log.d ("SERVER RESPONSE", response);
-                                if (response != null) {
-                                    try {
-                                        JSONObject jsonObj = new JSONObject (response);
-                                        JSONArray jsonArray = jsonObj.getJSONArray (AppConfigTags.QUESTIONS);
-                                        Constants.total_questions = jsonArray.length ();
-                                        if (db.getQuestionCount () != jsonArray.length ()) {
-                                            db.deleteAllQuestion ();
-                                        }
-                                        for (int i = 0; i < Constants.total_questions; i++) {
-                                            JSONObject jsonObject = jsonArray.getJSONObject (i);
-                                            Questions question = new Questions ();
-                                            question.setQuestion_id (jsonObject.getInt (AppConfigTags.QUESTION_ID));
-                                            question.setQuestion (jsonObject.getString (AppConfigTags.QUESTION));
-                                            Constants.questionsList.add (question);
-                                            if (db.getQuestionCount () != jsonArray.length ()) {
-                                                db.createQuestion (question);
-                                            }
-                                        }
-                                    } catch (JSONException e) {
-                                        e.printStackTrace ();
-                                    }
-                                } else {
-                                    Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
-                                }
-                            }
-                        },
-                        new Response.ErrorListener () {
-                            @Override
-                            public void onErrorResponse (VolleyError error) {
-                                Log.d ("TAG", error.toString ());
-                                Log.d ("Get AllQuestions", "Getting All Questions");
-                                List<Questions> allQuestions = db.getAllQuestions ();
-                                for (Questions question : allQuestions) {
-                                    Constants.questionsList.add (question);
-                                    Log.d ("Question", question.getQuestion ());
-                                }
-                                Constants.total_questions = Constants.questionsList.size ();
-
-                            }
-                        });
-                AppController.getInstance ().addToRequestQueue (strRequest1);
-            } else {
-                // Getting all Questions
-                Log.d ("Get AllQuestions", "Getting All Questions from database");
-                List<Questions> allQuestions = db.getAllQuestions ();
-                for (Questions question : allQuestions) {
-                    Constants.questionsList.add (question);
-                    Log.d ("Question", question.getQuestion ());
-                }
-                Constants.total_questions = Constants.questionsList.size ();
-            }
-
-
-            if (db.getResponseCount () > 0) {
-                Constants.responseListOffline = db.getAllResponse ();
-                Log.d ("Get All Response", "Getting All responses from database");
-                List<com.actiknow.liveaudit.model.Response> allResponses = db.getAllResponse ();
-                for (final com.actiknow.liveaudit.model.Response responses : allResponses) {
-                    Log.d ("URL", AppConfigURL.URL_SUBMITRESPONSE);
-                    final com.actiknow.liveaudit.model.Response finalResponse = responses;
-                    if (NetworkConnection.isNetworkAvailable (this)) {
-                        StringRequest strRequest2 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRESPONSE,
-                                new com.android.volley.Response.Listener<String> () {
-                                    @Override
-                                    public void onResponse (String response) {
-                                        Log.d ("SERVER RESPONSE", response);
-                                        if (response != null) {
-//                                            try {
-//                                                JSONObject jsonObj = new JSONObject (response);
-                                            db.deleteResponse (responses.getResponse_id ());
-//                                            } catch (JSONException e) {
-//                                                e.printStackTrace ();
-//                                            }
-                                        } else {
-                                            Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
-                                        }
-                                    }
-                                },
-                                new com.android.volley.Response.ErrorListener () {
-                                    @Override
-                                    public void onErrorResponse (VolleyError error) {
-                                        Log.d ("TAG", error.toString ());
-                                    }
-                                }) {
-                            @Override
-                            protected Map<String, String> getParams () throws AuthFailureError {
-                                //Creating parameters
-                                Map<String, String> params = new Hashtable<String, String> ();
-                                //Adding parameters
-                                params.put (AppConfigTags.ATM_UNIQUE_ID, finalResponse.getResponse_atm_unique_id ());
-                                params.put (AppConfigTags.ATM_AGENCY_ID, String.valueOf (finalResponse.getResponse_agency_id ()));
-                                params.put (AppConfigTags.AUDITOR_ID, String.valueOf (finalResponse.getResponse_auditor_id ()));
-                                params.put (AppConfigTags.QUESTION_ID, String.valueOf (finalResponse.getResponse_question_id ()));
-//                                params.put (AppConfigTags.QUESTION, finalResponse.getResponse_question ());
-                                params.put (AppConfigTags.SWITCH_FLAG, String.valueOf (finalResponse.getResponse_switch_flag ()));
-                                params.put (AppConfigTags.COMMENT, finalResponse.getResponse_comment ());
-                                params.put (AppConfigTags.IMAGE1, finalResponse.getResponse_image1 ());
-                                params.put (AppConfigTags.IMAGE2, finalResponse.getResponse_image2 ());
-                                //returning parameters
-                                Log.d ("Param sent to the server", "" + params);
-                                return params;
-                            }
-                        };
-                        AppController.getInstance ().addToRequestQueue (strRequest2);
-                    } else {
-                        Log.d ("karman", "in offline response if no internet");
-                    }
-                }
-//                db.deleteAllResponses ();
-                Constants.responseListOffline.clear ();
-            }
-
-
-            if (db.getRatingCount () > 0) {
-                Log.d ("Get All Rating", "Getting All ratings from database");
-                List<com.actiknow.liveaudit.model.Rating> allRatings = db.getAllRatings ();
-                for (com.actiknow.liveaudit.model.Rating ratings : allRatings) {
-                    Log.d ("URL", AppConfigURL.URL_SUBMITRATING);
-                    final com.actiknow.liveaudit.model.Rating finalRating = ratings;
-                    if (NetworkConnection.isNetworkAvailable (this)) {
-                        StringRequest strRequest3 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRATING,
-                                new com.android.volley.Response.Listener<String> () {
-                                    @Override
-                                    public void onResponse (String response) {
-                                        Log.d ("SERVER RESPONSE", response);
-                                        if (response != null) {
-//                                            try {
-//                                                JSONObject jsonObj = new JSONObject (response);
-                                            db.deleteRating (finalRating.getRating_id ());
-//                                            } catch (JSONException e) {
-//                                                e.printStackTrace ();
-//                                            }
-                                        } else {
-                                            Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
-                                        }
-                                    }
-                                },
-                                new com.android.volley.Response.ErrorListener () {
-                                    @Override
-                                    public void onErrorResponse (VolleyError error) {
-                                        Log.d ("TAG", error.toString ());
-                                    }
-                                }) {
-                            @Override
-                            protected Map<String, String> getParams () throws AuthFailureError {
-                                //Creating parameters
-                                Map<String, String> params = new Hashtable<String, String> ();
-                                //Adding parameters
-                                params.put (AppConfigTags.ATM_UNIQUE_ID, finalRating.getAtm_unique_id ());
-                                params.put (AppConfigTags.AUDITOR_ID, String.valueOf (finalRating.getAuditor_id ()));
-                                params.put (AppConfigTags.RATING, String.valueOf (finalRating.getRating ()));
-                                //returning parameters
-                                Log.d ("Param sent to the server", "" + params);
-                                return params;
-                            }
-                        };
-                        AppController.getInstance ().addToRequestQueue (strRequest3);
-                    } else {
-                        Log.d ("karman", "in offline response if no internet");
-                    }
-                }
-            }
-        }
-
-        db.closeDB ();
     }
 
     private void isLogin () {
@@ -460,8 +126,8 @@ Dialog dialogEnterManually;
             Intent myIntent = new Intent (this, LoginActivity.class);
             startActivity (myIntent);
         }
-        // if (Constants.username == "" || Constants.password == "")
-        //    finish();
+        if (Constants.auditor_id_main == 0)
+            finish ();
     }
 
     private void initPref () {
@@ -471,9 +137,8 @@ Dialog dialogEnterManually;
         Constants.auditor_id_main = loginDetailsPref.getIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_ID);
     }
 
-
     private void initView () {
-        listViewAllAtms = (ListView) findViewById (R.id.lvAtmList);
+        listViewAllAtm = (ListView) findViewById (R.id.lvAtmList);
         tvNoInternetConnection = (TextView) findViewById (R.id.tvNoIternetConnection);
         progressBar = (ProgressBar) findViewById (R.id.progressbar);
         btEnterManually = (Button) findViewById (R.id.btEnterManually);
@@ -529,11 +194,79 @@ Dialog dialogEnterManually;
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu (Menu menu) {
+        getMenuInflater ().inflate (R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected (MenuItem item) {
+        switch (item.getItemId ()) {
+            case R.id.action_logout:
+                showLogOutDialog ();
+                return true;
+        }
+        Utils.hideSoftKeyboard (MainActivity.this);
+/**
+ if (item != null && item.getItemId () == android.R.id.home) {
+ if (mDrawerLayout.isDrawerOpen (mDrawerPanel)) {
+ } else {
+ mDrawerLayout.openDrawer (mDrawerPanel);
+ }
+ return true;
+ }
+ */
+        return super.onOptionsItemSelected (item);
+    }
+
+    private void showLogOutDialog () {
+        AlertDialog.Builder alert = new AlertDialog.Builder (MainActivity.this);
+        alert.setMessage ("Are you sure you want to LOGOUT");
+        alert.setPositiveButton ("YES", new DialogInterface.OnClickListener () {
+            @Override
+            public void onClick (DialogInterface dialog, int which) {
+                LoginDetailsPref loginDetailsPref = LoginDetailsPref.getInstance ();
+                loginDetailsPref.putIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_ID, 0);
+                loginDetailsPref.putStringPref (MainActivity.this, LoginDetailsPref.AUDITOR_NAME, "");
+                loginDetailsPref.putStringPref (MainActivity.this, LoginDetailsPref.USERNAME, "");
+                Intent intent = new Intent (MainActivity.this, LoginActivity.class);
+                Constants.username = "";
+                Constants.auditor_name = "";
+                Constants.auditor_id_main = 0;
+                intent.setFlags (Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity (intent);
+                overridePendingTransition (R.anim.slide_in_left, R.anim.slide_out_right);
+            }
+        });
+        alert.setNegativeButton ("NO", new DialogInterface.OnClickListener () {
+            @Override
+            public void onClick (DialogInterface dialog, int which) {
+                dialog.dismiss ();
+            }
+        });
+        alert.show ();
+    }
+
+    private void showSplashScreen () {
+        Constants.splash_screen_first_time = 1;
+        dialogSplash.setContentView (R.layout.dialog_splash);
+        dialogSplash.setCancelable (false);
+        dialogSplash.show ();
+
+        final Handler handler = new Handler ();
+        handler.postDelayed (new Runnable () {
+            @Override
+            public void run () {
+                if (dialogSplash != null)
+                    dialogSplash.dismiss ();
+            }
+        }, 4000);
+    }
+
     private void setUpNavigationDrawer () {
         Toolbar toolbar = (Toolbar) findViewById (R.id.toolbar1);
         toolbar.showOverflowMenu ();
-
-
         setSupportActionBar (toolbar);
         ActionBar actionBar = getSupportActionBar ();
         try {
@@ -576,41 +309,279 @@ Dialog dialogEnterManually;
         mDrawerLayout.setDrawerListener (mDrawerToggle);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu (Menu menu) {
-        getMenuInflater ().inflate (R.menu.menu_main, menu);
-        return true;
+    private void getAtmListFromServer () {
+        if (NetworkConnection.isNetworkAvailable (this)) {
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_GETALLATMS);
+            StringRequest strRequest = new StringRequest (Request.Method.POST, AppConfigURL.URL_GETALLATMS,
+                    new Response.Listener<String> () {
+                        @Override
+                        public void onResponse (String response) {
+                            int is_data_received = 0;
+                            int json_array_len = 0;
+                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response);
+                            if (response != null) {
+                                is_data_received = 1;
+                                try {
+                                    JSONObject jsonObj = new JSONObject (response);
+                                    JSONArray jsonArray = jsonObj.getJSONArray (AppConfigTags.ATMS);
+                                    db.deleteAllAtms ();
+                                    json_array_len = jsonArray.length ();
+                                    for (int i = 0; i < json_array_len; i++) {
+                                        JSONObject jsonObject = jsonArray.getJSONObject (i);
+                                        Atm atm = new Atm ();
+                                        atm.setAtm_id (jsonObject.getInt (AppConfigTags.ATM_ID));
+                                        atm.setAtm_unique_id (jsonObject.getString (AppConfigTags.ATM_UNIQUE_ID));
+                                        atm.setAtm_agency_id (jsonObject.getInt (AppConfigTags.ATM_AGENCY_ID));
+                                        atm.setAtm_last_audit_date (Utils.convertTimeFormat (jsonObject.getString (AppConfigTags.ATM_LAST_AUDIT_DATE)));
+                                        atm.setAtm_bank_name (jsonObject.getString (AppConfigTags.ATM_BANK_NAME));
+                                        atm.setAtm_address (jsonObject.getString (AppConfigTags.ATM_ADDRESS));
+                                        atm.setAtm_city (jsonObject.getString (AppConfigTags.ATM_CITY));
+                                        atm.setAtm_pincode (jsonObject.getString (AppConfigTags.ATM_PINCODE));
+                                        atmList.add (atm);
+                                        db.createAtm (atm);
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace ();
+                                }
+                            } else {
+                                Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                            }
+                            adapter.notifyDataSetChanged ();
+                            if (is_data_received != 0 && json_array_len != 0) {
+                                progressBar.setVisibility (View.GONE);
+                                listViewAllAtm.setVisibility (View.VISIBLE);
+                                tvNoInternetConnection.setVisibility (View.GONE);
+                            } else if (is_data_received != 0 && json_array_len == 0) {
+                                tvNoInternetConnection.setVisibility (View.VISIBLE);
+                                progressBar.setVisibility (View.GONE);
+                                listViewAllAtm.setVisibility (View.GONE);
+                            }
+                            if (is_data_received == 0) {
+                                progressBar.setVisibility (View.GONE);
+                                listViewAllAtm.setVisibility (View.GONE);
+                                tvNoInternetConnection.setVisibility (View.VISIBLE);
+                            }
+                        }
+                    },
+                    new Response.ErrorListener () {
+                        @Override
+                        public void onErrorResponse (VolleyError error) {
+                            Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString ());
+                            progressBar.setVisibility (View.GONE);
+                            listViewAllAtm.setVisibility (View.VISIBLE);
+                            getAtmListFromLocalDatabase ();
+                        }
+                    }) {
+                @Override
+                protected Map<String, String> getParams () throws AuthFailureError {
+                    Map<String, String> params = new Hashtable<String, String> ();
+                    params.put (AppConfigTags.AUDITOR_ID, String.valueOf (Constants.auditor_id_main));
+                    Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params);
+                    return params;
+                }
+            };
+            AppController.getInstance ().addToRequestQueue (strRequest);
+        } else {
+            progressBar.setVisibility (View.GONE);
+            listViewAllAtm.setVisibility (View.VISIBLE);
+            getAtmListFromLocalDatabase ();
+            Utils.showOkDialog (MainActivity.this, "Seems like there is no internet connection, the app will continue in Offline mode");
+        }
     }
 
-    @Override
-    public boolean onOptionsItemSelected (MenuItem item) {
-/*
+    private void getAtmListFromLocalDatabase () {
+        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the atm from local database");
+        atmList.clear ();
+        List<Atm> allAtm = db.getAllAtms ();
+        for (Atm atm : allAtm)
+            atmList.add (atm);
+        adapter.notifyDataSetChanged ();
+    }
 
-        switch (item.getItemId ()) {
-            case R.id.action_enter_manually:
-                Log.e ("Karman", "manually clicked");
-                Toast.makeText (MainActivity.this, "manually clicked", Toast.LENGTH_SHORT).show ();
-                return true;
+    private void getQuestionListFromServer () {
+        if (NetworkConnection.isNetworkAvailable (this)) {
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_GETALLQUESTIONS);
+            StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_GETALLQUESTIONS,
+                    new Response.Listener<String> () {
+                        @Override
+                        public void onResponse (String response) {
+                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response);
+                            if (response != null) {
+                                try {
+                                    JSONObject jsonObj = new JSONObject (response);
+                                    JSONArray jsonArray = jsonObj.getJSONArray (AppConfigTags.QUESTIONS);
+                                    Constants.total_questions = jsonArray.length ();
+                                    db.deleteAllQuestion ();
+                                    for (int i = 0; i < Constants.total_questions; i++) {
+                                        JSONObject jsonObject = jsonArray.getJSONObject (i);
+                                        Question question = new Question ();
+                                        question.setQuestion_id (jsonObject.getInt (AppConfigTags.QUESTION_ID));
+                                        question.setQuestion (jsonObject.getString (AppConfigTags.QUESTION));
+                                        Constants.questionsList.add (question);
+                                        db.createQuestion (question);
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace ();
+                                }
+                            } else {
+                                Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                            }
+                        }
+                    },
+                    new Response.ErrorListener () {
+                        @Override
+                        public void onErrorResponse (VolleyError error) {
+                            Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString ());
+                            getQuestionListFromLocalDatabase ();
+                        }
+                    });
+            AppController.getInstance ().addToRequestQueue (strRequest1);
+        } else {
+            getQuestionListFromLocalDatabase ();
         }
+    }
 
-        */
+    private void getQuestionListFromLocalDatabase () {
+        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the questions from local database");
+        List<Question> allQuestions = db.getAllQuestions ();
+        for (Question question : allQuestions)
+            Constants.questionsList.add (question);
+        Constants.total_questions = Constants.questionsList.size ();
+    }
 
-        View view2 = this.getCurrentFocus ();
-        if (view2 != null) {
-            InputMethodManager imm = (InputMethodManager) this.getSystemService (Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow (view2.getWindowToken (), 0);
-        }
-        if (item != null && item.getItemId () == android.R.id.home) {
-            if (mDrawerLayout.isDrawerOpen (mDrawerPanel)) {
-            } else {
-                mDrawerLayout.openDrawer (mDrawerPanel);
+    private void showEnterManuallyDialog () {
+        Button btEnterManuallyContinue;
+        final EditText etEnterManuallyAtmId;
+        final EditText etEnterManuallyAtmLocation;
+
+        dialogEnterManually = new Dialog (MainActivity.this);
+        dialogEnterManually.setContentView (R.layout.dialog_enter_manually);
+        dialogEnterManually.setCancelable (true);
+        btEnterManuallyContinue = (Button) dialogEnterManually.findViewById (R.id.btEnterManuallyContinue);
+        etEnterManuallyAtmId = (EditText) dialogEnterManually.findViewById (R.id.etEnterManuallyAtmId);
+        etEnterManuallyAtmLocation = (EditText) dialogEnterManually.findViewById (R.id.etEnterManuallyLocation);
+        Utils.setTypefaceToAllViews (MainActivity.this, etEnterManuallyAtmId);
+        dialogEnterManually.getWindow ().setBackgroundDrawable (new ColorDrawable (android.graphics.Color.TRANSPARENT));
+        dialogEnterManually.show ();
+        btEnterManuallyContinue.setOnClickListener (new View.OnClickListener () {
+            @Override
+            public void onClick (View v) {
+                if (etEnterManuallyAtmId.getText ().toString ().length () == 0)
+                    etEnterManuallyAtmId.setError ("Please enter the ATM ID");
+                else {
+                    Constants.atm_location_in_manual = etEnterManuallyAtmLocation.getText ().toString ().toUpperCase ();
+                    Constants.atm_unique_id = etEnterManuallyAtmId.getText ().toString ().toUpperCase ();
+                    Intent intent = new Intent (MainActivity.this, ViewPagerActivity.class);
+                    MainActivity.this.startActivity (intent);
+                    MainActivity.this.overridePendingTransition (R.anim.slide_in_right, R.anim.slide_out_left);
+                    dialogEnterManually.dismiss ();
+                }
             }
-            return true;
-        }
-        return super.onOptionsItemSelected (item);
+        });
     }
 
+    private void uploadStoredRatingToServer () {
+        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the rating from local database");
+        List<com.actiknow.liveaudit.model.Rating> allRatings = db.getAllRatings ();
+        for (com.actiknow.liveaudit.model.Rating ratings : allRatings) {
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITRATING);
+            final com.actiknow.liveaudit.model.Rating finalRating = ratings;
+            if (NetworkConnection.isNetworkAvailable (this)) {
+                StringRequest strRequest3 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRATING,
+                        new com.android.volley.Response.Listener<String> () {
+                            @Override
+                            public void onResponse (String response) {
+                                Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response);
+                                if (response != null) {
+                                    try {
+                                        JSONObject jsonObj = new JSONObject (response);
+                                        int status = jsonObj.getInt (AppConfigTags.STATUS);
+                                        if (status == 1)
+                                            db.deleteRating (finalRating.getRating_id ());
+                                    } catch (JSONException e) {
+                                        e.printStackTrace ();
+                                    }
+                                } else {
+                                    Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                }
+                            }
+                        },
+                        new com.android.volley.Response.ErrorListener () {
+                            @Override
+                            public void onErrorResponse (VolleyError error) {
+                                Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString ());
+                            }
+                        }) {
+                    @Override
+                    protected Map<String, String> getParams () throws AuthFailureError {
+                        Map<String, String> params = new Hashtable<String, String> ();
+                        params.put (AppConfigTags.ATM_UNIQUE_ID, finalRating.getAtm_unique_id ());
+                        params.put (AppConfigTags.AUDITOR_ID, String.valueOf (finalRating.getAuditor_id ()));
+                        params.put (AppConfigTags.RATING, String.valueOf (finalRating.getRating ()));
+                        Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params);
+                        return params;
+                    }
+                };
+                AppController.getInstance ().addToRequestQueue (strRequest3);
+            } else {
+                Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection");
+            }
+        }
+    }
 
+    private void uploadStoredResponseToServer () {
+        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the responses from local  database");
+        List<com.actiknow.liveaudit.model.Response> allResponses = db.getAllResponse ();
+        for (final com.actiknow.liveaudit.model.Response responses : allResponses) {
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITRESPONSE);
+            final com.actiknow.liveaudit.model.Response finalResponse = responses;
+            if (NetworkConnection.isNetworkAvailable (this)) {
+                StringRequest strRequest2 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRESPONSE,
+                        new com.android.volley.Response.Listener<String> () {
+                            @Override
+                            public void onResponse (String response) {
+                                Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response);
+                                if (response != null) {
+                                    try {
+                                        JSONObject jsonObj = new JSONObject (response);
+                                        int status = jsonObj.getInt (AppConfigTags.STATUS);
+                                        if (status == 1)
+                                            db.deleteResponse (responses.getResponse_id ());
+                                    } catch (JSONException e) {
+                                        e.printStackTrace ();
+                                    }
+                                } else {
+                                    Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                }
+                            }
+                        },
+                        new com.android.volley.Response.ErrorListener () {
+                            @Override
+                            public void onErrorResponse (VolleyError error) {
+                                Utils.showLog (Log.ERROR, AppConfigTags.TAG, error.toString ());
+                            }
+                        }) {
+                    @Override
+                    protected Map<String, String> getParams () throws AuthFailureError {
+                        Map<String, String> params = new Hashtable<String, String> ();
+                        params.put (AppConfigTags.ATM_UNIQUE_ID, finalResponse.getResponse_atm_unique_id ());
+                        params.put (AppConfigTags.ATM_AGENCY_ID, String.valueOf (finalResponse.getResponse_agency_id ()));
+                        params.put (AppConfigTags.AUDITOR_ID, String.valueOf (finalResponse.getResponse_auditor_id ()));
+                        params.put (AppConfigTags.QUESTION_ID, String.valueOf (finalResponse.getResponse_question_id ()));
+                        params.put (AppConfigTags.SWITCH_FLAG, String.valueOf (finalResponse.getResponse_switch_flag ()));
+                        params.put (AppConfigTags.COMMENT, finalResponse.getResponse_comment ());
+                        params.put (AppConfigTags.IMAGE1, finalResponse.getResponse_image1 ());
+                        params.put (AppConfigTags.IMAGE2, finalResponse.getResponse_image2 ());
+                        Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params);
+                        return params;
+                    }
+                };
+                AppController.getInstance ().addToRequestQueue (strRequest2);
+            } else {
+                Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection");
+            }
+        }
+    }
 /*
     private void initLocationSettings () {
 

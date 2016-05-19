@@ -55,22 +55,9 @@
         android:id="@+id/vpPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/btNext"
         android:layout_below="@+id/toolbar1"
         android:gravity="center" android:paddingLeft="5dp"
         android:paddingRight="5dp">
     </com.actiknow.liveaudit.utils.CustomViewPager>
 
-    <Button
-        android:id="@+id/btNext"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="20dp"
-        android:background="@drawable/bg_button"
-        android:text="NEXT"
-        android:textColor="@color/text_color_white"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:visibility="gone"/>
 </RelativeLayout>

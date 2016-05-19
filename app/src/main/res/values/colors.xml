@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#b32731</color>
+    <color name="colorPrimary">#d32f2f</color>
     <color name="colorPrimaryDark">#b61c27</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#b61c27</color>
 
     <color name="accent">#cccccc</color>
     <color name="primary_text">#fff</color>
@@ -18,9 +18,9 @@
     <color name="text_color_blue">#6164ff</color>
     <color name="pressed_color">#bebebe</color>
     <color name="default_color">#eeeeee</color>
-    <color name="text_color_orange">#e67d22</color>
+    <color name="text_color_orange">#f57f17</color>
     <color name="text_color_red">#d70d17</color>
-    <color name="text_color_yellow">#fcb103</color>
-
+    <color name="text_color_yellow">#ffc107</color>
+    <color name="progress_dialog_background">#f0455a64</color>
     <color name="color_divider">#c4c4c4</color>
 </resources>

@@ -9,8 +9,10 @@ public class AppConfigTags {
     public static final String ATMS = "atms";
     public static final String QUESTIONS = "questions";
     public static final String RESPONSES = "responses";
+    public static final String URL = "URL";
     public static final String SERVER_RESPONSE = "SERVER RESPONSE";
     public static final String DIDNT_RECEIVE_ANY_DATA_FROM_SERVER = "DIDNT RECEIVE ANY DATA FROM SERVER";
+    public static final String PARAMETERS_SENT_TO_THE_SERVER = "PARAMETERS SENT TO THE SERVER";
 
 
     public static final String ATM_ID = "atm_id";
@@ -54,4 +56,6 @@ public class AppConfigTags {
     public static final String AUDITOR_EMAIL = "auditor_email";
     public static final String AUDITOR_PASSWORD = "auditor_password";
 
+    public static final String TAG = "TAG";
+    public static final String VOLLEY_ERROR = "VOLLEY ERROR";
 }

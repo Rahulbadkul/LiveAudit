@@ -1,9 +1,25 @@
 package com.actiknow.liveaudit.utils;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.actiknow.liveaudit.R;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
@@ -67,6 +83,87 @@ public class Utils {
             return newFormat;
         } else {
             return "Unavailable";
+        }
+    }
+
+    public static void showOkDialog (Activity activity, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder (activity);
+        builder.setMessage (message)
+                .setCancelable (false)
+                .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
+                    public void onClick (DialogInterface dialog, int id) {
+                        dialog.dismiss ();
+                    }
+                });
+        AlertDialog alert = builder.create ();
+        alert.show ();
+    }
+
+    public static void showSnackBar (CoordinatorLayout coordinatorLayout, Activity activity, String message) {
+        //      View rootView = activity.getWindow ().getDecorView ().findViewById (android.R.id.content);
+        final Snackbar snackbar = Snackbar
+                .make (coordinatorLayout, message, Snackbar.LENGTH_LONG)
+                .setAction ("DISMISS", new View.OnClickListener () {
+                    @Override
+                    public void onClick (View view) {
+                    }
+                });
+        snackbar.show ();
+    }
+
+    public static void showToast (Activity activity, String message) {
+        Toast.makeText (activity, message, Toast.LENGTH_SHORT).show ();
+    }
+
+
+    public static void setTypefaceToAllViews (Activity activity, View view) {
+        Typeface tf = SetTypeFace.getTypeface (activity);
+        SetTypeFace.applyTypeface (SetTypeFace.getParentView (view), tf);
+
+    }
+
+    public static void showProgressDialog (ProgressDialog progressDialog, String message) {
+        TextView tvMessage;
+        progressDialog.show ();
+        progressDialog.getWindow ().setBackgroundDrawable (new ColorDrawable (android.graphics.Color.TRANSPARENT));
+        progressDialog.setContentView (R.layout.progress_dialog);
+        tvMessage = (TextView) progressDialog.findViewById (R.id.tvProgressDialogMessage);
+        tvMessage.setText (message);
+        if (message.length () != 0)
+            tvMessage.setVisibility (View.VISIBLE);
+        else
+            tvMessage.setVisibility (View.GONE);
+        progressDialog.setCancelable (false);
+    }
+
+    public static void showLog (int log_type, String tag, String message) {
+        switch (log_type) {
+            case Log.DEBUG:
+                Log.d (tag, message);
+                break;
+            case Log.ERROR:
+                Log.e (tag, message);
+                break;
+            case Log.INFO:
+                Log.i (tag, message);
+                break;
+            case Log.VERBOSE:
+                Log.v (tag, message);
+                break;
+            case Log.WARN:
+                Log.w (tag, message);
+                break;
+            case Log.ASSERT:
+                Log.wtf (tag, message);
+                break;
+        }
+    }
+
+    public static void hideSoftKeyboard (Activity activity) {
+        View view = activity.getCurrentFocus ();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) activity.getSystemService (Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow (view.getWindowToken (), 0);
         }
     }
 }

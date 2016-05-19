@@ -9,5 +9,7 @@
         android:id="@+id/action_logout"
         android:orderInCategory="3"
         android:title="LOGOUT"
-        app:showAsAction="always"/>
+        app:showAsAction="always"
+
+    />
 </menu>
