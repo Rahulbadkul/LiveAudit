@@ -24,7 +24,7 @@ public class Rating {
 
     public void setRating_id (int rating_id) {
         this.rating_id = rating_id;
-        Utils.showLog (Log.DEBUG, "rating_id", "" + rating_id);
+        Utils.showLog (Log.DEBUG, "rating_id", "" + rating_id, false);
     }
 
     public int getAuditor_id () {
@@ -33,7 +33,7 @@ public class Rating {
 
     public void setAuditor_id (int auditor_id) {
         this.auditor_id = auditor_id;
-        Utils.showLog (Log.DEBUG, "auditor_id", "" + auditor_id);
+        Utils.showLog (Log.DEBUG, "auditor_id", "" + auditor_id, false);
     }
 
     public int getRating () {
@@ -42,7 +42,7 @@ public class Rating {
 
     public void setRating (int rating) {
         this.rating = rating;
-        Utils.showLog (Log.DEBUG, "rating", "" + rating);
+        Utils.showLog (Log.DEBUG, "rating", "" + rating, false);
     }
 
     public String getAtm_unique_id () {
@@ -51,6 +51,6 @@ public class Rating {
 
     public void setAtm_unique_id (String atm_unique_id) {
         this.atm_unique_id = atm_unique_id;
-        Utils.showLog (Log.DEBUG, "atm_unique_id", atm_unique_id);
+        Utils.showLog (Log.DEBUG, "atm_unique_id", atm_unique_id, false);
     }
 }

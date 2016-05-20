@@ -24,4 +24,6 @@ public class Constants {
 
     public static List<Response> responseList = new ArrayList<Response> ();
     public static String atm_location_in_manual = "";
+
+    public static boolean show_log = false;
 }

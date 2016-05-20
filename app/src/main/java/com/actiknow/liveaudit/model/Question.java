@@ -22,7 +22,7 @@ public class Question {
 
     public void setQuestion_id (int question_id) {
         this.question_id = question_id;
-        Utils.showLog (Log.DEBUG, "question_id", "" + question_id);
+        Utils.showLog (Log.DEBUG, "question_id", "" + question_id, false);
     }
 
     public String getQuestion () {
@@ -31,6 +31,6 @@ public class Question {
 
     public void setQuestion (String question) {
         this.question = question;
-        Utils.showLog (Log.DEBUG, "question", question);
+        Utils.showLog (Log.DEBUG, "question", question, false);
     }
 }

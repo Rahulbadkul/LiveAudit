@@ -311,14 +311,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void getAtmListFromServer () {
         if (NetworkConnection.isNetworkAvailable (this)) {
-            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_GETALLATMS);
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_GETALLATMS, true);
             StringRequest strRequest = new StringRequest (Request.Method.POST, AppConfigURL.URL_GETALLATMS,
                     new Response.Listener<String> () {
                         @Override
                         public void onResponse (String response) {
                             int is_data_received = 0;
                             int json_array_len = 0;
-                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response);
+                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
                             if (response != null) {
                                 is_data_received = 1;
                                 try {
@@ -344,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
                                     e.printStackTrace ();
                                 }
                             } else {
-                                Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER, true);
                             }
                             adapter.notifyDataSetChanged ();
                             if (is_data_received != 0 && json_array_len != 0) {
@@ -366,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
                     new Response.ErrorListener () {
                         @Override
                         public void onErrorResponse (VolleyError error) {
-                            Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString ());
+                            Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
                             progressBar.setVisibility (View.GONE);
                             listViewAllAtm.setVisibility (View.VISIBLE);
                             getAtmListFromLocalDatabase ();
@@ -376,7 +376,7 @@ public class MainActivity extends AppCompatActivity {
                 protected Map<String, String> getParams () throws AuthFailureError {
                     Map<String, String> params = new Hashtable<String, String> ();
                     params.put (AppConfigTags.AUDITOR_ID, String.valueOf (Constants.auditor_id_main));
-                    Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params);
+                    Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params, true);
                     return params;
                 }
             };
@@ -390,7 +390,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getAtmListFromLocalDatabase () {
-        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the atm from local database");
+        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the atm from local database", true);
         atmList.clear ();
         List<Atm> allAtm = db.getAllAtms ();
         for (Atm atm : allAtm)
@@ -400,12 +400,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void getQuestionListFromServer () {
         if (NetworkConnection.isNetworkAvailable (this)) {
-            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_GETALLQUESTIONS);
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_GETALLQUESTIONS, true);
             StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_GETALLQUESTIONS,
                     new Response.Listener<String> () {
                         @Override
                         public void onResponse (String response) {
-                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response);
+                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
                             if (response != null) {
                                 try {
                                     JSONObject jsonObj = new JSONObject (response);
@@ -424,14 +424,14 @@ public class MainActivity extends AppCompatActivity {
                                     e.printStackTrace ();
                                 }
                             } else {
-                                Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER, true);
                             }
                         }
                     },
                     new Response.ErrorListener () {
                         @Override
                         public void onErrorResponse (VolleyError error) {
-                            Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString ());
+                            Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
                             getQuestionListFromLocalDatabase ();
                         }
                     });
@@ -442,7 +442,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getQuestionListFromLocalDatabase () {
-        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the questions from local database");
+        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the questions from local database", true);
         List<Question> allQuestions = db.getAllQuestions ();
         for (Question question : allQuestions)
             Constants.questionsList.add (question);
@@ -481,17 +481,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void uploadStoredRatingToServer () {
-        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the rating from local database");
+        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the rating from local database", true);
         List<com.actiknow.liveaudit.model.Rating> allRatings = db.getAllRatings ();
         for (com.actiknow.liveaudit.model.Rating ratings : allRatings) {
-            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITRATING);
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITRATING, true);
             final com.actiknow.liveaudit.model.Rating finalRating = ratings;
             if (NetworkConnection.isNetworkAvailable (this)) {
                 StringRequest strRequest3 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRATING,
                         new com.android.volley.Response.Listener<String> () {
                             @Override
                             public void onResponse (String response) {
-                                Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response);
+                                Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
                                 if (response != null) {
                                     try {
                                         JSONObject jsonObj = new JSONObject (response);
@@ -502,14 +502,14 @@ public class MainActivity extends AppCompatActivity {
                                         e.printStackTrace ();
                                     }
                                 } else {
-                                    Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                    Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER, true);
                                 }
                             }
                         },
                         new com.android.volley.Response.ErrorListener () {
                             @Override
                             public void onErrorResponse (VolleyError error) {
-                                Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString ());
+                                Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
                             }
                         }) {
                     @Override
@@ -518,29 +518,29 @@ public class MainActivity extends AppCompatActivity {
                         params.put (AppConfigTags.ATM_UNIQUE_ID, finalRating.getAtm_unique_id ());
                         params.put (AppConfigTags.AUDITOR_ID, String.valueOf (finalRating.getAuditor_id ()));
                         params.put (AppConfigTags.RATING, String.valueOf (finalRating.getRating ()));
-                        Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params);
+                        Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params, true);
                         return params;
                     }
                 };
                 AppController.getInstance ().addToRequestQueue (strRequest3);
             } else {
-                Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection");
+                Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection", true);
             }
         }
     }
 
     private void uploadStoredResponseToServer () {
-        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the responses from local  database");
+        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the responses from local  database", true);
         List<com.actiknow.liveaudit.model.Response> allResponses = db.getAllResponse ();
         for (final com.actiknow.liveaudit.model.Response responses : allResponses) {
-            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITRESPONSE);
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITRESPONSE, true);
             final com.actiknow.liveaudit.model.Response finalResponse = responses;
             if (NetworkConnection.isNetworkAvailable (this)) {
                 StringRequest strRequest2 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRESPONSE,
                         new com.android.volley.Response.Listener<String> () {
                             @Override
                             public void onResponse (String response) {
-                                Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response);
+                                Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
                                 if (response != null) {
                                     try {
                                         JSONObject jsonObj = new JSONObject (response);
@@ -551,14 +551,14 @@ public class MainActivity extends AppCompatActivity {
                                         e.printStackTrace ();
                                     }
                                 } else {
-                                    Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                    Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER, true);
                                 }
                             }
                         },
                         new com.android.volley.Response.ErrorListener () {
                             @Override
                             public void onErrorResponse (VolleyError error) {
-                                Utils.showLog (Log.ERROR, AppConfigTags.TAG, error.toString ());
+                                Utils.showLog (Log.ERROR, AppConfigTags.TAG, error.toString (), true);
                             }
                         }) {
                     @Override
@@ -572,13 +572,13 @@ public class MainActivity extends AppCompatActivity {
                         params.put (AppConfigTags.COMMENT, finalResponse.getResponse_comment ());
                         params.put (AppConfigTags.IMAGE1, finalResponse.getResponse_image1 ());
                         params.put (AppConfigTags.IMAGE2, finalResponse.getResponse_image2 ());
-                        Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params);
+                        Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params, true);
                         return params;
                     }
                 };
                 AppController.getInstance ().addToRequestQueue (strRequest2);
             } else {
-                Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection");
+                Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection", true);
             }
         }
     }

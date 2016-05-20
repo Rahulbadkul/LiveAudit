@@ -21,6 +21,7 @@ import com.actiknow.liveaudit.utils.Utils;
 public class ViewPagerActivity extends AppCompatActivity {
     public static boolean flag = false;
     static CustomViewPager vpPager;
+    int count = 0;
     private SmartFragmentStatePagerAdapter adapterViewPager;
 
     public static void nextPage () {
@@ -56,14 +57,14 @@ public class ViewPagerActivity extends AppCompatActivity {
             public void onPageSelected (int position) {
                 if (position == Constants.total_questions) {
                     BaseFragment fragment = (BaseFragment) adapterViewPager.getRegisteredFragment (position);
-                    int count = 0;
+
                     for (int i = 0; i < Constants.total_questions - 1; i++) {
                         Response response;
                         response = Constants.responseList.get (i);
                         count = count + response.getResponse_switch_flag ();
                     }
                     int rating = ((count + 1) * 100) / Constants.total_questions;
-                    Utils.showLog (Log.DEBUG, AppConfigTags.RATING, "" + rating);
+                    Utils.showLog (Log.DEBUG, AppConfigTags.RATING, "" + rating, true);
                     fragment.tvRatingNumber.setText (String.valueOf (rating / 10));
                     fragment.sbRating.setProgress (rating);
                 }

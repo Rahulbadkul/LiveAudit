@@ -107,7 +107,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public long createQuestion (Question question) {
         SQLiteDatabase db = this.getWritableDatabase ();
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Creating Question");
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Creating Question", false);
         ContentValues values = new ContentValues ();
         values.put (KEY_ID, question.getQuestion_id ());
         values.put (KEY_QUESTION, question.getQuestion ());
@@ -119,7 +119,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public Question getQuestion (long question_id) {
         SQLiteDatabase db = this.getReadableDatabase ();
         String selectQuery = "SELECT  * FROM " + TABLE_QUESTIONS + " WHERE " + KEY_ID + " = " + question_id;
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get Question where ID = " + question_id);
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get Question where ID = " + question_id, false);
         Cursor c = db.rawQuery (selectQuery, null);
         if (c != null)
             c.moveToFirst ();
@@ -132,7 +132,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public List<Question> getAllQuestions () {
         List<Question> questions = new ArrayList<Question> ();
         String selectQuery = "SELECT  * FROM " + TABLE_QUESTIONS;
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get all questions");
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get all questions", false);
         SQLiteDatabase db = this.getReadableDatabase ();
         Cursor c = db.rawQuery (selectQuery, null);
         // looping through all rows and adding to list
@@ -153,13 +153,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery (countQuery, null);
         int count = cursor.getCount ();
         cursor.close ();
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get total questions count : " + count);
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get total questions count : " + count, false);
         return count;
     }
 
     public int updateQuestion (Question question) {
         SQLiteDatabase db = this.getWritableDatabase ();
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Update questions");
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Update questions", false);
         ContentValues values = new ContentValues ();
         values.put (KEY_QUESTION, question.getQuestion ());
         // updating row
@@ -168,14 +168,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public void deleteQuestion (long question_id) {
         SQLiteDatabase db = this.getWritableDatabase ();
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete question where ID = " + question_id);
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete question where ID = " + question_id, false);
         db.delete (TABLE_QUESTIONS, KEY_ID + " = ?",
                 new String[] {String.valueOf (question_id)});
     }
 
     public void deleteAllQuestion () {
         SQLiteDatabase db = this.getWritableDatabase ();
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete all questions");
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete all questions", false);
         db.execSQL ("delete from " + TABLE_QUESTIONS);
     }
 
@@ -185,7 +185,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public long createAtm (Atm atm) {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Creating Atm");
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Creating Atm", false);
         values.put (KEY_ID, atm.getAtm_id ());
         values.put (KEY_AGENCY_ID, atm.getAtm_agency_id ());
         values.put (KEY_ATM_ID, atm.getAtm_unique_id ());
@@ -202,7 +202,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public Atm getAtm (long atm_id) {
         SQLiteDatabase db = this.getReadableDatabase ();
         String selectQuery = "SELECT  * FROM " + TABLE_ATMS + " WHERE " + KEY_ID + " = " + atm_id;
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get Atm where ID = " + atm_id);
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get Atm where ID = " + atm_id, false);
         Cursor c = db.rawQuery (selectQuery, null);
         if (c != null)
             c.moveToFirst ();
@@ -221,7 +221,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public List<Atm> getAllAtms () {
         List<Atm> atms = new ArrayList<Atm> ();
         String selectQuery = "SELECT  * FROM " + TABLE_ATMS;
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get all atm");
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get all atm", false);
         SQLiteDatabase db = this.getReadableDatabase ();
         Cursor c = db.rawQuery (selectQuery, null);
         // looping through all rows and adding to list
@@ -248,13 +248,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery (countQuery, null);
         int count = cursor.getCount ();
         cursor.close ();
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get total atm count : " + count);
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get total atm count : " + count, false);
         return count;
     }
 
     public int updateAtm (Atm atm) {
         SQLiteDatabase db = this.getWritableDatabase ();
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Update atm");
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Update atm", false);
         ContentValues values = new ContentValues ();
         values.put (KEY_ATM_ID, atm.getAtm_unique_id ());
         values.put (KEY_AGENCY_ID, atm.getAtm_agency_id ());
@@ -269,13 +269,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public void deleteAtm (long atm_id) {
         SQLiteDatabase db = this.getWritableDatabase ();
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete atm where ID = " + atm_id);
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete atm where ID = " + atm_id, false);
         db.delete (TABLE_ATMS, KEY_ID + " = ?", new String[] {String.valueOf (atm_id)});
     }
 
     public void deleteAllAtms () {
         SQLiteDatabase db = this.getWritableDatabase ();
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete all atm");
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete all atm", false);
         db.execSQL ("delete from " + TABLE_ATMS);
     }
 
@@ -285,7 +285,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public long createResponse (Response response) {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Response inserted successfully in the database");
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Response inserted successfully in the database", false);
         values.put (KEY_ATM_ID, response.getResponse_atm_unique_id ());
         values.put (KEY_AGENCY_ID, response.getResponse_agency_id ());
         values.put (KEY_AUDITOR_ID, response.getResponse_auditor_id ());
@@ -384,7 +384,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public long createRating (Rating rating) {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
-        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Rating inserted successfully in the database");
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Rating inserted successfully in the database", false);
         values.put (KEY_ATM_ID, rating.getAtm_unique_id ());
         values.put (KEY_AUDITOR_ID, rating.getAuditor_id ());
         values.put (KEY_RATING, rating.getRating ());

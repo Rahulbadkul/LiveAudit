@@ -128,7 +128,7 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                 @Override
                 public void onClick (View v) {
                     pDialog = new ProgressDialog (getActivity ());
-                    Utils.showProgressDialog (pDialog, "");
+                    Utils.showProgressDialog (pDialog, null);
 /*
                     try {
                         jsonArray = new JSONArray (AppConfigTags.RESPONSES);
@@ -242,8 +242,8 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                     List<ApplicationInfo> list = packageManager.getInstalledApplications (PackageManager.GET_UNINSTALLED_PACKAGES);
                     for (int n = 0; n < list.size (); n++) {
                         if ((list.get (n).flags & ApplicationInfo.FLAG_SYSTEM) == 1) {
-                            Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Installed Applications  : " + list.get (n).loadLabel (packageManager).toString ());
-                            Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "package name  : " + list.get (n).packageName);
+                            Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Installed Applications  : " + list.get (n).loadLabel (packageManager).toString (), false);
+                            Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "package name  : " + list.get (n).packageName, false);
                             if (list.get (n).loadLabel (packageManager).toString ().equalsIgnoreCase ("Camera")) {
                                 defaultCameraPackage = list.get (n).packageName;
                                 break;
@@ -273,8 +273,8 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                     List<ApplicationInfo> list = packageManager.getInstalledApplications (PackageManager.GET_UNINSTALLED_PACKAGES);
                     for (int n = 0; n < list.size (); n++) {
                         if ((list.get (n).flags & ApplicationInfo.FLAG_SYSTEM) == 1) {
-                            Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Installed Applications  : " + list.get (n).loadLabel (packageManager).toString ());
-                            Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "package name  : " + list.get (n).packageName);
+                            Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Installed Applications  : " + list.get (n).loadLabel (packageManager).toString (), false);
+                            Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "package name  : " + list.get (n).packageName, false);
                             if (list.get (n).loadLabel (packageManager).toString ().equalsIgnoreCase ("Camera")) {
                                 defaultCameraPackage = list.get (n).packageName;
                                 break;
@@ -293,30 +293,29 @@ public class BaseFragment extends android.support.v4.app.Fragment {
         btNext.setOnClickListener (new View.OnClickListener () {
             @Override
             public void onClick (View v) {
+                Utils.hideSoftKeyboard (getActivity ());
                 if (switchYesNo.isChecked ())
                     switch_flag = 1;
                 else
                     switch_flag = 0;
 
-
-                Utils.hideSoftKeyboard (getActivity ());
-                if (switch_flag == 0) {
+                if (! switchYesNo.isChecked ()) {
                     if (etComments.getText ().toString ().length () != 0) {
                         etComments.setError (null);
                         ViewPagerActivity.nextPage ();
                         final String image1 = Utils.bitmapToBase64 (bp1);
                         final String image2 = Utils.bitmapToBase64 (bp2);
 
-                        Utils.showLog (Log.DEBUG, AppConfigTags.PAGE_NUMBER, "" + page);
-                        Utils.showLog (Log.DEBUG, AppConfigTags.AUDITOR_ID, "" + Constants.auditor_id_main);
-                        Utils.showLog (Log.DEBUG, AppConfigTags.ATM_AGENCY_ID, "" + Constants.atm_agency_id);
-                        Utils.showLog (Log.DEBUG, AppConfigTags.ATM_UNIQUE_ID, "" + Constants.atm_unique_id);
-                        Utils.showLog (Log.DEBUG, AppConfigTags.QUESTION_ID, "" + question_id);
-                        Utils.showLog (Log.DEBUG, AppConfigTags.QUESTION, "" + question);
-                        Utils.showLog (Log.DEBUG, AppConfigTags.SWITCH_FLAG, "" + switch_flag);
-                        Utils.showLog (Log.DEBUG, AppConfigTags.COMMENT, etComments.getText ().toString ());
-                        Utils.showLog (Log.DEBUG, AppConfigTags.IMAGE1, image1);
-                        Utils.showLog (Log.DEBUG, AppConfigTags.IMAGE2, image2);
+                        Utils.showLog (Log.DEBUG, AppConfigTags.PAGE_NUMBER, "" + page, false);
+                        Utils.showLog (Log.DEBUG, AppConfigTags.AUDITOR_ID, "" + Constants.auditor_id_main, false);
+                        Utils.showLog (Log.DEBUG, AppConfigTags.ATM_AGENCY_ID, "" + Constants.atm_agency_id, false);
+                        Utils.showLog (Log.DEBUG, AppConfigTags.ATM_UNIQUE_ID, "" + Constants.atm_unique_id, false);
+                        Utils.showLog (Log.DEBUG, AppConfigTags.QUESTION_ID, "" + question_id, false);
+                        Utils.showLog (Log.DEBUG, AppConfigTags.QUESTION, "" + question, false);
+                        Utils.showLog (Log.DEBUG, AppConfigTags.SWITCH_FLAG, "" + switch_flag, false);
+                        Utils.showLog (Log.DEBUG, AppConfigTags.COMMENT, etComments.getText ().toString (), false);
+                        Utils.showLog (Log.DEBUG, AppConfigTags.IMAGE1, image1, false);
+                        Utils.showLog (Log.DEBUG, AppConfigTags.IMAGE2, image2, false);
 
                         Response response = new Response ();
                         response.setResponse_auditor_id (Constants.auditor_id_main);
@@ -340,16 +339,17 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                     final String image1 = Utils.bitmapToBase64 (bp1);
                     final String image2 = Utils.bitmapToBase64 (bp2);
 
-                    Utils.showLog (Log.DEBUG, AppConfigTags.PAGE_NUMBER, "" + page);
-                    Utils.showLog (Log.DEBUG, AppConfigTags.AUDITOR_ID, "" + Constants.auditor_id_main);
-                    Utils.showLog (Log.DEBUG, AppConfigTags.ATM_AGENCY_ID, "" + Constants.atm_agency_id);
-                    Utils.showLog (Log.DEBUG, AppConfigTags.ATM_UNIQUE_ID, "" + Constants.atm_unique_id);
-                    Utils.showLog (Log.DEBUG, AppConfigTags.QUESTION_ID, "" + question_id);
-                    Utils.showLog (Log.DEBUG, AppConfigTags.QUESTION, "" + question);
-                    Utils.showLog (Log.DEBUG, AppConfigTags.SWITCH_FLAG, "" + switch_flag);
-                    Utils.showLog (Log.DEBUG, AppConfigTags.COMMENT, etComments.getText ().toString ());
-                    Utils.showLog (Log.DEBUG, AppConfigTags.IMAGE1, image1);
-                    Utils.showLog (Log.DEBUG, AppConfigTags.IMAGE2, image2);
+                    Utils.showLog (Log.DEBUG, AppConfigTags.PAGE_NUMBER, "" + page, false);
+                    Utils.showLog (Log.DEBUG, AppConfigTags.AUDITOR_ID, "" + Constants.auditor_id_main, false);
+                    Utils.showLog (Log.DEBUG, AppConfigTags.ATM_AGENCY_ID, "" + Constants.atm_agency_id, false);
+                    Utils.showLog (Log.DEBUG, AppConfigTags.ATM_UNIQUE_ID, "" + Constants.atm_unique_id, false);
+                    Utils.showLog (Log.DEBUG, AppConfigTags.QUESTION_ID, "" + question_id, false);
+                    Utils.showLog (Log.DEBUG, AppConfigTags.QUESTION, "" + question, false);
+                    Utils.showLog (Log.DEBUG, AppConfigTags.SWITCH_FLAG, "" + switch_flag, false);
+                    Utils.showLog (Log.DEBUG, AppConfigTags.COMMENT, etComments.getText ().toString (), false);
+                    Utils.showLog (Log.DEBUG, AppConfigTags.IMAGE1, image1, false);
+                    Utils.showLog (Log.DEBUG, AppConfigTags.IMAGE2, image2, false);
+
 
                     Response response = new Response ();
                     response.setResponse_auditor_id (Constants.auditor_id_main);
@@ -393,27 +393,27 @@ public class BaseFragment extends android.support.v4.app.Fragment {
 
     private void submitResponseToServer (int i, Response response) {
         if (NetworkConnection.isNetworkAvailable (getActivity ())) {
-            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITRESPONSE);
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITRESPONSE, true);
             final Response finalResponse = response;
             final int finalI = i;
             StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRESPONSE,
                     new com.android.volley.Response.Listener<String> () {
                         @Override
                         public void onResponse (String response) {
-                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response);
+                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
                             if (response != null) {
                                 if (finalI == Constants.total_questions - 1) {
                                     pDialog.dismiss ();
                                     Utils.showOkDialog (getActivity (), "Your responses have been uploaded successfully to the server", true);
                                 }
                             } else
-                                Utils.showLog (Log.DEBUG, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER, true);
                         }
                     },
                     new com.android.volley.Response.ErrorListener () {
                         @Override
                         public void onErrorResponse (VolleyError error) {
-                            Utils.showLog (Log.INFO, AppConfigTags.VOLLEY_ERROR, error.toString ());
+                            Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
                             if (finalI == Constants.total_questions - 1) {
                                 pDialog.dismiss ();
                                 Utils.showOkDialog (getActivity (), "Seems like there is an issue with the internet connection," +
@@ -434,7 +434,7 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                     params.put (AppConfigTags.COMMENT, finalResponse.getResponse_comment ());
                     params.put (AppConfigTags.IMAGE1, finalResponse.getResponse_image1 ());
                     params.put (AppConfigTags.IMAGE2, finalResponse.getResponse_image2 ());
-                    Utils.showLog (Log.DEBUG, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params);
+                    Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params, true);
                     return params;
                 }
             };
@@ -451,12 +451,12 @@ public class BaseFragment extends android.support.v4.app.Fragment {
 
     private void submitRatingToServer (final Rating rating) {
         if (NetworkConnection.isNetworkAvailable (getActivity ())) {
-            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITRATING);
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITRATING, true);
             StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRATING,
                     new com.android.volley.Response.Listener<String> () {
                         @Override
                         public void onResponse (String response) {
-                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response);
+                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
                             if (response != null) {
                                 try {
                                     JSONObject jsonObj = new JSONObject (response);
@@ -464,14 +464,14 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                                     e.printStackTrace ();
                                 }
                             } else {
-                                Utils.showLog (Log.DEBUG, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER, true);
                             }
                         }
                     },
                     new com.android.volley.Response.ErrorListener () {
                         @Override
                         public void onErrorResponse (VolleyError error) {
-                            Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString ());
+                            Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
                         }
                     }) {
                 @Override
@@ -480,7 +480,7 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                     params.put (AppConfigTags.ATM_UNIQUE_ID, rating.getAtm_unique_id ());
                     params.put (AppConfigTags.AUDITOR_ID, String.valueOf (rating.getAuditor_id ()));
                     params.put (AppConfigTags.RATING, String.valueOf (rating.getRating ()));
-                    Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params);
+                    Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params, true);
                     return params;
                 }
             };

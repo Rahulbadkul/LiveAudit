@@ -94,13 +94,13 @@ public class LoginActivity extends AppCompatActivity {
 
     private void sendLoginDetailsToServer () {
         if (NetworkConnection.isNetworkAvailable (LoginActivity.this)) {
-            Utils.showLog (Log.DEBUG, AppConfigTags.URL, AppConfigURL.URL_LOGIN);
-            Utils.showProgressDialog (progressDialog, "");
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_LOGIN, true);
+            Utils.showProgressDialog (progressDialog, null);
             StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_LOGIN,
                     new com.android.volley.Response.Listener<String> () {
                         @Override
                         public void onResponse (String response) {
-                            Utils.showLog (Log.DEBUG, AppConfigTags.SERVER_RESPONSE, response);
+                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
                             if (response != null) {
                                 try {
                                     progressDialog.dismiss ();
@@ -123,14 +123,14 @@ public class LoginActivity extends AppCompatActivity {
                                     e.printStackTrace ();
                                 }
                             } else {
-                                Log.e (AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER);
+                                Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER, true);
                             }
                         }
                     },
                     new com.android.volley.Response.ErrorListener () {
                         @Override
                         public void onErrorResponse (VolleyError error) {
-                            Utils.showLog (Log.DEBUG, AppConfigTags.VOLLEY_ERROR, error.toString ());
+                            Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
                             progressDialog.dismiss ();
                             Utils.showSnackBar (coordinatorLayout, "Please try again after some time");
                         }
@@ -140,7 +140,7 @@ public class LoginActivity extends AppCompatActivity {
                     Map<String, String> params = new Hashtable<String, String> ();
                     params.put (AppConfigTags.EMAIL, etUsername.getText ().toString ());
                     params.put (AppConfigTags.PASSWORD, etPassword.getText ().toString ());
-                    Utils.showLog (Log.DEBUG, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params);
+                    Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params, true);
                     return params;
                 }
             };

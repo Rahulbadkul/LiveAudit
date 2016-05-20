@@ -131,35 +131,39 @@ public class Utils {
         progressDialog.getWindow ().setBackgroundDrawable (new ColorDrawable (android.graphics.Color.TRANSPARENT));
         progressDialog.setContentView (R.layout.progress_dialog);
         tvMessage = (TextView) progressDialog.findViewById (R.id.tvProgressDialogMessage);
-        tvMessage.setText (message);
-        if (message.length () != 0)
+        if (message != null) {
+            tvMessage.setText (message);
             tvMessage.setVisibility (View.VISIBLE);
+        }
         else
             tvMessage.setVisibility (View.GONE);
         progressDialog.setCancelable (false);
     }
 
-    public static void showLog (int log_type, String tag, String message) {
-
-        switch (log_type) {
-            case Log.DEBUG:
-                Log.d (tag, message);
-                break;
-            case Log.ERROR:
-                Log.e (tag, message);
-                break;
-            case Log.INFO:
-                Log.i (tag, message);
-                break;
-            case Log.VERBOSE:
-                Log.v (tag, message);
-                break;
-            case Log.WARN:
-                Log.w (tag, message);
-                break;
-            case Log.ASSERT:
-                Log.wtf (tag, message);
-                break;
+    public static void showLog (int log_type, String tag, String message, boolean show_flag) {
+        if (Constants.show_log) {
+            if (show_flag) {
+                switch (log_type) {
+                    case Log.DEBUG:
+                        Log.d (tag, message);
+                        break;
+                    case Log.ERROR:
+                        Log.e (tag, message);
+                        break;
+                    case Log.INFO:
+                        Log.i (tag, message);
+                        break;
+                    case Log.VERBOSE:
+                        Log.v (tag, message);
+                        break;
+                    case Log.WARN:
+                        Log.w (tag, message);
+                        break;
+                    case Log.ASSERT:
+                        Log.wtf (tag, message);
+                        break;
+                }
+            }
         }
     }
 
