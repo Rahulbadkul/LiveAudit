@@ -20,21 +20,21 @@ import java.util.List;
 public class AllAtmAdapter extends BaseAdapter {
 	private Activity activity;
 	private LayoutInflater inflater;
-	private List<Atm> atms;
+	private List<Atm> atmList;
 
-	public AllAtmAdapter (Activity activity, List<Atm> atms) {
+	public AllAtmAdapter (Activity activity, List<Atm> atmList) {
 		this.activity = activity;
-		this.atms = atms;
+		this.atmList = atmList;
 	}
 
 	@Override
 	public int getCount() {
-		return atms.size();
+		return atmList.size ();
 	}
 
 	@Override
 	public Object getItem(int location) {
-		return atms.get(location);
+		return atmList.get (location);
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class AllAtmAdapter extends BaseAdapter {
 
 		Utils.setTypefaceToAllViews (activity, holder.atm_pincode);
 
-		final Atm atm = atms.get (position);
+		final Atm atm = atmList.get (position);
 		holder.atm_last_audit_date.setText (atm.getAtm_last_audit_date ());
 		holder.atm_atm_unique_id.setText (atm.getAtm_unique_id ().toUpperCase ());
 		holder.atm_bank_name.setText (atm.getAtm_bank_name ().toUpperCase ());
@@ -93,6 +93,4 @@ public class AllAtmAdapter extends BaseAdapter {
 		TextView atm_city;
 		TextView atm_pincode;
 	}
-
-
 }

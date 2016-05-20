@@ -59,7 +59,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class MainActivity extends AppCompatActivity {//implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity {
 
     TextView tvNoInternetConnection;
     ProgressBar progressBar;
@@ -385,7 +385,7 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
             progressBar.setVisibility (View.GONE);
             listViewAllAtm.setVisibility (View.VISIBLE);
             getAtmListFromLocalDatabase ();
-            Utils.showOkDialog (MainActivity.this, "Seems like there is no internet connection, the app will continue in Offline mode");
+            Utils.showOkDialog (MainActivity.this, "Seems like there is no internet connection, the app will continue in Offline mode", false);
         }
     }
 
@@ -582,92 +582,6 @@ public class MainActivity extends AppCompatActivity {//implements LocationListen
             }
         }
     }
-/*
-    private void initLocationSettings () {
-
-        if (googleApiClient == null) {
-            googleApiClient = new GoogleApiClient.Builder (this).addApi (LocationServices.API).addConnectionCallbacks (this)
-                    .addOnConnectionFailedListener (MainActivity.this).build ();
-            googleApiClient.connect ();
-            LocationRequest locationRequest = LocationRequest.create ();
-            locationRequest.setPriority (LocationRequest.PRIORITY_HIGH_ACCURACY);
-            locationRequest.setInterval (30 * 1000);
-            locationRequest.setFastestInterval (5 * 1000);
-            LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder ().addLocationRequest (locationRequest);
-
-            builder.setAlwaysShow (true);
-            PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings (googleApiClient, builder.build ());
-            result.setResultCallback (new ResultCallback<LocationSettingsResult> () {
-                @Override
-                public void onResult (LocationSettingsResult result) {
-                    final Status status = result.getStatus ();
-                    final LocationSettingsStates state = result.getLocationSettingsStates ();
-                    switch (status.getStatusCode ()) {
-                        case LocationSettingsStatusCodes.SUCCESS:
-                            // All location settings are satisfied. The client can
-                            // initialize location
-                            // requests here.
-                            break;
-                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                            // Location settings are not satisfied. But could be
-                            // fixed by showing the user
-                            // a dialog.
- //                           try {
-                                // Show the dialog by calling
-                                // startResolutionForResult(),
-                                // and check the result in onActivityResult().
-//                                status.startResolutionForResult (MainActivity.this, 1000);
-//                            } catch (IntentSender.SendIntentException e) {
-                                // Ignore the error.
-//                            }
-                            break;
-                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                            // Location settings are not satisfied. However, we have
-                            // no way to fix the
-                            // settings so we won't show the dialog.
-                            break;
-                    }
-                }
-            });
-        }
-    }
-
-    @Override
-    public void onConnected (Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended (int i) {
-
-    }
-
-    @Override
-    public void onLocationChanged (Location location) {
-
-    }
-
-    @Override
-    public void onStatusChanged (String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled (String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled (String provider) {
-
-    }
-
-    @Override
-    public void onConnectionFailed (ConnectionResult connectionResult) {
-
-    }
-*/
-
 }
 
 

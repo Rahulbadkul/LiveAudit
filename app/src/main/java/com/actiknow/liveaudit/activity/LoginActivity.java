@@ -117,7 +117,7 @@ public class LoginActivity extends AppCompatActivity {
                                         overridePendingTransition (R.anim.slide_in_right, R.anim.slide_out_left);
                                     } else {
                                         progressDialog.dismiss ();
-                                        Utils.showSnackBar (coordinatorLayout, LoginActivity.this, "Invalid Login Credentials");
+                                        Utils.showSnackBar (coordinatorLayout, "Invalid Login Credentials");
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace ();
@@ -132,7 +132,7 @@ public class LoginActivity extends AppCompatActivity {
                         public void onErrorResponse (VolleyError error) {
                             Utils.showLog (Log.DEBUG, AppConfigTags.VOLLEY_ERROR, error.toString ());
                             progressDialog.dismiss ();
-                            Utils.showSnackBar (coordinatorLayout, LoginActivity.this, "Please try again after some time");
+                            Utils.showSnackBar (coordinatorLayout, "Please try again after some time");
                         }
                     }) {
                 @Override
@@ -147,7 +147,7 @@ public class LoginActivity extends AppCompatActivity {
             AppController.getInstance ().addToRequestQueue (strRequest1);
         } else {
             progressDialog.dismiss ();
-            Utils.showSnackBar (coordinatorLayout, LoginActivity.this, "Please check your network connection");
+            Utils.showSnackBar (coordinatorLayout, "Please check your network connection");
         }
     }
 

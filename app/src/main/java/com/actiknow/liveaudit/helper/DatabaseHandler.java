@@ -11,6 +11,8 @@ import com.actiknow.liveaudit.model.Atm;
 import com.actiknow.liveaudit.model.Question;
 import com.actiknow.liveaudit.model.Rating;
 import com.actiknow.liveaudit.model.Response;
+import com.actiknow.liveaudit.utils.AppConfigTags;
+import com.actiknow.liveaudit.utils.Utils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,10 +21,6 @@ import java.util.List;
 import java.util.Locale;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
-
-    // Logcat tag
-    private static final String LOG = DatabaseHandler.class.getName ();
-
     // Database Version
     private static final int DATABASE_VERSION = 6;
 
@@ -34,7 +32,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String TABLE_ATMS = "atms";
     private static final String TABLE_RESPONSES = "responses";
     private static final String TABLE_RATINGS = "ratings";
-//    private static final String TABLE_TODO_TAG = "todo_tags";
 
     // Common column names
     private static final String KEY_ID = "id";
@@ -63,8 +60,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // RATING Table - column names
     private static final String KEY_RATING = "rating";
 
-    // Question Table Create Statements
-    // Todo table create statement
+    // Question table Create Statements
     private static final String CREATE_TABLE_QUESTIONS = "CREATE TABLE "
             + TABLE_QUESTIONS + "(" + KEY_ID + " INTEGER PRIMARY KEY," +KEY_QUESTION
             + " TEXT," + KEY_CREATED_AT + " DATETIME" + ")";
@@ -86,22 +82,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_ATM_ID + " TEXT," + KEY_AUDITOR_ID + " INTEGER,"
             + KEY_RATING + " INTEGER," + KEY_CREATED_AT + " DATETIME" + ")";
 
-
-    // todo_tag table create statement
-//    private static final String CREATE_TABLE_TODO_TAG = "CREATE TABLE "
-//            + TABLE_TODO_TAG + "(" + KEY_ID + " INTEGER PRIMARY KEY,"
-//            + KEY_TODO_ID + " INTEGER," + KEY_TAG_ID + " INTEGER,"
-//            + KEY_CREATED_AT + " DATETIME" + ")";
-
-
-
     public DatabaseHandler (Context context) {
         super (context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate (SQLiteDatabase db) {
-        // creating required tables
         db.execSQL (CREATE_TABLE_QUESTIONS);
         db.execSQL (CREATE_TABLE_ATMS);
         db.execSQL (CREATE_TABLE_RESPONSE);
@@ -110,21 +96,18 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade (SQLiteDatabase db, int oldVersion, int newVersion) {
-        // on upgrade drop older tables
         db.execSQL ("DROP TABLE IF EXISTS " + TABLE_QUESTIONS);
         db.execSQL ("DROP TABLE IF EXISTS " + TABLE_ATMS);
         db.execSQL ("DROP TABLE IF EXISTS " + TABLE_RESPONSES);
-        // create new tables
+        db.execSQL ("DROP TABLE IF EXISTS " + TABLE_RATINGS);
         onCreate (db);
     }
 
     // ------------------------ "questions" table methods ----------------//
 
-    /**
-     * Creating a question
-     */
     public long createQuestion (Question question) {
         SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Creating Question");
         ContentValues values = new ContentValues ();
         values.put (KEY_ID, question.getQuestion_id ());
         values.put (KEY_QUESTION, question.getQuestion ());
@@ -133,13 +116,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return question_id;
     }
 
-    /**
-     * get single question
-     */
     public Question getQuestion (long question_id) {
         SQLiteDatabase db = this.getReadableDatabase ();
         String selectQuery = "SELECT  * FROM " + TABLE_QUESTIONS + " WHERE " + KEY_ID + " = " + question_id;
-        Log.e (LOG, selectQuery);
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get Question where ID = " + question_id);
         Cursor c = db.rawQuery (selectQuery, null);
         if (c != null)
             c.moveToFirst ();
@@ -149,13 +129,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return question;
     }
 
-    /**
-     * getting all questions
-     */
     public List<Question> getAllQuestions () {
         List<Question> questions = new ArrayList<Question> ();
         String selectQuery = "SELECT  * FROM " + TABLE_QUESTIONS;
-//        Log.e (LOG, selectQuery);
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get all questions");
         SQLiteDatabase db = this.getReadableDatabase ();
         Cursor c = db.rawQuery (selectQuery, null);
         // looping through all rows and adding to list
@@ -164,63 +141,51 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 Question question = new Question ();
                 question.setQuestion_id (c.getInt ((c.getColumnIndex (KEY_ID))));
                 question.setQuestion ((c.getString (c.getColumnIndex (KEY_QUESTION))));
-                // adding to question list
                 questions.add (question);
             } while (c.moveToNext ());
         }
         return questions;
     }
-    /**
-     * getting questions count
-     */
+
     public int getQuestionCount () {
         String countQuery = "SELECT  * FROM " + TABLE_QUESTIONS;
-//        Log.e (LOG, countQuery);
         SQLiteDatabase db = this.getReadableDatabase ();
         Cursor cursor = db.rawQuery (countQuery, null);
         int count = cursor.getCount ();
         cursor.close ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get total questions count : " + count);
         return count;
     }
 
-    /**
-     * Updating a question
-     */
     public int updateQuestion (Question question) {
         SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Update questions");
         ContentValues values = new ContentValues ();
         values.put (KEY_QUESTION, question.getQuestion ());
         // updating row
-        return db.update (TABLE_QUESTIONS, values, KEY_ID + " = ?",
-                new String[] {String.valueOf (question.getQuestion_id ())});
+        return db.update (TABLE_QUESTIONS, values, KEY_ID + " = ?", new String[] {String.valueOf (question.getQuestion_id ())});
     }
 
-    /**
-     * Deleting a question
-     */
     public void deleteQuestion (long question_id) {
         SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete question where ID = " + question_id);
         db.delete (TABLE_QUESTIONS, KEY_ID + " = ?",
                 new String[] {String.valueOf (question_id)});
     }
 
-    /**
-     * Deleting all questions
-     */
     public void deleteAllQuestion () {
         SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete all questions");
         db.execSQL ("delete from " + TABLE_QUESTIONS);
     }
 
 
     // ------------------------ "atms" table methods ----------------//
 
-    /**
-     * Creating a atm
-     */
     public long createAtm (Atm atm) {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Creating Atm");
         values.put (KEY_ID, atm.getAtm_id ());
         values.put (KEY_AGENCY_ID, atm.getAtm_agency_id ());
         values.put (KEY_ATM_ID, atm.getAtm_unique_id ());
@@ -234,13 +199,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return atm_id;
     }
 
-    /**
-     * get single question
-     */
     public Atm getAtm (long atm_id) {
         SQLiteDatabase db = this.getReadableDatabase ();
         String selectQuery = "SELECT  * FROM " + TABLE_ATMS + " WHERE " + KEY_ID + " = " + atm_id;
-        Log.e (LOG, selectQuery);
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get Atm where ID = " + atm_id);
         Cursor c = db.rawQuery (selectQuery, null);
         if (c != null)
             c.moveToFirst ();
@@ -256,13 +218,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return atm;
     }
 
-    /**
-     * getting all atms
-     */
     public List<Atm> getAllAtms () {
         List<Atm> atms = new ArrayList<Atm> ();
         String selectQuery = "SELECT  * FROM " + TABLE_ATMS;
-//        Log.e (LOG, selectQuery);
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get all atm");
         SQLiteDatabase db = this.getReadableDatabase ();
         Cursor c = db.rawQuery (selectQuery, null);
         // looping through all rows and adding to list
@@ -283,24 +242,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return atms;
     }
 
-    /**
-     * getting atm count
-     */
     public int getAtmCount () {
         String countQuery = "SELECT  * FROM " + TABLE_ATMS;
-//        Log.e (LOG, countQuery);
         SQLiteDatabase db = this.getReadableDatabase ();
         Cursor cursor = db.rawQuery (countQuery, null);
         int count = cursor.getCount ();
         cursor.close ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get total atm count : " + count);
         return count;
     }
 
-    /**
-     * Updating an atm
-     */
     public int updateAtm (Atm atm) {
         SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Update atm");
         ContentValues values = new ContentValues ();
         values.put (KEY_ATM_ID, atm.getAtm_unique_id ());
         values.put (KEY_AGENCY_ID, atm.getAtm_agency_id ());
@@ -310,37 +264,28 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put (KEY_CITY, atm.getAtm_city ());
         values.put (KEY_PINCODE, atm.getAtm_pincode ());
         // updating row
-        return db.update (TABLE_ATMS, values, KEY_ID + " = ?",
-                new String[] {String.valueOf (atm.getAtm_id ())});
+        return db.update (TABLE_ATMS, values, KEY_ID + " = ?", new String[] {String.valueOf (atm.getAtm_id ())});
     }
 
-    /**
-     * Deleting an atm
-     */
     public void deleteAtm (long atm_id) {
         SQLiteDatabase db = this.getWritableDatabase ();
-        db.delete (TABLE_ATMS, KEY_ID + " = ?",
-                new String[] {String.valueOf (atm_id)});
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete atm where ID = " + atm_id);
+        db.delete (TABLE_ATMS, KEY_ID + " = ?", new String[] {String.valueOf (atm_id)});
     }
 
-    /**
-     * Deleting all atms
-     */
     public void deleteAllAtms () {
         SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete all atm");
         db.execSQL ("delete from " + TABLE_ATMS);
     }
 
 
     // ------------------------ "Response" table methods ----------------//
 
-    /**
-     * Creating a atm
-     */
     public long createResponse (Response response) {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
-        Log.d ("Response", "Response inserted successfully in the database");
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Response inserted successfully in the database");
         values.put (KEY_ATM_ID, response.getResponse_atm_unique_id ());
         values.put (KEY_AGENCY_ID, response.getResponse_agency_id ());
         values.put (KEY_AUDITOR_ID, response.getResponse_auditor_id ());
@@ -354,13 +299,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return response_id;
     }
 
-    /**
-     * get single response
-     */
     public Response getResponse (long response_id) {
         SQLiteDatabase db = this.getReadableDatabase ();
         String selectQuery = "SELECT  * FROM " + TABLE_RESPONSES + " WHERE " + KEY_ID + " = " + response_id;
-        Log.e (LOG, selectQuery);
         Cursor c = db.rawQuery (selectQuery, null);
         if (c != null)
             c.moveToFirst ();
@@ -377,13 +318,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return response;
     }
 
-    /**
-     * getting all atms
-     */
     public List<Response> getAllResponse () {
         List<Response> responses = new ArrayList<Response> ();
         String selectQuery = "SELECT  * FROM " + TABLE_RESPONSES;
-//        Log.e (LOG, selectQuery);
         SQLiteDatabase db = this.getReadableDatabase ();
         Cursor c = db.rawQuery (selectQuery, null);
         // looping through all rows and adding to list
@@ -405,12 +342,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return responses;
     }
 
-    /**
-     * getting atm count
-     */
     public int getResponseCount () {
         String countQuery = "SELECT  * FROM " + TABLE_RESPONSES;
-//        Log.e (LOG, countQuery);
         SQLiteDatabase db = this.getReadableDatabase ();
         Cursor cursor = db.rawQuery (countQuery, null);
         int count = cursor.getCount ();
@@ -418,9 +351,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return count;
     }
 
-    /**
-     * Updating an atm
-     */
     public int updateResponse (Response response) {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
@@ -437,18 +367,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 new String[] {String.valueOf (response.getResponse_id ())});
     }
 
-    /**
-     * Deleting an atm
-     */
     public void deleteResponse (long response_id) {
         SQLiteDatabase db = this.getWritableDatabase ();
         db.delete (TABLE_RESPONSES, KEY_ID + " = ?",
                 new String[] {String.valueOf (response_id)});
     }
 
-    /**
-     * Deleting all atms
-     */
     public void deleteAllResponses () {
         SQLiteDatabase db = this.getWritableDatabase ();
         db.execSQL ("delete from " + TABLE_RESPONSES);
@@ -457,13 +381,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     // ------------------------ "rating" table methods ----------------//
 
-    /**
-     * Creating a question
-     */
     public long createRating (Rating rating) {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
-        Log.d ("Rating", "Rating inserted successfully in the database");
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Rating inserted successfully in the database");
         values.put (KEY_ATM_ID, rating.getAtm_unique_id ());
         values.put (KEY_AUDITOR_ID, rating.getAuditor_id ());
         values.put (KEY_RATING, rating.getRating ());
@@ -472,13 +393,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return rating_id;
     }
 
-    /**
-     * get single question
-     */
     public Rating getRating (long rating_id) {
         SQLiteDatabase db = this.getReadableDatabase ();
         String selectQuery = "SELECT  * FROM " + TABLE_RATINGS + " WHERE " + KEY_ID + " = " + rating_id;
-        Log.e (LOG, selectQuery);
         Cursor c = db.rawQuery (selectQuery, null);
         if (c != null)
             c.moveToFirst ();
@@ -490,16 +407,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return rating;
     }
 
-    /**
-     * getting all questions
-     */
     public List<Rating> getAllRatings () {
         List<Rating> ratings = new ArrayList<Rating> ();
         String selectQuery = "SELECT  * FROM " + TABLE_RATINGS;
-//        Log.e (LOG, selectQuery);
         SQLiteDatabase db = this.getReadableDatabase ();
         Cursor c = db.rawQuery (selectQuery, null);
-        // looping through all rows and adding to list
         if (c.moveToFirst ()) {
             do {
                 Rating rating = new Rating ();
@@ -507,19 +419,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 rating.setAuditor_id (c.getInt (c.getColumnIndex (KEY_AUDITOR_ID)));
                 rating.setRating (c.getInt (c.getColumnIndex (KEY_RATING)));
                 rating.setAtm_unique_id ((c.getString (c.getColumnIndex (KEY_ATM_ID))));
-                // adding to question list
                 ratings.add (rating);
             } while (c.moveToNext ());
         }
         return ratings;
     }
 
-    /**
-     * getting questions count
-     */
     public int getRatingCount () {
         String countQuery = "SELECT  * FROM " + TABLE_RATINGS;
-//        Log.e (LOG, countQuery);
         SQLiteDatabase db = this.getReadableDatabase ();
         Cursor cursor = db.rawQuery (countQuery, null);
         int count = cursor.getCount ();
@@ -527,9 +434,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return count;
     }
 
-    /**
-     * Updating a question
-     */
     public int updateRating (Rating rating) {
         SQLiteDatabase db = this.getWritableDatabase ();
         ContentValues values = new ContentValues ();
@@ -541,159 +445,23 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 new String[] {String.valueOf (rating.getRating_id ())});
     }
 
-    /**
-     * Deleting a question
-     */
     public void deleteRating (long rating_id) {
         SQLiteDatabase db = this.getWritableDatabase ();
         db.delete (TABLE_RATINGS, KEY_ID + " = ?",
                 new String[] {String.valueOf (rating_id)});
     }
 
-    /**
-     * Deleting all questions
-     */
     public void deleteAllRating () {
         SQLiteDatabase db = this.getWritableDatabase ();
         db.execSQL ("delete from " + TABLE_RATINGS);
     }
 
-
-    // ------------------------ "tags" table methods ----------------//
-
-    /**
-     * Creating tag
-     /
-    public long createTag (Tag tag) {
-        SQLiteDatabase db = this.getWritableDatabase ();
-
-        ContentValues values = new ContentValues ();
-        values.put (KEY_TAG_NAME, tag.getTagName ());
-        values.put (KEY_CREATED_AT, getDateTime ());
-
-        // insert row
-        long tag_id = db.insert (TABLE_TAG, null, values);
-
-        return tag_id;
-    }
-
-    /**
-     * getting all tags
-     /
-    public List<Tag> getAllTags () {
-        List<Tag> tags = new ArrayList<Tag> ();
-        String selectQuery = "SELECT  * FROM " + TABLE_TAG;
-
-        Log.e (LOG, selectQuery);
-
-        SQLiteDatabase db = this.getReadableDatabase ();
-        Cursor c = db.rawQuery (selectQuery, null);
-
-        // looping through all rows and adding to list
-        if (c.moveToFirst ()) {
-            do {
-                Tag t = new Tag ();
-                t.setId (c.getInt ((c.getColumnIndex (KEY_ID))));
-                t.setTagName (c.getString (c.getColumnIndex (KEY_TAG_NAME)));
-
-                // adding to tags list
-                tags.add (t);
-            } while (c.moveToNext ());
-        }
-        return tags;
-    }
-
-    /**
-     * Updating a tag
-     /
-    public int updateTag (Tag tag) {
-        SQLiteDatabase db = this.getWritableDatabase ();
-
-        ContentValues values = new ContentValues ();
-        values.put (KEY_TAG_NAME, tag.getTagName ());
-
-        // updating row
-        return db.update (TABLE_TAG, values, KEY_ID + " = ?",
-                new String[] {String.valueOf (tag.getId ())});
-    }
-
-    /**
-     * Deleting a tag
-     /
-    public void deleteTag (Tag tag, boolean should_delete_all_tag_todos) {
-        SQLiteDatabase db = this.getWritableDatabase ();
-
-        // before deleting tag
-        // check if todos under this tag should also be deleted
-        if (should_delete_all_tag_todos) {
-            // get all todos under this tag
-            List<Todo> allTagToDos = getAllToDosByTag (tag.getTagName ());
-
-            // delete all todos
-            for (Todo todo : allTagToDos) {
-                // delete todo
-                deleteToDo (todo.getId ());
-            }
-        }
-
-        // now delete the tag
-        db.delete (TABLE_TAG, KEY_ID + " = ?",
-                new String[] {String.valueOf (tag.getId ())});
-    }
-
-    // ------------------------ "todo_tags" table methods ----------------//
-
-    /**
-     * Creating todo_tag
-     /
-    public long createTodoTag (long todo_id, long tag_id) {
-        SQLiteDatabase db = this.getWritableDatabase ();
-
-        ContentValues values = new ContentValues ();
-        values.put (KEY_TODO_ID, todo_id);
-        values.put (KEY_TAG_ID, tag_id);
-        values.put (KEY_CREATED_AT, getDateTime ());
-
-        long id = db.insert (TABLE_TODO_TAG, null, values);
-
-        return id;
-    }
-
-    /**
-     * Updating a todo tag
-     /
-    public int updateNoteTag (long id, long tag_id) {
-        SQLiteDatabase db = this.getWritableDatabase ();
-
-        ContentValues values = new ContentValues ();
-        values.put (KEY_TAG_ID, tag_id);
-
-        // updating row
-        return db.update (TABLE_TODO, values, KEY_ID + " = ?",
-                new String[] {String.valueOf (id)});
-    }
-
-    /**
-     * Deleting a todo tag
-     /
-    public void deleteToDoTag (long id) {
-        SQLiteDatabase db = this.getWritableDatabase ();
-        db.delete (TABLE_TODO, KEY_ID + " = ?",
-                new String[] {String.valueOf (id)});
-    }
-
-    */
-
-
-    // closing database
     public void closeDB () {
         SQLiteDatabase db = this.getReadableDatabase ();
         if (db != null && db.isOpen ())
             db.close ();
     }
-    /**
-     * get datetime
-     */
+
     private String getDateTime () {
         SimpleDateFormat dateFormat = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss", Locale.getDefault ());
         Date date = new Date ();

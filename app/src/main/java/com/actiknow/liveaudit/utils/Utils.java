@@ -16,6 +16,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,7 +42,7 @@ public class Utils {
     }
 
     public static boolean isValidEmail2 (CharSequence target) {
-        return ! TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher (target).matches ();
+        return ! TextUtils.isEmpty (target) && android.util.Patterns.EMAIL_ADDRESS.matcher (target).matches ();
     }
 
     public static int isValidPassword (String password) {
@@ -86,21 +87,24 @@ public class Utils {
         }
     }
 
-    public static void showOkDialog (Activity activity, String message) {
+    public static void showOkDialog (final Activity activity, String message, final boolean finish_flag) {
         AlertDialog.Builder builder = new AlertDialog.Builder (activity);
         builder.setMessage (message)
                 .setCancelable (false)
                 .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
                     public void onClick (DialogInterface dialog, int id) {
                         dialog.dismiss ();
+                        if (finish_flag) {
+                            activity.finish ();
+                            activity.overridePendingTransition (R.anim.slide_in_left, R.anim.slide_out_right);
+                        }
                     }
                 });
         AlertDialog alert = builder.create ();
         alert.show ();
     }
 
-    public static void showSnackBar (CoordinatorLayout coordinatorLayout, Activity activity, String message) {
-        //      View rootView = activity.getWindow ().getDecorView ().findViewById (android.R.id.content);
+    public static void showSnackBar (CoordinatorLayout coordinatorLayout, String message) {
         final Snackbar snackbar = Snackbar
                 .make (coordinatorLayout, message, Snackbar.LENGTH_LONG)
                 .setAction ("DISMISS", new View.OnClickListener () {
@@ -115,14 +119,13 @@ public class Utils {
         Toast.makeText (activity, message, Toast.LENGTH_SHORT).show ();
     }
 
-
     public static void setTypefaceToAllViews (Activity activity, View view) {
         Typeface tf = SetTypeFace.getTypeface (activity);
         SetTypeFace.applyTypeface (SetTypeFace.getParentView (view), tf);
-
     }
 
     public static void showProgressDialog (ProgressDialog progressDialog, String message) {
+        // Initialize the progressDialog before calling this function
         TextView tvMessage;
         progressDialog.show ();
         progressDialog.getWindow ().setBackgroundDrawable (new ColorDrawable (android.graphics.Color.TRANSPARENT));
@@ -137,6 +140,7 @@ public class Utils {
     }
 
     public static void showLog (int log_type, String tag, String message) {
+
         switch (log_type) {
             case Log.DEBUG:
                 Log.d (tag, message);
@@ -157,6 +161,10 @@ public class Utils {
                 Log.wtf (tag, message);
                 break;
         }
+    }
+
+    public static void showErrorInEditText (EditText editText, String message) {
+        editText.setError (message);
     }
 
     public static void hideSoftKeyboard (Activity activity) {

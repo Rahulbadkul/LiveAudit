@@ -2,6 +2,8 @@ package com.actiknow.liveaudit.model;
 
 import android.util.Log;
 
+import com.actiknow.liveaudit.utils.Utils;
+
 public class Response {
     private int response_id, response_auditor_id, response_switch_flag, response_question_id, response_agency_id;
     private String response_atm_unique_id, response_question, response_comment, response_image1, response_image2;
@@ -27,7 +29,7 @@ public class Response {
 
     public void setResponse_id (int response_id) {
         this.response_id = response_id;
-        Log.d ("response_id", "" + response_id);
+        Utils.showLog (Log.DEBUG, "response_id", "" + response_id);
     }
 
     public int getResponse_auditor_id () {
@@ -36,7 +38,7 @@ public class Response {
 
     public void setResponse_auditor_id (int response_auditor_id) {
         this.response_auditor_id = response_auditor_id;
-        Log.d ("response_auditor_id", "" + response_auditor_id);
+        Utils.showLog (Log.DEBUG, "response_auditor_id", "" + response_auditor_id);
     }
 
     public int getResponse_agency_id () {
@@ -45,7 +47,7 @@ public class Response {
 
     public void setResponse_agency_id (int response_agency_id) {
         this.response_agency_id = response_agency_id;
-        Log.d ("response_agency_id", "" + response_agency_id);
+        Utils.showLog (Log.DEBUG, "response_agency_id", "" + response_agency_id);
     }
 
     public String getResponse_atm_unique_id () {
@@ -54,7 +56,7 @@ public class Response {
 
     public void setResponse_atm_unique_id (String response_atm_unique_id) {
         this.response_atm_unique_id = response_atm_unique_id;
-        Log.d ("response_atm_unique_id", response_atm_unique_id);
+        Utils.showLog (Log.DEBUG, "response_atm_unique_id", response_atm_unique_id);
     }
 
     public int getResponse_question_id () {
@@ -63,7 +65,7 @@ public class Response {
 
     public void setResponse_question_id (int response_question_id) {
         this.response_question_id = response_question_id;
-        Log.d ("response_question_id", "" + response_question_id);
+        Utils.showLog (Log.DEBUG, "response_question_id", "" + response_question_id);
     }
 
     public int getResponse_switch_flag () {
@@ -72,7 +74,7 @@ public class Response {
 
     public void setResponse_switch_flag (int response_switch_flag) {
         this.response_switch_flag = response_switch_flag;
-        Log.d ("response_switch_flag", "" + response_switch_flag);
+        Utils.showLog (Log.DEBUG, "response_switch_flag", "" + response_switch_flag);
     }
 
     public String getResponse_question () {
@@ -81,7 +83,7 @@ public class Response {
 
     public void setResponse_question (String response_question) {
         this.response_question = response_question;
-        Log.d ("response_question", response_question);
+        Utils.showLog (Log.DEBUG, "response_question", response_question);
     }
 
     public String getResponse_comment () {
@@ -90,7 +92,7 @@ public class Response {
 
     public void setResponse_comment (String response_comment) {
         this.response_comment = response_comment;
-        Log.d ("response_comment", response_comment);
+        Utils.showLog (Log.DEBUG, "response_comment", response_comment);
     }
 
     public String getResponse_image1 () {
@@ -99,7 +101,7 @@ public class Response {
 
     public void setResponse_image1 (String response_image1) {
         this.response_image1 = response_image1;
-        Log.d ("response_image1", response_image1);
+        Utils.showLog (Log.DEBUG, "response_image1", response_image1);
     }
 
     public String getResponse_image2 () {
@@ -108,6 +110,6 @@ public class Response {
 
     public void setResponse_image2 (String response_image2) {
         this.response_image2 = response_image2;
-        Log.d ("response_image2", response_image2);
+        Utils.showLog (Log.DEBUG, "response_image2", response_image2);
     }
 }

@@ -2,6 +2,8 @@ package com.actiknow.liveaudit.model;
 
 import android.util.Log;
 
+import com.actiknow.liveaudit.utils.Utils;
+
 public class Atm {
     private int atm_id, atm_agency_id;
     private String atm_unique_id, atm_last_audit_date, atm_bank_name, atm_address, atm_city, atm_pincode;
@@ -26,7 +28,7 @@ public class Atm {
 
     public void setAtm_id (int atm_id) {
         this.atm_id = atm_id;
-        Log.d ("atm_id", "" + atm_id);
+        Utils.showLog (Log.DEBUG, "atm_id", "" + atm_id);
     }
 
     public int getAtm_agency_id () {
@@ -35,7 +37,7 @@ public class Atm {
 
     public void setAtm_agency_id (int atm_agency_id) {
         this.atm_agency_id = atm_agency_id;
-        Log.d ("atm_agency_id", "" + atm_agency_id);
+        Utils.showLog (Log.DEBUG, "atm_agency_id", "" + atm_agency_id);
     }
 
     public String getAtm_unique_id () {
@@ -44,7 +46,7 @@ public class Atm {
 
     public void setAtm_unique_id (String atm_unique_id) {
         this.atm_unique_id = atm_unique_id;
-        Log.d ("atm_unique_id", atm_unique_id);
+        Utils.showLog (Log.DEBUG, "atm_unique_id", atm_unique_id);
     }
 
     public String getAtm_last_audit_date () {
@@ -53,7 +55,7 @@ public class Atm {
 
     public void setAtm_last_audit_date (String atm_last_audit_date) {
         this.atm_last_audit_date = atm_last_audit_date;
-        Log.d ("atm_last_audit_date", atm_last_audit_date);
+        Utils.showLog (Log.DEBUG, "atm_last_audit_date", atm_last_audit_date);
     }
 
     public String getAtm_bank_name () {
@@ -62,7 +64,7 @@ public class Atm {
 
     public void setAtm_bank_name (String atm_bank_name) {
         this.atm_bank_name = atm_bank_name;
-        Log.d ("atm_bank_name", atm_bank_name);
+        Utils.showLog (Log.DEBUG, "atm_bank_name", atm_bank_name);
     }
 
     public String getAtm_address () {
@@ -71,7 +73,7 @@ public class Atm {
 
     public void setAtm_address (String atm_address) {
         this.atm_address = atm_address;
-        Log.d ("atm_address", atm_address);
+        Utils.showLog (Log.DEBUG, "atm_address", atm_address);
     }
 
     public String getAtm_city () {
@@ -80,7 +82,7 @@ public class Atm {
 
     public void setAtm_city (String atm_city) {
         this.atm_city = atm_city;
-        Log.d ("atm_city", atm_city);
+        Utils.showLog (Log.DEBUG, "atm_city", atm_city);
     }
 
     public String getAtm_pincode () {
@@ -89,6 +91,6 @@ public class Atm {
 
     public void setAtm_pincode (String atm_pincode) {
         this.atm_pincode = atm_pincode;
-        Log.d ("atm_pincode", atm_pincode);
+        Utils.showLog (Log.DEBUG, "atm_pincode", atm_pincode);
     }
 }

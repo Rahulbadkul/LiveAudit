@@ -2,6 +2,8 @@ package com.actiknow.liveaudit.model;
 
 import android.util.Log;
 
+import com.actiknow.liveaudit.utils.Utils;
+
 public class Question {
     private int question_id;
     private String question;
@@ -20,7 +22,7 @@ public class Question {
 
     public void setQuestion_id (int question_id) {
         this.question_id = question_id;
-        Log.d ("question_id", "" + question_id);
+        Utils.showLog (Log.DEBUG, "question_id", "" + question_id);
     }
 
     public String getQuestion () {
@@ -29,6 +31,6 @@ public class Question {
 
     public void setQuestion (String question) {
         this.question = question;
-        Log.d ("question", question);
+        Utils.showLog (Log.DEBUG, "question", question);
     }
 }

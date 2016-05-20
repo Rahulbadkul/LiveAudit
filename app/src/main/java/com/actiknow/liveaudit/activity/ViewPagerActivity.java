@@ -19,10 +19,8 @@ import com.actiknow.liveaudit.utils.Utils;
 
 
 public class ViewPagerActivity extends AppCompatActivity {
-
     public static boolean flag = false;
     static CustomViewPager vpPager;
-
     private SmartFragmentStatePagerAdapter adapterViewPager;
 
     public static void nextPage () {
@@ -39,7 +37,6 @@ public class ViewPagerActivity extends AppCompatActivity {
     }
 
     private void initData () {
-        Constants.count = 0;
         Constants.responseList.clear ();
         adapterViewPager = new MyPagerAdapter (getSupportFragmentManager ());
         vpPager.setAdapter (adapterViewPager);
@@ -85,7 +82,6 @@ public class ViewPagerActivity extends AppCompatActivity {
                 // Code goes here
             }
         });
-
         final View touchView = findViewById (R.id.vpPager);
         touchView.setOnTouchListener (new View.OnTouchListener () {
             @Override
