@@ -40,8 +40,8 @@ public class NavDrawerAdapter extends BaseAdapter {
         TextView text = (TextView) vi.findViewById(R.id.textViewnavdraweritem);
         ImageView icon = (ImageView) vi.findViewById(R.id.imageViewnavdraweritem);
         switch (position) {
-            case 0 : icon.setImageResource(R.drawable.ic_home);
-                icon.setVisibility (View.VISIBLE);
+            case 0: //icon.setImageResource(R.drawable.ic_home);
+                //icon.setVisibility (View.VISIBLE);
                 break;
         }
         text.setText (data[position]);
