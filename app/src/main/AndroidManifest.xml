@@ -31,6 +31,9 @@
         <activity android:name=".activity.ViewPagerActivity"
                   android:screenOrientation="portrait">
         </activity>
+        <activity android:name=".activity.AllQuestionListActivity"
+                  android:screenOrientation="portrait">
+        </activity>
 
         <meta-data
             android:name="com.google.android.gms.version"

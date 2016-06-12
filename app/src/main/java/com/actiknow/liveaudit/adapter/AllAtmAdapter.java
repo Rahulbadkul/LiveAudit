@@ -10,7 +10,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.actiknow.liveaudit.R;
-import com.actiknow.liveaudit.activity.ViewPagerActivity;
+import com.actiknow.liveaudit.activity.AllQuestionListActivity;
 import com.actiknow.liveaudit.model.Atm;
 import com.actiknow.liveaudit.utils.Constants;
 import com.actiknow.liveaudit.utils.Utils;
@@ -56,6 +56,7 @@ public class AllAtmAdapter extends BaseAdapter {
 			holder.atm_address = (TextView) convertView.findViewById (R.id.tvAddress);
 			holder.atm_city = (TextView) convertView.findViewById (R.id.tvCity);
 			holder.atm_pincode = (TextView) convertView.findViewById (R.id.tvPincode);
+			convertView.setTag (holder);
 		} else
 			holder = (ViewHolder) convertView.getTag ();
 
@@ -77,7 +78,7 @@ public class AllAtmAdapter extends BaseAdapter {
 			public void onClick (View arg0) {
 				Constants.atm_unique_id = atm.getAtm_unique_id ().toUpperCase ();
 				Constants.atm_agency_id = atm.getAtm_agency_id ();
-				Intent intent = new Intent (activity, ViewPagerActivity.class);
+				Intent intent = new Intent (activity, AllQuestionListActivity.class);
 				activity.startActivity (intent);
 				activity.overridePendingTransition (R.anim.slide_in_right, R.anim.slide_out_left);
 			}

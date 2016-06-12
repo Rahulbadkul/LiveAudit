@@ -1,0 +1,107 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/text_color_white">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar1"
+        style="@style/Widget.MyApp.ActionBar"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/text_color_white"
+        android:elevation="0dp"
+        android:theme="@style/Base.ThemeOverlay.AppCompat.Dark">
+        <RelativeLayout
+            android:id="@+id/toolbar_logo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left|center_vertical">
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="180dp"
+                android:layout_height="60dp"
+                android:src="@drawable/live_audit_logo"/>
+        </RelativeLayout>
+    </android.support.v7.widget.Toolbar>
+    <View
+        android:id="@+id/view2"
+        style="@style/Divider"
+        android:layout_below="@+id/toolbar1"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"/>
+    <ListView
+        android:id="@+id/lvQuestionList"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_above="@+id/tvRate"
+        android:layout_below="@+id/view2"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:divider="@color/color_divider"
+        android:dividerHeight="1dp" android:visibility="visible"/>
+
+    <TextView
+        android:id="@+id/tvRate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/tlRating"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
+        android:text="Overall Quality Index of this ATM"
+        android:textSize="20sp"/>
+    <TableLayout
+        android:id="@+id/tlRating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btSubmit"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:stretchColumns="0">
+        <TableRow>
+            <SeekBar
+                android:id="@+id/sbRating"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/btSubmit"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="5dp"
+                android:progressDrawable="@drawable/red_scrubber_progress"
+                android:thumb="@drawable/red_scrubber_control"/>
+
+            <TextView
+                android:id="@+id/tvRatingNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tvRate"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="5dp"
+                android:text="0"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="30sp"/>
+
+        </TableRow>
+
+    </TableLayout>
+
+    <Button
+        android:id="@+id/btSubmit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="20dp"
+        android:background="@drawable/bg_button"
+        android:text="SUBMIT"
+        android:textColor="@color/text_color_white"
+        android:textSize="20sp"
+        android:textStyle="bold"/>
+
+
+</RelativeLayout>
