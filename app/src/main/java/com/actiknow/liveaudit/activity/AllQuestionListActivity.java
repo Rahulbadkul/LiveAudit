@@ -18,6 +18,7 @@ import com.actiknow.liveaudit.R;
 import com.actiknow.liveaudit.adapter.AllQuestionsAdapter;
 import com.actiknow.liveaudit.helper.DatabaseHandler;
 import com.actiknow.liveaudit.model.Question;
+import com.actiknow.liveaudit.model.Rating;
 import com.actiknow.liveaudit.model.Response;
 import com.actiknow.liveaudit.utils.AppConfigTags;
 import com.actiknow.liveaudit.utils.Constants;
@@ -117,6 +118,11 @@ public class AllQuestionListActivity extends AppCompatActivity {
                     Log.d (AppConfigTags.IMAGE1, response.getResponse_image1 ());
                     Log.d (AppConfigTags.IMAGE2, response.getResponse_image2 ());
                 }
+
+                final Rating rating = new Rating ();
+                rating.setAtm_unique_id (Constants.atm_unique_id);
+                rating.setAuditor_id (Constants.auditor_id_main);
+                rating.setRating (sbRating.getProgress () / 10);
             }
         });
     }
