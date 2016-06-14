@@ -4,6 +4,9 @@ package com.actiknow.liveaudit.activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -37,6 +40,7 @@ import com.actiknow.liveaudit.model.Question;
 import com.actiknow.liveaudit.utils.AppConfigTags;
 import com.actiknow.liveaudit.utils.AppConfigURL;
 import com.actiknow.liveaudit.utils.Constants;
+import com.actiknow.liveaudit.utils.GPSTracker;
 import com.actiknow.liveaudit.utils.LoginDetailsPref;
 import com.actiknow.liveaudit.utils.NetworkConnection;
 import com.actiknow.liveaudit.utils.Utils;
@@ -61,11 +65,11 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static int GEO_IMAGE_REQUEST_CODE = 1;
     TextView tvNoInternetConnection;
     ProgressBar progressBar;
     ListView listViewAllAtm;
     Button btEnterManually;
-
     GoogleApiClient client;
     Dialog dialogSplash;
     Dialog dialogEnterManually;
@@ -86,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
         isLogin ();
         initListener ();
         initData ();
+        getLatLong ();
         setUpNavigationDrawer ();
 //        initLocationSettings ();
 
@@ -99,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
                 uploadStoredResponseToServer ();
             if (db.getRatingCount () > 0)
                 uploadStoredRatingToServer ();
+            if (db.getGeoImageCount () > 0)
+                uploadStoredGeoImageToServer ();
         }
         db.closeDB ();
     }
@@ -142,6 +149,17 @@ public class MainActivity extends AppCompatActivity {
         tvNoInternetConnection = (TextView) findViewById (R.id.tvNoIternetConnection);
         progressBar = (ProgressBar) findViewById (R.id.progressbar);
         btEnterManually = (Button) findViewById (R.id.btEnterManually);
+    }
+
+    private void getLatLong () {
+        GPSTracker gps = new GPSTracker (MainActivity.this);
+        if (gps.canGetLocation ()) {
+            Constants.latitude = gps.getLatitude ();
+            Constants.longitude = gps.getLongitude ();
+            Log.e ("current lat long", "" + Constants.latitude + " " + Constants.longitude);
+        } else {
+            gps.showSettingsAlert ();
+        }
     }
 
     @Override
@@ -469,12 +487,56 @@ public class MainActivity extends AppCompatActivity {
                 if (etEnterManuallyAtmId.getText ().toString ().length () == 0)
                     etEnterManuallyAtmId.setError ("Please enter the ATM ID");
                 else {
-                    Constants.atm_location_in_manual = etEnterManuallyAtmLocation.getText ().toString ().toUpperCase ();
-                    Constants.atm_unique_id = etEnterManuallyAtmId.getText ().toString ().toUpperCase ();
-                    Intent intent = new Intent (MainActivity.this, ViewPagerActivity.class);
-                    MainActivity.this.startActivity (intent);
-                    MainActivity.this.overridePendingTransition (R.anim.slide_in_right, R.anim.slide_out_left);
                     dialogEnterManually.dismiss ();
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder (MainActivity.this);
+                    builder.setMessage ("Please take an image of the ATM Machine\nNote : This image will be Geotagged")
+                            .setCancelable (false)
+                            .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
+                                public void onClick (DialogInterface dialog, int id) {
+                                    dialog.dismiss ();
+                                    Constants.atm_location_in_manual = etEnterManuallyAtmLocation.getText ().toString ().toUpperCase ();
+                                    Constants.atm_unique_id = etEnterManuallyAtmId.getText ().toString ().toUpperCase ();
+
+                                    Constants.geoImage.setAtm_unique_id (etEnterManuallyAtmId.getText ().toString ().toUpperCase ());
+                                    Constants.geoImage.setAuditor_id (Constants.auditor_id_main);
+                                    Constants.geoImage.setLatitude (String.valueOf (Constants.latitude));
+                                    Constants.geoImage.setLongitude (String.valueOf (Constants.longitude));
+
+                                    Intent mIntent = null;
+                                    if (Utils.isPackageExists (MainActivity.this, "com.google.android.camera")) {
+                                        mIntent = new Intent ();
+                                        mIntent.setPackage ("com.google.android.camera");
+                                        mIntent.setAction (android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                                    } else {
+                                        PackageManager packageManager = getPackageManager ();
+                                        String defaultCameraPackage = null;
+                                        List<ApplicationInfo> list = packageManager.getInstalledApplications (PackageManager.GET_UNINSTALLED_PACKAGES);
+                                        for (int n = 0; n < list.size (); n++) {
+                                            if ((list.get (n).flags & ApplicationInfo.FLAG_SYSTEM) == 1) {
+                                                Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Installed Applications  : " + list.get (n).loadLabel (packageManager).toString (), false);
+                                                Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "package name  : " + list.get (n).packageName, false);
+                                                if (list.get (n).loadLabel (packageManager).toString ().equalsIgnoreCase ("Camera")) {
+                                                    defaultCameraPackage = list.get (n).packageName;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        mIntent = new Intent ();
+                                        mIntent.setPackage (defaultCameraPackage);
+                                        mIntent.setAction (android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                                    }
+                                    if (mIntent.resolveActivity (getPackageManager ()) != null)
+                                        startActivityForResult (mIntent, MainActivity.GEO_IMAGE_REQUEST_CODE);
+                                }
+                            })
+                            .setNegativeButton ("CANCEL", new DialogInterface.OnClickListener () {
+                                public void onClick (DialogInterface dialog, int id) {
+                                    dialog.dismiss ();
+                                }
+                            });
+                    AlertDialog alert = builder.create ();
+                    alert.show ();
                 }
             }
         });
@@ -523,6 +585,58 @@ public class MainActivity extends AppCompatActivity {
                     }
                 };
                 AppController.getInstance ().addToRequestQueue (strRequest3);
+            } else {
+                Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection", true);
+            }
+        }
+    }
+
+    private void uploadStoredGeoImageToServer () {
+        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the geo images from local database", true);
+        List<com.actiknow.liveaudit.model.GeoImage> allGeoImages = db.getAllGeoImages ();
+        for (com.actiknow.liveaudit.model.GeoImage geoImage : allGeoImages) {
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITGEOIMAGE, true);
+            final com.actiknow.liveaudit.model.GeoImage finalGeoImage = geoImage;
+            if (NetworkConnection.isNetworkAvailable (this)) {
+                StringRequest strRequest4 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITGEOIMAGE,
+                        new com.android.volley.Response.Listener<String> () {
+                            @Override
+                            public void onResponse (String response) {
+                                Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
+                                if (response != null) {
+                                    try {
+                                        JSONObject jsonObj = new JSONObject (response);
+                                        int status = jsonObj.getInt (AppConfigTags.STATUS);
+                                        if (status == 1)
+                                            db.deleteGeoImage (finalGeoImage.getGeo_image_string ());
+                                    } catch (JSONException e) {
+                                        e.printStackTrace ();
+                                    }
+                                } else {
+                                    Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER, true);
+                                }
+                            }
+                        },
+                        new com.android.volley.Response.ErrorListener () {
+                            @Override
+                            public void onErrorResponse (VolleyError error) {
+                                Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
+                            }
+                        }) {
+                    @Override
+                    protected Map<String, String> getParams () throws AuthFailureError {
+                        Map<String, String> params = new Hashtable<String, String> ();
+                        params.put (AppConfigTags.ATM_UNIQUE_ID, finalGeoImage.getAtm_unique_id ());
+                        params.put (AppConfigTags.AUDITOR_ID, String.valueOf (finalGeoImage.getAuditor_id ()));
+                        params.put (AppConfigTags.ATM_AGENCY_ID, String.valueOf (finalGeoImage.getAgency_id ()));
+                        params.put (AppConfigTags.GEO_IMAGE, String.valueOf (finalGeoImage.getGeo_image_string ()));
+                        params.put (AppConfigTags.LATITUDE, String.valueOf (finalGeoImage.getLatitude ()));
+                        params.put (AppConfigTags.LONGITUDE, String.valueOf (finalGeoImage.getLongitude ()));
+                        Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params, true);
+                        return params;
+                    }
+                };
+                AppController.getInstance ().addToRequestQueue (strRequest4);
             } else {
                 Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection", true);
             }
@@ -579,6 +693,30 @@ public class MainActivity extends AppCompatActivity {
                 AppController.getInstance ().addToRequestQueue (strRequest2);
             } else {
                 Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection", true);
+            }
+        }
+    }
+
+    public void onActivityResult (int requestCode, int resultCode, Intent data) {
+        // TODO Auto-generated method stub
+        super.onActivityResult (requestCode, resultCode, data);
+
+        if (requestCode == GEO_IMAGE_REQUEST_CODE) {
+            switch (resultCode) {
+                case RESULT_OK:
+                    Bitmap bp = (Bitmap) data.getExtras ().get ("data");
+                    String image = Utils.bitmapToBase64 (bp);
+                    Constants.geoImage.setGeo_image_string (image);
+
+                    Intent intent = new Intent (MainActivity.this, AllQuestionListActivity.class);
+                    startActivity (intent);
+                    overridePendingTransition (R.anim.slide_in_right, R.anim.slide_out_left);
+                    break;
+                case RESULT_CANCELED:
+//                    Utils.showToast (MainActivity.this, "Please take an image");
+                    break;
+                default:
+                    break;
             }
         }
     }

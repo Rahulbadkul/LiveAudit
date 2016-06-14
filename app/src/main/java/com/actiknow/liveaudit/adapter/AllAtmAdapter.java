@@ -2,7 +2,12 @@ package com.actiknow.liveaudit.adapter;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,8 +15,9 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.actiknow.liveaudit.R;
-import com.actiknow.liveaudit.activity.AllQuestionListActivity;
+import com.actiknow.liveaudit.activity.MainActivity;
 import com.actiknow.liveaudit.model.Atm;
+import com.actiknow.liveaudit.utils.AppConfigTags;
 import com.actiknow.liveaudit.utils.Constants;
 import com.actiknow.liveaudit.utils.Utils;
 
@@ -78,9 +84,52 @@ public class AllAtmAdapter extends BaseAdapter {
 			public void onClick (View arg0) {
 				Constants.atm_unique_id = atm.getAtm_unique_id ().toUpperCase ();
 				Constants.atm_agency_id = atm.getAtm_agency_id ();
-				Intent intent = new Intent (activity, AllQuestionListActivity.class);
-				activity.startActivity (intent);
-				activity.overridePendingTransition (R.anim.slide_in_right, R.anim.slide_out_left);
+				Constants.geoImage.setAgency_id (atm.getAtm_agency_id ());
+				Constants.geoImage.setAtm_unique_id (atm.getAtm_unique_id ().toUpperCase ());
+				Constants.geoImage.setAuditor_id (Constants.auditor_id_main);
+				Constants.geoImage.setLatitude (String.valueOf (Constants.latitude));
+				Constants.geoImage.setLongitude (String.valueOf (Constants.longitude));
+
+				AlertDialog.Builder builder = new AlertDialog.Builder (activity);
+				builder.setMessage ("Please take an image of the ATM Machine\nNote : This image will be Geotagged")
+						.setCancelable (false)
+						.setPositiveButton ("OK", new DialogInterface.OnClickListener () {
+							public void onClick (DialogInterface dialog, int id) {
+								dialog.dismiss ();
+								Intent mIntent = null;
+								if (Utils.isPackageExists (activity, "com.google.android.camera")) {
+									mIntent = new Intent ();
+									mIntent.setPackage ("com.google.android.camera");
+									mIntent.setAction (android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+								} else {
+									PackageManager packageManager = activity.getPackageManager ();
+									String defaultCameraPackage = null;
+									List<ApplicationInfo> list = packageManager.getInstalledApplications (PackageManager.GET_UNINSTALLED_PACKAGES);
+									for (int n = 0; n < list.size (); n++) {
+										if ((list.get (n).flags & ApplicationInfo.FLAG_SYSTEM) == 1) {
+											Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Installed Applications  : " + list.get (n).loadLabel (packageManager).toString (), false);
+											Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "package name  : " + list.get (n).packageName, false);
+											if (list.get (n).loadLabel (packageManager).toString ().equalsIgnoreCase ("Camera")) {
+												defaultCameraPackage = list.get (n).packageName;
+												break;
+											}
+										}
+									}
+									mIntent = new Intent ();
+									mIntent.setPackage (defaultCameraPackage);
+									mIntent.setAction (android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+								}
+								if (mIntent.resolveActivity (activity.getPackageManager ()) != null)
+									activity.startActivityForResult (mIntent, MainActivity.GEO_IMAGE_REQUEST_CODE);
+							}
+						})
+						.setNegativeButton ("CANCEL", new DialogInterface.OnClickListener () {
+							public void onClick (DialogInterface dialog, int id) {
+								dialog.dismiss ();
+							}
+						});
+				AlertDialog alert = builder.create ();
+				alert.show ();
 			}
 		});
 		return convertView;

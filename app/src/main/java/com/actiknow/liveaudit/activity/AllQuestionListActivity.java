@@ -2,6 +2,9 @@
 package com.actiknow.liveaudit.activity;
 
 import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -16,27 +19,41 @@ import android.widget.TextView;
 
 import com.actiknow.liveaudit.R;
 import com.actiknow.liveaudit.adapter.AllQuestionsAdapter;
+import com.actiknow.liveaudit.app.AppController;
 import com.actiknow.liveaudit.helper.DatabaseHandler;
+import com.actiknow.liveaudit.model.GeoImage;
 import com.actiknow.liveaudit.model.Question;
 import com.actiknow.liveaudit.model.Rating;
 import com.actiknow.liveaudit.model.Response;
 import com.actiknow.liveaudit.utils.AppConfigTags;
+import com.actiknow.liveaudit.utils.AppConfigURL;
 import com.actiknow.liveaudit.utils.Constants;
+import com.actiknow.liveaudit.utils.NetworkConnection;
 import com.actiknow.liveaudit.utils.Utils;
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 
 public class AllQuestionListActivity extends AppCompatActivity {
 
-    TextView tvRatingNumber;
-    SeekBar sbRating;
+    public static TextView tvRatingNumber;
+    public static SeekBar sbRating;
     Button btSubmit;
     ListView lvAllQuestions;
+    ProgressDialog pDialog;
 
     GoogleApiClient client;
     Dialog dialogEnterManually;
@@ -105,9 +122,14 @@ public class AllQuestionListActivity extends AppCompatActivity {
         btSubmit.setOnClickListener (new View.OnClickListener () {
             @Override
             public void onClick (View v) {
+                pDialog = new ProgressDialog (AllQuestionListActivity.this);
+                Utils.showProgressDialog (pDialog, null);
+
+
                 for (int i = 0; i < Constants.total_questions; i++) {
                     final Response response;
                     response = Constants.responseList.get (i);
+                    submitResponseToServer (i, response);
                     Log.d (AppConfigTags.ATM_UNIQUE_ID, response.getResponse_atm_unique_id ());
                     Log.d (AppConfigTags.ATM_AGENCY_ID, String.valueOf (response.getResponse_agency_id ()));
                     Log.d (AppConfigTags.AUDITOR_ID, String.valueOf (response.getResponse_auditor_id ()));
@@ -119,10 +141,25 @@ public class AllQuestionListActivity extends AppCompatActivity {
                     Log.d (AppConfigTags.IMAGE2, response.getResponse_image2 ());
                 }
 
-                final Rating rating = new Rating ();
-                rating.setAtm_unique_id (Constants.atm_unique_id);
-                rating.setAuditor_id (Constants.auditor_id_main);
-                rating.setRating (sbRating.getProgress () / 10);
+
+                Constants.rating.setAtm_unique_id (Constants.atm_unique_id);
+                Constants.rating.setAuditor_id (Constants.auditor_id_main);
+                Constants.rating.setRating (sbRating.getProgress () / 10);
+                submitRatingToServer (Constants.rating);
+
+                Log.d (AppConfigTags.ATM_UNIQUE_ID, Constants.rating.getAtm_unique_id ());
+                Log.d (AppConfigTags.AUDITOR_ID, String.valueOf (Constants.rating.getAuditor_id ()));
+                Log.d (AppConfigTags.RATING, String.valueOf (Constants.rating.getRating ()));
+
+                submitGeoImageToServer (Constants.geoImage);
+
+                Log.d (AppConfigTags.ATM_UNIQUE_ID, Constants.geoImage.getAtm_unique_id ());
+                Log.d (AppConfigTags.AUDITOR_ID, String.valueOf (Constants.geoImage.getAuditor_id ()));
+                Log.d (AppConfigTags.ATM_AGENCY_ID, String.valueOf (Constants.geoImage.getAgency_id ()));
+                Log.d (AppConfigTags.GEO_IMAGE, Constants.geoImage.getGeo_image_string ());
+                Log.d (AppConfigTags.LATITUDE, Constants.geoImage.getLatitude ());
+                Log.d (AppConfigTags.LONGITUDE, Constants.geoImage.getLongitude ());
+
             }
         });
     }
@@ -189,6 +226,168 @@ public class AllQuestionListActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected (MenuItem item) {
         return super.onOptionsItemSelected (item);
+    }
+
+    public void onActivityResult (int requestCode, int resultCode, Intent data) {
+        // TODO Auto-generated method stub
+        super.onActivityResult (requestCode, resultCode, data);
+        try {
+
+            Bitmap bp = (Bitmap) data.getExtras ().get ("data");
+            String image = Utils.bitmapToBase64 (bp);
+
+            for (int i = 0; i < Constants.questionsList.size (); i++) {
+                final Response response;
+                response = Constants.responseList.get (i);
+                if (requestCode == response.getResponse_question_id ())
+                    response.setResponse_image1 (image);
+            }
+        } catch (Exception e) {
+        }
+    }
+
+
+    private void submitResponseToServer (int i, Response response) {
+        if (NetworkConnection.isNetworkAvailable (AllQuestionListActivity.this)) {
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITRESPONSE, true);
+            final Response finalResponse = response;
+            final int finalI = i;
+            StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRESPONSE,
+                    new com.android.volley.Response.Listener<String> () {
+                        @Override
+                        public void onResponse (String response) {
+                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
+                            if (response != null) {
+                                //             if (finalI == 0 && Constants.atm_location_in_manual.length ()!=0)
+
+                                if (finalI == Constants.total_questions - 1) {
+                                    pDialog.dismiss ();
+                                    Utils.showOkDialog (AllQuestionListActivity.this, "Your responses have been uploaded successfully to the server", true);
+                                }
+                            } else
+                                Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER, true);
+                        }
+                    },
+                    new com.android.volley.Response.ErrorListener () {
+                        @Override
+                        public void onErrorResponse (VolleyError error) {
+                            Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
+                            if (finalI == Constants.total_questions - 1) {
+                                pDialog.dismiss ();
+                                Utils.showOkDialog (AllQuestionListActivity.this, "Seems like there is an issue with the internet connection," +
+                                        " your responses have been saved and will be uploaded once you are online", true);
+                                db.createResponse (finalResponse);
+                            }
+                        }
+                    }) {
+                @Override
+                protected Map<String, String> getParams () throws AuthFailureError {
+                    Map<String, String> params = new Hashtable<String, String> ();
+                    params.put (AppConfigTags.ATM_UNIQUE_ID, finalResponse.getResponse_atm_unique_id ());
+                    params.put (AppConfigTags.ATM_AGENCY_ID, String.valueOf (finalResponse.getResponse_agency_id ()));
+                    params.put (AppConfigTags.AUDITOR_ID, String.valueOf (finalResponse.getResponse_auditor_id ()));
+                    params.put (AppConfigTags.QUESTION_ID, String.valueOf (finalResponse.getResponse_question_id ()));
+                    params.put (AppConfigTags.QUESTION, finalResponse.getResponse_question ());
+                    params.put (AppConfigTags.SWITCH_FLAG, String.valueOf (finalResponse.getResponse_switch_flag ()));
+                    params.put (AppConfigTags.COMMENT, finalResponse.getResponse_comment ());
+                    params.put (AppConfigTags.IMAGE1, finalResponse.getResponse_image1 ());
+                    params.put (AppConfigTags.IMAGE2, finalResponse.getResponse_image2 ());
+                    Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params, true);
+                    return params;
+                }
+            };
+            AppController.getInstance ().addToRequestQueue (strRequest1);
+        } else {
+            if (i == Constants.total_questions - 1) {
+                pDialog.dismiss ();
+                Utils.showOkDialog (AllQuestionListActivity.this, "Seems like there is no internet connection, your responses have been saved" +
+                        " and will be uploaded once you are online", true);
+            }
+            db.createResponse (response);
+        }
+    }
+
+    private void submitRatingToServer (final Rating rating) {
+        if (NetworkConnection.isNetworkAvailable (AllQuestionListActivity.this)) {
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITRATING, true);
+            StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITRATING,
+                    new com.android.volley.Response.Listener<String> () {
+                        @Override
+                        public void onResponse (String response) {
+                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
+                            if (response != null) {
+                                try {
+                                    JSONObject jsonObj = new JSONObject (response);
+                                } catch (JSONException e) {
+                                    e.printStackTrace ();
+                                }
+                            } else {
+                                Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER, true);
+                            }
+                        }
+                    },
+                    new com.android.volley.Response.ErrorListener () {
+                        @Override
+                        public void onErrorResponse (VolleyError error) {
+                            Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
+                        }
+                    }) {
+                @Override
+                protected Map<String, String> getParams () throws AuthFailureError {
+                    Map<String, String> params = new Hashtable<String, String> ();
+                    params.put (AppConfigTags.ATM_UNIQUE_ID, rating.getAtm_unique_id ());
+                    params.put (AppConfigTags.AUDITOR_ID, String.valueOf (rating.getAuditor_id ()));
+                    params.put (AppConfigTags.RATING, String.valueOf (rating.getRating ()));
+                    Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params, true);
+                    return params;
+                }
+            };
+            AppController.getInstance ().addToRequestQueue (strRequest1);
+        } else
+            db.createRating (rating);
+    }
+
+    private void submitGeoImageToServer (final GeoImage geoImage) {
+        if (NetworkConnection.isNetworkAvailable (AllQuestionListActivity.this)) {
+            Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITGEOIMAGE, true);
+            StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITGEOIMAGE,
+                    new com.android.volley.Response.Listener<String> () {
+                        @Override
+                        public void onResponse (String response) {
+                            Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
+                            if (response != null) {
+                                try {
+                                    JSONObject jsonObj = new JSONObject (response);
+                                } catch (JSONException e) {
+                                    e.printStackTrace ();
+                                }
+                            } else {
+                                Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER, true);
+                            }
+                        }
+                    },
+                    new com.android.volley.Response.ErrorListener () {
+                        @Override
+                        public void onErrorResponse (VolleyError error) {
+                            Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
+                        }
+                    }) {
+                @Override
+                protected Map<String, String> getParams () throws AuthFailureError {
+                    Map<String, String> params = new Hashtable<String, String> ();
+                    params.put (AppConfigTags.ATM_UNIQUE_ID, geoImage.getAtm_unique_id ());
+                    params.put (AppConfigTags.AUDITOR_ID, String.valueOf (geoImage.getAuditor_id ()));
+                    params.put (AppConfigTags.ATM_AGENCY_ID, String.valueOf (geoImage.getAgency_id ()));
+                    params.put (AppConfigTags.GEO_IMAGE, geoImage.getGeo_image_string ());
+                    params.put (AppConfigTags.LATITUDE, geoImage.getLatitude ());
+                    params.put (AppConfigTags.LONGITUDE, geoImage.getLongitude ());
+                    Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params, true);
+                    return params;
+                }
+            };
+            AppController.getInstance ().addToRequestQueue (strRequest1);
+        } else
+            db.createGeoImage (geoImage);
     }
 }
 

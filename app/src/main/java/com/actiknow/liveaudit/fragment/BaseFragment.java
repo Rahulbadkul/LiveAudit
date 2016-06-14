@@ -123,67 +123,11 @@ public class BaseFragment extends android.support.v4.app.Fragment {
             initView2 (view);
             initListener2 ();
             Utils.setTypefaceToAllViews (getActivity (), tvRatingNumber);
-
-            btSubmit.setOnClickListener (new View.OnClickListener () {
-                @Override
-                public void onClick (View v) {
-                    pDialog = new ProgressDialog (getActivity ());
-                    Utils.showProgressDialog (pDialog, null);
-/*
-                    try {
-                        jsonArray = new JSONArray (AppConfigTags.RESPONSES);
-                    } catch (JSONException e) {
-                        e.printStackTrace ();
-                    }
-*/
-                    for (int i = 0; i < Constants.total_questions; i++) {
-                        final Response response;
-                        response = Constants.responseList.get (i);
-                        submitResponseToServer (i, response);
-/**
-                        JSONObject jsonObject = new JSONObject ();
-
-                        try {
-                            jsonObject.put (AppConfigTags.ATM_UNIQUE_ID, response.getResponse_atm_unique_id ());
-                            jsonObject.put (AppConfigTags.ATM_AGENCY_ID, String.valueOf (response.getResponse_agency_id ()));
-                            jsonObject.put (AppConfigTags.AUDITOR_ID, String.valueOf (response.getResponse_auditor_id ()));
-                            jsonObject.put (AppConfigTags.QUESTION_ID, String.valueOf (response.getResponse_question_id ()));
-                            jsonObject.put (AppConfigTags.QUESTION, response.getResponse_question ());
-                            jsonObject.put (AppConfigTags.SWITCH_FLAG, String.valueOf (response.getResponse_switch_flag ()));
-                            jsonObject.put (AppConfigTags.COMMENT, response.getResponse_comment ());
-                            jsonObject.put (AppConfigTags.IMAGE1, response.getResponse_image1 ());
-                            jsonObject.put (AppConfigTags.IMAGE2, response.getResponse_image2 ());
-                            jsonArray.put (jsonObject);
-                        } catch (JSONException e) {
-                            e.printStackTrace ();
-                        }
-
- */
-                    }
-                    final Rating rating = new Rating ();
-                    rating.setAtm_unique_id (Constants.atm_unique_id);
-                    rating.setAuditor_id (Constants.auditor_id_main);
-                    rating.setRating (sbRating.getProgress () / 10);
-
-                    submitRatingToServer (rating);
-//                    Log.d ("Jsonstring : ", jsonArray.toString ());
-                }
-            });
         }
         db.closeDB ();
         return view;
     }
 
-    public boolean isPackageExists (String targetPackage) {
-        List<ApplicationInfo> packages;
-        PackageManager pm;
-        pm = getActivity ().getPackageManager ();
-        packages = pm.getInstalledApplications (0);
-        for (ApplicationInfo packageInfo : packages) {
-            if (packageInfo.packageName.equals (targetPackage)) return true;
-        }
-        return false;
-    }
 
     public void onActivityResult (int requestCode, int resultCode, Intent data) {
         // TODO Auto-generated method stub
@@ -232,7 +176,7 @@ public class BaseFragment extends android.support.v4.app.Fragment {
             @Override
             public void onClick (View v) {
                 Intent mIntent = null;
-                if (isPackageExists ("com.google.android.camera")) {
+                if (Utils.isPackageExists (getActivity (), "com.google.android.camera")) {
                     mIntent = new Intent ();
                     mIntent.setPackage ("com.google.android.camera");
                     mIntent.setAction (android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
@@ -263,7 +207,7 @@ public class BaseFragment extends android.support.v4.app.Fragment {
             @Override
             public void onClick (View v) {
                 Intent mIntent = null;
-                if (isPackageExists ("com.google.android.camera")) {
+                if (Utils.isPackageExists (getActivity (), "com.google.android.camera")) {
                     mIntent = new Intent ();
                     mIntent.setPackage ("com.google.android.camera");
                     mIntent.setAction (android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
@@ -389,6 +333,52 @@ public class BaseFragment extends android.support.v4.app.Fragment {
                 tvRatingNumber.setText ("" + paramInt / 10);
             }
         });
+        btSubmit.setOnClickListener (new View.OnClickListener () {
+            @Override
+            public void onClick (View v) {
+                pDialog = new ProgressDialog (getActivity ());
+                Utils.showProgressDialog (pDialog, null);
+/*
+                    try {
+                        jsonArray = new JSONArray (AppConfigTags.RESPONSES);
+                    } catch (JSONException e) {
+                        e.printStackTrace ();
+                    }
+*/
+                for (int i = 0; i < Constants.total_questions; i++) {
+                    final Response response;
+                    response = Constants.responseList.get (i);
+                    submitResponseToServer (i, response);
+/**
+ JSONObject jsonObject = new JSONObject ();
+
+ try {
+ jsonObject.put (AppConfigTags.ATM_UNIQUE_ID, response.getResponse_atm_unique_id ());
+ jsonObject.put (AppConfigTags.ATM_AGENCY_ID, String.valueOf (response.getResponse_agency_id ()));
+ jsonObject.put (AppConfigTags.AUDITOR_ID, String.valueOf (response.getResponse_auditor_id ()));
+ jsonObject.put (AppConfigTags.QUESTION_ID, String.valueOf (response.getResponse_question_id ()));
+ jsonObject.put (AppConfigTags.QUESTION, response.getResponse_question ());
+ jsonObject.put (AppConfigTags.SWITCH_FLAG, String.valueOf (response.getResponse_switch_flag ()));
+ jsonObject.put (AppConfigTags.COMMENT, response.getResponse_comment ());
+ jsonObject.put (AppConfigTags.IMAGE1, response.getResponse_image1 ());
+ jsonObject.put (AppConfigTags.IMAGE2, response.getResponse_image2 ());
+ jsonArray.put (jsonObject);
+ } catch (JSONException e) {
+ e.printStackTrace ();
+ }
+
+ */
+                }
+                final Rating rating = new Rating ();
+                rating.setAtm_unique_id (Constants.atm_unique_id);
+                rating.setAuditor_id (Constants.auditor_id_main);
+                rating.setRating (sbRating.getProgress () / 10);
+
+                submitRatingToServer (rating);
+//                    Log.d ("Jsonstring : ", jsonArray.toString ());
+            }
+        });
+
     }
 
     private void submitResponseToServer (int i, Response response) {

@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
@@ -17,14 +19,17 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actiknow.liveaudit.R;
+import com.actiknow.liveaudit.model.Response;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Admin on 23-12-2015.
@@ -178,4 +183,32 @@ public class Utils {
             imm.hideSoftInputFromWindow (view.getWindowToken (), 0);
         }
     }
+
+
+    public static boolean isPackageExists (Activity activity, String targetPackage) {
+        List<ApplicationInfo> packages;
+        PackageManager pm;
+        pm = activity.getPackageManager ();
+        packages = pm.getInstalledApplications (0);
+        for (ApplicationInfo packageInfo : packages) {
+            if (packageInfo.packageName.equals (targetPackage))
+                return true;
+        }
+        return false;
+    }
+
+    public static void setSeekBar (SeekBar sbRating, TextView tvRatingNumber) {
+        int count = 0;
+        for (int i = 0; i < Constants.questionsList.size (); i++) {
+            Response response;
+            response = Constants.responseList.get (i);
+            count = count + response.getResponse_switch_flag ();
+        }
+        int rating = ((count) * 100) / Constants.total_questions;
+        Utils.showLog (Log.DEBUG, AppConfigTags.RATING, "" + rating, true);
+        tvRatingNumber.setText (String.valueOf (rating / 10));
+        sbRating.setProgress (rating);
+    }
+
+
 }

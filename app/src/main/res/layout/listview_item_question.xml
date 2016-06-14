@@ -16,25 +16,14 @@
             android:id="@+id/tvQuestionInList"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_toLeftOf="@+id/switchYesNoInList"
-
-            android:layout_toStartOf="@+id/switchYesNoInList"
-            android:gravity="center_vertical" android:paddingRight="10dp"
-
-            android:text="12/03/2016z"
-            android:textSize="14sp"/>
-
-
-        <Switch
-            android:id="@+id/switchYesNoInList"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
+            android:layout_alignParentLeft="true"
             android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true" android:checked="false"/>
+            android:layout_alignParentStart="true" android:layout_alignParentTop="true"
+
+            android:gravity="center_vertical"
+            android:paddingRight="10dp" android:text="12/03/2016z"
+            android:textSize="14sp"/>
 
 
     </RelativeLayout>
@@ -64,5 +53,12 @@
         android:text="Image"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textSize="12sp"/>
+    <Switch
+        android:id="@+id/switchYesNoInList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/tvImageInList"
+        android:layout_alignParentLeft="true" android:layout_alignParentStart="true"
+        android:layout_below="@+id/rlQuestion" android:checked="false"/>
 
 </RelativeLayout>

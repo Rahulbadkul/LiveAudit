@@ -34,6 +34,10 @@ public class AppConfigTags {
     public static final String IMAGE2 = "image2";
     public static final String RATING = "rating";
 
+    public static final String GEO_IMAGE = "geo_image";
+    public static final String LATITUDE = "latitude";
+    public static final String LONGITUDE = "longitude";
+
     public static final String LOGIN = "login";
     public static final String EMAIL = "email";
     public static final String PASSWORD = "password";

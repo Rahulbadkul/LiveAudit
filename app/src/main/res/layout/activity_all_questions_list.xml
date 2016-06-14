@@ -41,6 +41,14 @@
         android:divider="@color/color_divider"
         android:dividerHeight="1dp" android:visibility="visible"/>
 
+    <View
+        android:id="@+id/view3"
+        style="@style/Divider"
+        android:layout_above="@+id/tvRate"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"/>
+
+
     <TextView
         android:id="@+id/tvRate"
         android:layout_width="wrap_content"

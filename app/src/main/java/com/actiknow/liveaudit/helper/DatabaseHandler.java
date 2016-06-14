@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.actiknow.liveaudit.model.Atm;
+import com.actiknow.liveaudit.model.GeoImage;
 import com.actiknow.liveaudit.model.Question;
 import com.actiknow.liveaudit.model.Rating;
 import com.actiknow.liveaudit.model.Response;
@@ -22,7 +23,7 @@ import java.util.Locale;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
     // Database Version
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
     // Database Name
     private static final String DATABASE_NAME = "liveAudit";
@@ -32,6 +33,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String TABLE_ATMS = "atms";
     private static final String TABLE_RESPONSES = "responses";
     private static final String TABLE_RATINGS = "ratings";
+    private static final String TABLE_GEO_IMAGE = "geo_image";
 
     // Common column names
     private static final String KEY_ID = "id";
@@ -60,6 +62,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // RATING Table - column names
     private static final String KEY_RATING = "rating";
 
+    // RESPONSE_GEO_IMAGE Table - column names
+    private static final String KEY_GEO_IMAGE = "geo_image";
+    private static final String KEY_LATITUDE = "latitude";
+    private static final String KEY_LONGITUDE = "longitude";
+
     // Question table Create Statements
     private static final String CREATE_TABLE_QUESTIONS = "CREATE TABLE "
             + TABLE_QUESTIONS + "(" + KEY_ID + " INTEGER PRIMARY KEY," +KEY_QUESTION
@@ -82,6 +89,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_ATM_ID + " TEXT," + KEY_AUDITOR_ID + " INTEGER,"
             + KEY_RATING + " INTEGER," + KEY_CREATED_AT + " DATETIME" + ")";
 
+    // Response_geo_image table create statement
+    private static final String CREATE_TABLE_GEO_IMAGE = "CREATE TABLE " + TABLE_GEO_IMAGE
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_ATM_ID + " TEXT," + KEY_AGENCY_ID + " INTEGER,"
+            + KEY_AUDITOR_ID + " INTEGER," + KEY_GEO_IMAGE + " TEXT," + KEY_LATITUDE + " TEXT," + KEY_LONGITUDE + " TEXT," + KEY_CREATED_AT + " DATETIME" + ")";
+
     public DatabaseHandler (Context context) {
         super (context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -92,6 +104,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL (CREATE_TABLE_ATMS);
         db.execSQL (CREATE_TABLE_RESPONSE);
         db.execSQL (CREATE_TABLE_RATING);
+        db.execSQL (CREATE_TABLE_GEO_IMAGE);
     }
 
     @Override
@@ -100,6 +113,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL ("DROP TABLE IF EXISTS " + TABLE_ATMS);
         db.execSQL ("DROP TABLE IF EXISTS " + TABLE_RESPONSES);
         db.execSQL ("DROP TABLE IF EXISTS " + TABLE_RATINGS);
+        db.execSQL ("DROP TABLE IF EXISTS " + TABLE_GEO_IMAGE);
         onCreate (db);
     }
 
@@ -455,6 +469,101 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase ();
         db.execSQL ("delete from " + TABLE_RATINGS);
     }
+
+    // ------------------------ "response geo image" table methods ----------------//
+
+    public long createGeoImage (GeoImage geoImage) {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Creating GeoImage", false);
+        ContentValues values = new ContentValues ();
+        values.put (KEY_AUDITOR_ID, geoImage.getAuditor_id ());
+        values.put (KEY_AGENCY_ID, geoImage.getAgency_id ());
+        values.put (KEY_ATM_ID, geoImage.getAtm_unique_id ());
+        values.put (KEY_GEO_IMAGE, geoImage.getGeo_image_string ());
+        values.put (KEY_LATITUDE, geoImage.getLatitude ());
+        values.put (KEY_LONGITUDE, geoImage.getLongitude ());
+        values.put (KEY_CREATED_AT, getDateTime ());
+        long geo_image_id = db.insert (TABLE_GEO_IMAGE, null, values);
+        return geo_image_id;
+    }
+
+    public GeoImage getGeoImage (long geo_image_id) {
+        SQLiteDatabase db = this.getReadableDatabase ();
+        String selectQuery = "SELECT  * FROM " + TABLE_GEO_IMAGE + " WHERE " + KEY_ID + " = " + geo_image_id;
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get Geo Image where ID = " + geo_image_id, false);
+        Cursor c = db.rawQuery (selectQuery, null);
+        if (c != null)
+            c.moveToFirst ();
+        GeoImage geoImage = new GeoImage ();
+        geoImage.setAuditor_id (c.getInt (c.getColumnIndex (KEY_AUDITOR_ID)));
+        geoImage.setAtm_unique_id (c.getString (c.getColumnIndex (KEY_ATM_ID)));
+        geoImage.setAgency_id (c.getInt (c.getColumnIndex (KEY_AGENCY_ID)));
+        geoImage.setGeo_image_string (c.getString (c.getColumnIndex (KEY_GEO_IMAGE)));
+        geoImage.setLatitude (c.getString (c.getColumnIndex (KEY_LATITUDE)));
+        geoImage.setLongitude (c.getString (c.getColumnIndex (KEY_LONGITUDE)));
+        return geoImage;
+    }
+
+    public List<GeoImage> getAllGeoImages () {
+        List<GeoImage> geoImages = new ArrayList<GeoImage> ();
+        String selectQuery = "SELECT  * FROM " + TABLE_GEO_IMAGE;
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get all Geo Images", false);
+        SQLiteDatabase db = this.getReadableDatabase ();
+        Cursor c = db.rawQuery (selectQuery, null);
+        // looping through all rows and adding to list
+        if (c.moveToFirst ()) {
+            do {
+                GeoImage geoImage = new GeoImage ();
+                geoImage.setAuditor_id (c.getInt (c.getColumnIndex (KEY_AUDITOR_ID)));
+                geoImage.setAtm_unique_id (c.getString (c.getColumnIndex (KEY_ATM_ID)));
+                geoImage.setAgency_id (c.getInt (c.getColumnIndex (KEY_AGENCY_ID)));
+                geoImage.setGeo_image_string (c.getString (c.getColumnIndex (KEY_GEO_IMAGE)));
+                geoImage.setLatitude (c.getString (c.getColumnIndex (KEY_LATITUDE)));
+                geoImage.setLongitude (c.getString (c.getColumnIndex (KEY_LONGITUDE)));
+                geoImages.add (geoImage);
+            } while (c.moveToNext ());
+        }
+        return geoImages;
+    }
+
+    public int getGeoImageCount () {
+        String countQuery = "SELECT  * FROM " + TABLE_GEO_IMAGE;
+        SQLiteDatabase db = this.getReadableDatabase ();
+        Cursor cursor = db.rawQuery (countQuery, null);
+        int count = cursor.getCount ();
+        cursor.close ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get total geo images count : " + count, false);
+        return count;
+    }
+
+    public int updateGeoImage (GeoImage geoImage) {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Update geo image", false);
+        ContentValues values = new ContentValues ();
+        values.put (KEY_AUDITOR_ID, geoImage.getAuditor_id ());
+        values.put (KEY_AGENCY_ID, geoImage.getAgency_id ());
+        values.put (KEY_ATM_ID, geoImage.getAtm_unique_id ());
+        values.put (KEY_GEO_IMAGE, geoImage.getGeo_image_string ());
+        values.put (KEY_LATITUDE, geoImage.getLatitude ());
+        values.put (KEY_LONGITUDE, geoImage.getLongitude ());
+
+        // updating row
+        return db.update (TABLE_GEO_IMAGE, values, KEY_ID + " = ?", new String[] {String.valueOf (geoImage.getResponse_geo_image_id ())});
+    }
+
+    public void deleteGeoImage (String geo_image_string) {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete geo image where geo image string = " + geo_image_string, false);
+        db.delete (TABLE_GEO_IMAGE, KEY_GEO_IMAGE + " = ?",
+                new String[] {geo_image_string});
+    }
+
+    public void deleteAllGeoImages () {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete all geo images", false);
+        db.execSQL ("delete from " + TABLE_GEO_IMAGE);
+    }
+
 
     public void closeDB () {
         SQLiteDatabase db = this.getReadableDatabase ();
