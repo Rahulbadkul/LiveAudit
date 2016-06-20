@@ -96,6 +96,20 @@ public class LoginActivity extends AppCompatActivity {
         if (NetworkConnection.isNetworkAvailable (LoginActivity.this)) {
             Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_LOGIN, true);
             Utils.showProgressDialog (progressDialog, null);
+
+
+            //         new Login (this).execute (etUsername.getText ().toString (), etPassword.getText ().toString ());
+
+
+
+
+
+
+
+
+
+
+
             StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_LOGIN,
                     new com.android.volley.Response.Listener<String> () {
                         @Override
@@ -144,11 +158,17 @@ public class LoginActivity extends AppCompatActivity {
                     return params;
                 }
             };
+
+            strRequest1.setShouldCache (false);
+//            AppController.getInstance ().getRequestQueue ().getCache ().remove (AppConfigURL.URL_LOGIN);
+//            AppController.getInstance ().getRequestQueue ().getCache ().invalidate (AppConfigURL.URL_LOGIN, true);
             AppController.getInstance ().addToRequestQueue (strRequest1);
         } else {
             progressDialog.dismiss ();
             Utils.showSnackBar (coordinatorLayout, "Please check your network connection");
         }
+
+
     }
 
     private void setPreferences () {

@@ -246,7 +246,6 @@ public class AllQuestionListActivity extends AppCompatActivity {
         }
     }
 
-
     private void submitResponseToServer (int i, Response response) {
         if (NetworkConnection.isNetworkAvailable (AllQuestionListActivity.this)) {
             Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITRESPONSE, true);
@@ -296,7 +295,9 @@ public class AllQuestionListActivity extends AppCompatActivity {
                     return params;
                 }
             };
+            strRequest1.setShouldCache (false);
             AppController.getInstance ().addToRequestQueue (strRequest1);
+//            AppController.getInstance ().getRequestQueue ().getCache ().invalidate (AppConfigURL.URL_SUBMITRESPONSE, true);
         } else {
             if (i == Constants.total_questions - 1) {
                 pDialog.dismiss ();
@@ -342,7 +343,9 @@ public class AllQuestionListActivity extends AppCompatActivity {
                     return params;
                 }
             };
+            strRequest1.setShouldCache (false);
             AppController.getInstance ().addToRequestQueue (strRequest1);
+//            AppController.getInstance ().getRequestQueue ().getCache ().invalidate (AppConfigURL.URL_SUBMITRATING, true);
         } else
             db.createRating (rating);
     }
@@ -385,7 +388,9 @@ public class AllQuestionListActivity extends AppCompatActivity {
                     return params;
                 }
             };
+            strRequest1.setShouldCache (false);
             AppController.getInstance ().addToRequestQueue (strRequest1);
+//            AppController.getInstance ().getRequestQueue ().getCache ().invalidate (AppConfigURL.URL_SUBMITGEOIMAGE, true);
         } else
             db.createGeoImage (geoImage);
     }

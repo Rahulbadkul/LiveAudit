@@ -398,7 +398,9 @@ public class MainActivity extends AppCompatActivity {
                     return params;
                 }
             };
+            strRequest.setShouldCache (false);
             AppController.getInstance ().addToRequestQueue (strRequest);
+//            AppController.getInstance ().getRequestQueue ().getCache ().invalidate (AppConfigURL.URL_GETALLATMS, true);
         } else {
             progressBar.setVisibility (View.GONE);
             listViewAllAtm.setVisibility (View.VISIBLE);
@@ -423,13 +425,13 @@ public class MainActivity extends AppCompatActivity {
                     new Response.Listener<String> () {
                         @Override
                         public void onResponse (String response) {
+                            db.deleteAllQuestion ();
                             Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
                             if (response != null) {
                                 try {
                                     JSONObject jsonObj = new JSONObject (response);
                                     JSONArray jsonArray = jsonObj.getJSONArray (AppConfigTags.QUESTIONS);
                                     Constants.total_questions = jsonArray.length ();
-                                    db.deleteAllQuestion ();
                                     for (int i = 0; i < Constants.total_questions; i++) {
                                         JSONObject jsonObject = jsonArray.getJSONObject (i);
                                         Question question = new Question ();
@@ -453,7 +455,9 @@ public class MainActivity extends AppCompatActivity {
                             getQuestionListFromLocalDatabase ();
                         }
                     });
+            strRequest1.setShouldCache (false);
             AppController.getInstance ().addToRequestQueue (strRequest1);
+//            AppController.getInstance ().getRequestQueue ().getCache ().invalidate (AppConfigURL.URL_GETALLQUESTIONS, true);
         } else {
             getQuestionListFromLocalDatabase ();
         }
