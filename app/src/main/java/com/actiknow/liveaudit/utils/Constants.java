@@ -34,4 +34,10 @@ public class Constants {
     public static String atm_location_in_manual = "";
 
     public static boolean show_log = true;
+
+
+    public static String location_tagging_start_time = "08:00";
+    public static String location_tagging_end_time = "20:00";
+
+
 }

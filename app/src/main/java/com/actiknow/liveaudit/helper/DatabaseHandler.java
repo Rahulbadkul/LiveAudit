@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.actiknow.liveaudit.model.Atm;
+import com.actiknow.liveaudit.model.AuditorLocation;
 import com.actiknow.liveaudit.model.GeoImage;
 import com.actiknow.liveaudit.model.Question;
 import com.actiknow.liveaudit.model.Rating;
@@ -23,7 +24,7 @@ import java.util.Locale;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
     // Database Version
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 10;
 
     // Database Name
     private static final String DATABASE_NAME = "liveAudit";
@@ -34,6 +35,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String TABLE_RESPONSES = "responses";
     private static final String TABLE_RATINGS = "ratings";
     private static final String TABLE_GEO_IMAGE = "geo_image";
+    private static final String TABLE_AUDITOR_LOCATION = "geo_location";
 
     // Common column names
     private static final String KEY_ID = "id";
@@ -62,10 +64,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // RATING Table - column names
     private static final String KEY_RATING = "rating";
 
-    // RESPONSE_GEO_IMAGE Table - column names
+    // GEO_IMAGE Table - column names
     private static final String KEY_GEO_IMAGE = "geo_image";
     private static final String KEY_LATITUDE = "latitude";
     private static final String KEY_LONGITUDE = "longitude";
+
+    // AUDITOR_LOCATION Table - column names
+    private static final String KEY_TIME = "time";
+    private static final String KEY_AUDITOR_LOCATION_ID = "auditor_location_id";
 
     // Question table Create Statements
     private static final String CREATE_TABLE_QUESTIONS = "CREATE TABLE "
@@ -94,6 +100,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_ATM_ID + " TEXT," + KEY_AGENCY_ID + " INTEGER,"
             + KEY_AUDITOR_ID + " INTEGER," + KEY_GEO_IMAGE + " TEXT," + KEY_LATITUDE + " TEXT," + KEY_LONGITUDE + " TEXT," + KEY_CREATED_AT + " DATETIME" + ")";
 
+    // Auditor location table create statement
+    private static final String CREATE_TABLE_AUDITOR_LOCATION = "CREATE TABLE " + TABLE_AUDITOR_LOCATION
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_AUDITOR_ID + " INTEGER," +
+            KEY_LATITUDE + " TEXT," + KEY_LONGITUDE + " TEXT," + KEY_TIME + " TEXT," + KEY_CREATED_AT + " DATETIME" + ")";
+
     public DatabaseHandler (Context context) {
         super (context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -105,6 +116,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL (CREATE_TABLE_RESPONSE);
         db.execSQL (CREATE_TABLE_RATING);
         db.execSQL (CREATE_TABLE_GEO_IMAGE);
+        db.execSQL (CREATE_TABLE_AUDITOR_LOCATION);
     }
 
     @Override
@@ -114,6 +126,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL ("DROP TABLE IF EXISTS " + TABLE_RESPONSES);
         db.execSQL ("DROP TABLE IF EXISTS " + TABLE_RATINGS);
         db.execSQL ("DROP TABLE IF EXISTS " + TABLE_GEO_IMAGE);
+        db.execSQL ("DROP TABLE IF EXISTS " + TABLE_AUDITOR_LOCATION);
         onCreate (db);
     }
 
@@ -562,6 +575,92 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase ();
         Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete all geo images", false);
         db.execSQL ("delete from " + TABLE_GEO_IMAGE);
+    }
+
+
+    // ------------------------ "auditor location" table methods ----------------//
+
+    public long createAuditorLocation (AuditorLocation auditorLocation) {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Creating auditorlocation", false);
+        ContentValues values = new ContentValues ();
+        values.put (KEY_AUDITOR_ID, auditorLocation.getAuditor_id ());
+        values.put (KEY_LATITUDE, auditorLocation.getLatitude ());
+        values.put (KEY_LONGITUDE, auditorLocation.getLongitude ());
+        values.put (KEY_TIME, auditorLocation.getTime ());
+        values.put (KEY_CREATED_AT, getDateTime ());
+        long auditor_location_id = db.insert (TABLE_AUDITOR_LOCATION, null, values);
+        return auditor_location_id;
+    }
+
+    public AuditorLocation getauditorLocation (long auditor_location_id) {
+        SQLiteDatabase db = this.getReadableDatabase ();
+        String selectQuery = "SELECT  * FROM " + TABLE_AUDITOR_LOCATION + " WHERE " + KEY_ID + " = " + auditor_location_id;
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get auditor location where ID = " + auditor_location_id, false);
+        Cursor c = db.rawQuery (selectQuery, null);
+        if (c != null)
+            c.moveToFirst ();
+        AuditorLocation auditorLocation = new AuditorLocation ();
+        auditorLocation.setAuditor_id (c.getInt (c.getColumnIndex (KEY_AUDITOR_ID)));
+        auditorLocation.setTime (c.getString (c.getColumnIndex (KEY_TIME)));
+        auditorLocation.setLatitude (c.getString (c.getColumnIndex (KEY_LATITUDE)));
+        auditorLocation.setLongitude (c.getString (c.getColumnIndex (KEY_LONGITUDE)));
+        return auditorLocation;
+    }
+
+    public List<AuditorLocation> getAllAuditorLocation () {
+        List<AuditorLocation> auditorLocations = new ArrayList<AuditorLocation> ();
+        String selectQuery = "SELECT  * FROM " + TABLE_AUDITOR_LOCATION;
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get all Auditor Locations", false);
+        SQLiteDatabase db = this.getReadableDatabase ();
+        Cursor c = db.rawQuery (selectQuery, null);
+        // looping through all rows and adding to list
+        if (c.moveToFirst ()) {
+            do {
+                AuditorLocation auditorLocation = new AuditorLocation ();
+                auditorLocation.setAuditor_id (c.getInt (c.getColumnIndex (KEY_AUDITOR_ID)));
+                auditorLocation.setTime (c.getString (c.getColumnIndex (KEY_TIME)));
+                auditorLocation.setLatitude (c.getString (c.getColumnIndex (KEY_LATITUDE)));
+                auditorLocation.setLongitude (c.getString (c.getColumnIndex (KEY_LONGITUDE)));
+                auditorLocations.add (auditorLocation);
+            } while (c.moveToNext ());
+        }
+        return auditorLocations;
+    }
+
+    public int getAuditorLocationCount () {
+        String countQuery = "SELECT  * FROM " + TABLE_AUDITOR_LOCATION;
+        SQLiteDatabase db = this.getReadableDatabase ();
+        Cursor cursor = db.rawQuery (countQuery, null);
+        int count = cursor.getCount ();
+        cursor.close ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get total auditor locations count : " + count, false);
+        return count;
+    }
+
+    public int updateAuditorLocation (AuditorLocation auditorLocation) {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Update auditor location", false);
+        ContentValues values = new ContentValues ();
+        values.put (KEY_AUDITOR_ID, auditorLocation.getAuditor_id ());
+        values.put (KEY_GEO_IMAGE, auditorLocation.getTime ());
+        values.put (KEY_LATITUDE, auditorLocation.getLatitude ());
+        values.put (KEY_LONGITUDE, auditorLocation.getLongitude ());
+        // updating row
+        return db.update (TABLE_AUDITOR_LOCATION, values, KEY_ID + " = ?", new String[] {String.valueOf (auditorLocation.getAuditor_location_id ())});
+    }
+
+    public void deleteAuditorLocation (String time) {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete auditor location where time = " + time, false);
+        db.delete (TABLE_AUDITOR_LOCATION, KEY_TIME + " = ?",
+                new String[] {time});
+    }
+
+    public void deleteAllAuditorLocation () {
+        SQLiteDatabase db = this.getWritableDatabase ();
+        Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Delete all auditor locations", false);
+        db.execSQL ("delete from " + TABLE_AUDITOR_LOCATION);
     }
 
 

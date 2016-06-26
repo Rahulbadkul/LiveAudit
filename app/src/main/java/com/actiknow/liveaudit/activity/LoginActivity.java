@@ -3,6 +3,9 @@ package com.actiknow.liveaudit.activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DimenRes;
+import android.support.annotation.IntegerRes;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -13,7 +16,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.actiknow.liveaudit.R;
-import com.actiknow.liveaudit.app.AppController;
 import com.actiknow.liveaudit.utils.AppConfigTags;
 import com.actiknow.liveaudit.utils.AppConfigURL;
 import com.actiknow.liveaudit.utils.Constants;
@@ -24,6 +26,7 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.dd.morphingbutton.MorphingButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,6 +41,7 @@ public class LoginActivity extends AppCompatActivity {
     Button btLogin;
     ProgressDialog progressDialog;
     CoordinatorLayout coordinatorLayout;
+//    MorphingButton btLogin;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -159,10 +163,9 @@ public class LoginActivity extends AppCompatActivity {
                 }
             };
 
-            strRequest1.setShouldCache (false);
-//            AppController.getInstance ().getRequestQueue ().getCache ().remove (AppConfigURL.URL_LOGIN);
-//            AppController.getInstance ().getRequestQueue ().getCache ().invalidate (AppConfigURL.URL_LOGIN, true);
-            AppController.getInstance ().addToRequestQueue (strRequest1);
+            Utils.sendRequest (strRequest1);
+
+
         } else {
             progressDialog.dismiss ();
             Utils.showSnackBar (coordinatorLayout, "Please check your network connection");
@@ -182,5 +185,41 @@ public class LoginActivity extends AppCompatActivity {
     public void onBackPressed () {
         finish ();
         overridePendingTransition (R.anim.slide_in_left, R.anim.slide_out_right);
+    }
+
+    public int dimen (@DimenRes int resId) {
+        return (int) getResources ().getDimension (resId);
+    }
+
+    public int color (@ColorRes int resId) {
+        return getResources ().getColor (resId);
+    }
+
+    public int integer (@IntegerRes int resId) {
+        return getResources ().getInteger (resId);
+    }
+
+    private void morphToSuccess (final MorphingButton btnMorph) {
+        MorphingButton.Params circle = MorphingButton.Params.create ()
+                .duration (1000)
+                .cornerRadius (dimen (R.dimen.bt))
+                .width (dimen (R.dimen.bt))
+                .height (dimen (R.dimen.bt))
+                .color (color (R.color.mb_green))
+                .colorPressed (color (R.color.mb_green_dark))
+                .icon (R.drawable.ic_ok);
+        btnMorph.morph (circle);
+    }
+
+    private void morphToFailure (final MorphingButton btnMorph, int duration) {
+        MorphingButton.Params circle = MorphingButton.Params.create ()
+                .duration (duration)
+                .cornerRadius (dimen (R.dimen.bt))
+                .width (dimen (R.dimen.bt))
+                .height (dimen (R.dimen.bt))
+                .color (color (R.color.mb_red))
+                .colorPressed (color (R.color.mb_red_dark))
+                .icon (R.drawable.ic_cancel);
+        btnMorph.morph (circle);
     }
 }

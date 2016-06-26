@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.LoginActivity">
+    tools:context=".activity.LoginActivity"
+>
     <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
@@ -98,8 +99,26 @@
             android:padding="15dp"/>
 
 -->
-
-
+        <!--
+                <com.dd.CircularProgressButton
+                    android:id="@+id/btLogin"
+                    android:layout_width="196dp"
+                    android:layout_height="64dp"
+                    android:layout_marginTop="16dp"
+                    android:textColor="@color/text_color_white"
+                    android:textSize="18sp"
+                    android:layout_alignEnd="@+id/input_layout_password"
+                    android:layout_alignLeft="@+id/input_layout_password"
+                    android:layout_alignRight="@+id/input_layout_password"
+                    android:layout_alignStart="@+id/input_layout_password"
+                    android:layout_below="@+id/input_layout_password"
+                    app:cpb_iconComplete="@drawable/ic_ok"
+                    app:cpb_iconError="@drawable/ic_cancel"
+                    app:cpb_textIdle="@string/Upload"/>
+        -->
+        <!--
+                <com.dd.morphingbutton.MorphingButton
+            -->
         <Button
             android:id="@+id/btLogin"
             android:layout_width="wrap_content"
@@ -109,7 +128,8 @@
             android:layout_alignRight="@+id/input_layout_password"
             android:layout_alignStart="@+id/input_layout_password"
             android:layout_below="@+id/input_layout_password"
-            android:background="@drawable/bg_button"
+
+            android:background="@color/colorPrimary"
             android:text="Login"
             android:textColor="@color/text_color_white"
             android:textSize="20sp"

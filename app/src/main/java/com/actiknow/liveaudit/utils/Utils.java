@@ -24,7 +24,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actiknow.liveaudit.R;
+import com.actiknow.liveaudit.app.AppController;
 import com.actiknow.liveaudit.model.Response;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.toolbox.StringRequest;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
@@ -208,6 +211,14 @@ public class Utils {
         Utils.showLog (Log.DEBUG, AppConfigTags.RATING, "" + rating, true);
         tvRatingNumber.setText (String.valueOf (rating / 10));
         sbRating.setProgress (rating);
+    }
+
+    public static void sendRequest (StringRequest strRequest) {
+        strRequest.setShouldCache (false);
+        AppController.getInstance ().addToRequestQueue (strRequest);
+        strRequest.setRetryPolicy (new DefaultRetryPolicy (5000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
     }
 
 

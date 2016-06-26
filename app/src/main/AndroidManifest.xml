@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
 
     <application
         android:name="com.actiknow.liveaudit.app.AppController"
@@ -34,6 +36,19 @@
         <activity android:name=".activity.AllQuestionListActivity"
                   android:screenOrientation="portrait">
         </activity>
+
+        <service
+            android:name=".service.LocationService"
+            android:enabled="true">
+        </service>
+
+        <receiver android:name=".receiver.BootCompletedIntentReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </receiver>
 
         <meta-data
             android:name="com.google.android.gms.version"

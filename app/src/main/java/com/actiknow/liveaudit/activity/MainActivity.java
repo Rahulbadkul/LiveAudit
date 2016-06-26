@@ -37,6 +37,7 @@ import com.actiknow.liveaudit.app.AppController;
 import com.actiknow.liveaudit.helper.DatabaseHandler;
 import com.actiknow.liveaudit.model.Atm;
 import com.actiknow.liveaudit.model.Question;
+import com.actiknow.liveaudit.service.LocationService;
 import com.actiknow.liveaudit.utils.AppConfigTags;
 import com.actiknow.liveaudit.utils.AppConfigURL;
 import com.actiknow.liveaudit.utils.Constants;
@@ -45,6 +46,7 @@ import com.actiknow.liveaudit.utils.LoginDetailsPref;
 import com.actiknow.liveaudit.utils.NetworkConnection;
 import com.actiknow.liveaudit.utils.Utils;
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -91,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
         initListener ();
         initData ();
         getLatLong ();
+        initService ();
         setUpNavigationDrawer ();
 //        initLocationSettings ();
 
@@ -106,6 +109,8 @@ public class MainActivity extends AppCompatActivity {
                 uploadStoredRatingToServer ();
             if (db.getGeoImageCount () > 0)
                 uploadStoredGeoImageToServer ();
+            if (db.getAuditorLocationCount () > 0)
+                uploadStoredAuditorLocationToServer ();
         }
         db.closeDB ();
     }
@@ -118,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
         client = new GoogleApiClient.Builder (this).addApi (AppIndex.API).build ();
         dialogSplash = new Dialog (this, R.style.full_screen);
     }
+
 
     private void initListener () {
         btEnterManually.setOnClickListener (new View.OnClickListener () {
@@ -142,6 +148,13 @@ public class MainActivity extends AppCompatActivity {
         Constants.auditor_name = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.AUDITOR_NAME);
         Constants.username = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.USERNAME);
         Constants.auditor_id_main = loginDetailsPref.getIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_ID);
+    }
+
+    private void initService () {
+        if (Constants.auditor_id_main != 0) {
+            Intent mServiceIntent = new Intent (this, LocationService.class);
+            startService (mServiceIntent);
+        }
     }
 
     private void initView () {
@@ -398,9 +411,8 @@ public class MainActivity extends AppCompatActivity {
                     return params;
                 }
             };
-            strRequest.setShouldCache (false);
-            AppController.getInstance ().addToRequestQueue (strRequest);
-//            AppController.getInstance ().getRequestQueue ().getCache ().invalidate (AppConfigURL.URL_GETALLATMS, true);
+            Utils.sendRequest (strRequest);
+
         } else {
             progressBar.setVisibility (View.GONE);
             listViewAllAtm.setVisibility (View.VISIBLE);
@@ -457,6 +469,9 @@ public class MainActivity extends AppCompatActivity {
                     });
             strRequest1.setShouldCache (false);
             AppController.getInstance ().addToRequestQueue (strRequest1);
+            strRequest1.setRetryPolicy (new DefaultRetryPolicy (5000,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 //            AppController.getInstance ().getRequestQueue ().getCache ().invalidate (AppConfigURL.URL_GETALLQUESTIONS, true);
         } else {
             getQuestionListFromLocalDatabase ();
@@ -588,7 +603,7 @@ public class MainActivity extends AppCompatActivity {
                         return params;
                     }
                 };
-                AppController.getInstance ().addToRequestQueue (strRequest3);
+                Utils.sendRequest (strRequest3);
             } else {
                 Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection", true);
             }
@@ -640,7 +655,9 @@ public class MainActivity extends AppCompatActivity {
                         return params;
                     }
                 };
-                AppController.getInstance ().addToRequestQueue (strRequest4);
+
+                Utils.sendRequest (strRequest4);
+
             } else {
                 Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection", true);
             }
@@ -694,7 +711,62 @@ public class MainActivity extends AppCompatActivity {
                         return params;
                     }
                 };
-                AppController.getInstance ().addToRequestQueue (strRequest2);
+                Utils.sendRequest (strRequest2);
+            } else {
+                Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection", true);
+            }
+        }
+    }
+
+    private void uploadStoredAuditorLocationToServer () {
+        Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Getting all the auditor_location from local database", true);
+        List<com.actiknow.liveaudit.model.AuditorLocation> allAuditorLocations = db.getAllAuditorLocation ();
+        for (com.actiknow.liveaudit.model.AuditorLocation auditorLocation : allAuditorLocations) {
+            final com.actiknow.liveaudit.model.AuditorLocation finalAuditorLocation = auditorLocation;
+            if (NetworkConnection.isNetworkAvailable (this)) {
+                Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITAUDITORLOCATION, true);
+                StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITAUDITORLOCATION,
+                        new com.android.volley.Response.Listener<String> () {
+                            @Override
+                            public void onResponse (String response) {
+                                Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
+                                if (response != null) {
+                                    try {
+                                        JSONObject jsonObj = new JSONObject (response);
+                                        int status = jsonObj.getInt (AppConfigTags.STATUS);
+                                        switch (status) {
+                                            case 0://error
+                                                break;
+                                            case 1://success
+                                                db.deleteAuditorLocation (finalAuditorLocation.getTime ());
+                                                break;
+                                        }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace ();
+                                    }
+                                } else {
+                                    Utils.showLog (Log.WARN, AppConfigTags.SERVER_RESPONSE, AppConfigTags.DIDNT_RECEIVE_ANY_DATA_FROM_SERVER, true);
+                                }
+                            }
+                        },
+                        new com.android.volley.Response.ErrorListener () {
+                            @Override
+                            public void onErrorResponse (VolleyError error) {
+                                Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
+                            }
+                        }) {
+                    @Override
+                    protected Map<String, String> getParams () throws AuthFailureError {
+                        Map<String, String> params = new Hashtable<String, String> ();
+                        params.put (AppConfigTags.AUDITOR_ID, String.valueOf (finalAuditorLocation.getAuditor_id ()));
+                        params.put (AppConfigTags.LATITUDE, finalAuditorLocation.getLatitude ());
+                        params.put (AppConfigTags.LONGITUDE, finalAuditorLocation.getLongitude ());
+                        params.put ("time", finalAuditorLocation.getTime ());
+                        Utils.showLog (Log.INFO, AppConfigTags.PARAMETERS_SENT_TO_THE_SERVER, "" + params, true);
+                        return params;
+                    }
+                };
+                Utils.sendRequest (strRequest1);
             } else {
                 Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection", true);
             }

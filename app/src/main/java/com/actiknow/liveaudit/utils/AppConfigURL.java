@@ -8,6 +8,7 @@ public class AppConfigURL {
 //    public static String URL_SUBMITRESPONSE = "https://atm-ncr-cammy92.c9users.io/submitresponse.php";
 //    public static String URL_SUBMITRATING = "https://atm-ncr-cammy92.c9users.io/submitrating.php";
 //    public static String URL_SUBMITGEOIMAGE = "https://atm-ncr-cammy92.c9users.io/submitgeoimage.php";
+//    public static String URL_SUBMITAUDITORLOCATION = "https://atm-ncr-cammy92.c9users.io/submitauditorlocation.php";
 
     // normal urls
     public static String URL_LOGIN = "http://www.hindustansupply.com/auditor_management/index.php/auditor/login";
@@ -16,7 +17,7 @@ public class AppConfigURL {
     public static String URL_SUBMITRESPONSE = "http://www.hindustansupply.com/auditor_management/index.php/auditor/createReports";
     public static String URL_SUBMITRATING = "http://www.hindustansupply.com/auditor_management/index.php/auditor/create_rating";
     public static String URL_SUBMITGEOIMAGE = "http://www.hindustansupply.com/auditor_management/index.php/auditor/geoImage";
-
+    public static String URL_SUBMITAUDITORLOCATION = "http://www.hindustansupply.com/auditor_management/index.php/auditor/updateLocations";
 
     //c9 ramesh url
 //    public static String URL_LOGIN = "https://atm-ncr-cammy92.c9users.io/auditor_management/index.php/auditor/login";

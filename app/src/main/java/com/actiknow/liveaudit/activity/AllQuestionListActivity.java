@@ -19,7 +19,6 @@ import android.widget.TextView;
 
 import com.actiknow.liveaudit.R;
 import com.actiknow.liveaudit.adapter.AllQuestionsAdapter;
-import com.actiknow.liveaudit.app.AppController;
 import com.actiknow.liveaudit.helper.DatabaseHandler;
 import com.actiknow.liveaudit.model.GeoImage;
 import com.actiknow.liveaudit.model.Question;
@@ -124,42 +123,46 @@ public class AllQuestionListActivity extends AppCompatActivity {
             public void onClick (View v) {
                 pDialog = new ProgressDialog (AllQuestionListActivity.this);
                 Utils.showProgressDialog (pDialog, null);
+//                JSONArray jsonArray = new JSONArray ();
 
-
+//                try {
                 for (int i = 0; i < Constants.total_questions; i++) {
                     final Response response;
                     response = Constants.responseList.get (i);
                     submitResponseToServer (i, response);
-                    Log.d (AppConfigTags.ATM_UNIQUE_ID, response.getResponse_atm_unique_id ());
-                    Log.d (AppConfigTags.ATM_AGENCY_ID, String.valueOf (response.getResponse_agency_id ()));
-                    Log.d (AppConfigTags.AUDITOR_ID, String.valueOf (response.getResponse_auditor_id ()));
-                    Log.d (AppConfigTags.QUESTION_ID, String.valueOf (response.getResponse_question_id ()));
-                    Log.d (AppConfigTags.QUESTION, response.getResponse_question ());
-                    Log.d (AppConfigTags.SWITCH_FLAG, String.valueOf (response.getResponse_switch_flag ()));
-                    Log.d (AppConfigTags.COMMENT, response.getResponse_comment ());
-                    Log.d (AppConfigTags.IMAGE1, response.getResponse_image1 ());
-                    Log.d (AppConfigTags.IMAGE2, response.getResponse_image2 ());
-                }
+//                        JSONObject jsonObject = new JSONObject ();
+//                        jsonObject.put (AppConfigTags.ATM_UNIQUE_ID, response.getResponse_atm_unique_id ());
+//                        jsonObject.put (AppConfigTags.ATM_AGENCY_ID, String.valueOf (response.getResponse_agency_id ()));
+//                        jsonObject.put (AppConfigTags.AUDITOR_ID, String.valueOf (response.getResponse_auditor_id ()));
+//                        jsonObject.put (AppConfigTags.QUESTION_ID, String.valueOf (response.getResponse_question_id ()));
+//                        jsonObject.put (AppConfigTags.QUESTION, response.getResponse_question ());
+//                        jsonObject.put (AppConfigTags.SWITCH_FLAG, String.valueOf (response.getResponse_switch_flag ()));
+//                        jsonObject.put (AppConfigTags.COMMENT, response.getResponse_comment ());
+//                        jsonObject.put (AppConfigTags.IMAGE1, response.getResponse_image1 ());
+//                        jsonObject.put (AppConfigTags.IMAGE2, response.getResponse_image2 ());
+//                        jsonArray.put (jsonObject);
 
+//                        Log.d (AppConfigTags.ATM_UNIQUE_ID, response.getResponse_atm_unique_id ());
+//                        Log.d (AppConfigTags.ATM_AGENCY_ID, String.valueOf (response.getResponse_agency_id ()));
+//                        Log.d (AppConfigTags.AUDITOR_ID, String.valueOf (response.getResponse_auditor_id ()));
+//                        Log.d (AppConfigTags.QUESTION_ID, String.valueOf (response.getResponse_question_id ()));
+//                        Log.d (AppConfigTags.QUESTION, response.getResponse_question ());
+//                        Log.d (AppConfigTags.SWITCH_FLAG, String.valueOf (response.getResponse_switch_flag ()));
+//                        Log.d (AppConfigTags.COMMENT, response.getResponse_comment ());
+//                        Log.d (AppConfigTags.IMAGE1, response.getResponse_image1 ());
+//                        Log.d (AppConfigTags.IMAGE2, response.getResponse_image2 ());
+                }
+//                } catch (JSONException e) {
+//                    e.printStackTrace ();
+//                }
+
+//                Log.d ("json array of response", ""+ jsonArray);
 
                 Constants.rating.setAtm_unique_id (Constants.atm_unique_id);
                 Constants.rating.setAuditor_id (Constants.auditor_id_main);
                 Constants.rating.setRating (sbRating.getProgress () / 10);
                 submitRatingToServer (Constants.rating);
-
-                Log.d (AppConfigTags.ATM_UNIQUE_ID, Constants.rating.getAtm_unique_id ());
-                Log.d (AppConfigTags.AUDITOR_ID, String.valueOf (Constants.rating.getAuditor_id ()));
-                Log.d (AppConfigTags.RATING, String.valueOf (Constants.rating.getRating ()));
-
                 submitGeoImageToServer (Constants.geoImage);
-
-                Log.d (AppConfigTags.ATM_UNIQUE_ID, Constants.geoImage.getAtm_unique_id ());
-                Log.d (AppConfigTags.AUDITOR_ID, String.valueOf (Constants.geoImage.getAuditor_id ()));
-                Log.d (AppConfigTags.ATM_AGENCY_ID, String.valueOf (Constants.geoImage.getAgency_id ()));
-                Log.d (AppConfigTags.GEO_IMAGE, Constants.geoImage.getGeo_image_string ());
-                Log.d (AppConfigTags.LATITUDE, Constants.geoImage.getLatitude ());
-                Log.d (AppConfigTags.LONGITUDE, Constants.geoImage.getLongitude ());
-
             }
         });
     }
@@ -275,8 +278,8 @@ public class AllQuestionListActivity extends AppCompatActivity {
                                 pDialog.dismiss ();
                                 Utils.showOkDialog (AllQuestionListActivity.this, "Seems like there is an issue with the internet connection," +
                                         " your responses have been saved and will be uploaded once you are online", true);
-                                db.createResponse (finalResponse);
                             }
+                            db.createResponse (finalResponse);
                         }
                     }) {
                 @Override
@@ -295,9 +298,7 @@ public class AllQuestionListActivity extends AppCompatActivity {
                     return params;
                 }
             };
-            strRequest1.setShouldCache (false);
-            AppController.getInstance ().addToRequestQueue (strRequest1);
-//            AppController.getInstance ().getRequestQueue ().getCache ().invalidate (AppConfigURL.URL_SUBMITRESPONSE, true);
+            Utils.sendRequest (strRequest1);
         } else {
             if (i == Constants.total_questions - 1) {
                 pDialog.dismiss ();
@@ -331,6 +332,7 @@ public class AllQuestionListActivity extends AppCompatActivity {
                         @Override
                         public void onErrorResponse (VolleyError error) {
                             Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
+                            db.createRating (rating);
                         }
                     }) {
                 @Override
@@ -343,9 +345,7 @@ public class AllQuestionListActivity extends AppCompatActivity {
                     return params;
                 }
             };
-            strRequest1.setShouldCache (false);
-            AppController.getInstance ().addToRequestQueue (strRequest1);
-//            AppController.getInstance ().getRequestQueue ().getCache ().invalidate (AppConfigURL.URL_SUBMITRATING, true);
+            Utils.sendRequest (strRequest1);
         } else
             db.createRating (rating);
     }
@@ -373,6 +373,7 @@ public class AllQuestionListActivity extends AppCompatActivity {
                         @Override
                         public void onErrorResponse (VolleyError error) {
                             Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
+                            db.createGeoImage (geoImage);
                         }
                     }) {
                 @Override
@@ -388,9 +389,7 @@ public class AllQuestionListActivity extends AppCompatActivity {
                     return params;
                 }
             };
-            strRequest1.setShouldCache (false);
-            AppController.getInstance ().addToRequestQueue (strRequest1);
-//            AppController.getInstance ().getRequestQueue ().getCache ().invalidate (AppConfigURL.URL_SUBMITGEOIMAGE, true);
+            Utils.sendRequest (strRequest1);
         } else
             db.createGeoImage (geoImage);
     }

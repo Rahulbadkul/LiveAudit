@@ -1,6 +1,7 @@
 package com.actiknow.liveaudit.app;
 
 import android.app.Application;
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.actiknow.liveaudit.utils.LruBitmapCache;
@@ -12,20 +13,24 @@ import com.android.volley.toolbox.Volley;
 public class AppController extends Application {
 
 	public static final String TAG = AppController.class.getSimpleName();
-
+	private static AppController mInstance;
+	private static Context context;
 	private RequestQueue mRequestQueue;
 	private ImageLoader mImageLoader;
 
-	private static AppController mInstance;
+	public static synchronized AppController getInstance () {
+		return mInstance;
+	}
+
+	public static Context getAppContext () {
+		return AppController.context;
+	}
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		mInstance = this;
-	}
-
-	public static synchronized AppController getInstance() {
-		return mInstance;
+		AppController.context = getApplicationContext ();
 	}
 
 	public RequestQueue getRequestQueue() {
@@ -61,4 +66,5 @@ public class AppController extends Application {
 			mRequestQueue.cancelAll(tag);
 		}
 	}
+
 }
