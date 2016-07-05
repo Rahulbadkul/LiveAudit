@@ -6,7 +6,6 @@ package com.actiknow.liveaudit.utils;
 public class AppConfigTags {
     public static final String ATMS = "atms";
     public static final String QUESTIONS = "questions";
-    public static final String RESPONSES = "responses";
     public static final String URL = "URL";
     public static final String SERVER_RESPONSE = "SERVER RESPONSE";
     public static final String DIDNT_RECEIVE_ANY_DATA_FROM_SERVER = "DIDNT RECEIVE ANY DATA FROM SERVER";
@@ -22,11 +21,11 @@ public class AppConfigTags {
     public static final String ATM_PINCODE = "atm_pincode";
 
     public static final String STATUS = "status";
-    public static final String PAGE_NUMBER = "page_number";
 
     public static final String QUESTION = "question";
     public static final String QUESTION_ID = "question_id";
 
+    public static final String ISSUES = "issues";
     public static final String AUDITOR_ID = "auditor_id";
     public static final String SWITCH_FLAG = "switch_flag";
     public static final String COMMENT = "comment";
@@ -37,6 +36,8 @@ public class AppConfigTags {
     public static final String GEO_IMAGE = "geo_image";
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
+
+    public static final String SIGN_IMAGE = "sign_image";
 
     public static final String LOGIN = "login";
     public static final String EMAIL = "email";

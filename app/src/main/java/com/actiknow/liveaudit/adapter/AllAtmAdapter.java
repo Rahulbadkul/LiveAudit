@@ -82,13 +82,16 @@ public class AllAtmAdapter extends BaseAdapter {
 
 			@Override
 			public void onClick (View arg0) {
-				Constants.atm_unique_id = atm.getAtm_unique_id ().toUpperCase ();
-				Constants.atm_agency_id = atm.getAtm_agency_id ();
-				Constants.geoImage.setAgency_id (atm.getAtm_agency_id ());
-				Constants.geoImage.setAtm_unique_id (atm.getAtm_unique_id ().toUpperCase ());
-				Constants.geoImage.setAuditor_id (Constants.auditor_id_main);
-				Constants.geoImage.setLatitude (String.valueOf (Constants.latitude));
-				Constants.geoImage.setLongitude (String.valueOf (Constants.longitude));
+//				Constants.atm_unique_id = atm.getAtm_unique_id ().toUpperCase ();
+//				Constants.atm_agency_id = atm.getAtm_agency_id ();
+
+				Constants.report.setAtm_id (atm.getAtm_id ());
+				Constants.report.setAuditor_id (Constants.auditor_id_main);
+				Constants.report.setAgency_id (atm.getAtm_agency_id ());
+				Constants.report.setAtm_unique_id (atm.getAtm_unique_id ().toUpperCase ());
+				Constants.report.setLatitude (String.valueOf (Constants.latitude));
+				Constants.report.setLongitude (String.valueOf (Constants.longitude));
+
 
 				AlertDialog.Builder builder = new AlertDialog.Builder (activity);
 				builder.setMessage ("Please take an image of the ATM Machine\nNote : This image will be Geotagged")

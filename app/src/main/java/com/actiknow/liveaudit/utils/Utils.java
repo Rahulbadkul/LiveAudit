@@ -205,18 +205,19 @@ public class Utils {
         for (int i = 0; i < Constants.questionsList.size (); i++) {
             Response response;
             response = Constants.responseList.get (i);
-            count = count + response.getResponse_switch_flag ();
+            count = count + response.getSwitch_flag ();
         }
-        int rating = ((count) * 100) / Constants.total_questions;
+        int rating = ((count) * 100) / Constants.questionsList.size ();
         Utils.showLog (Log.DEBUG, AppConfigTags.RATING, "" + rating, true);
-        tvRatingNumber.setText (String.valueOf (rating / 10));
+//        tvRatingNumber.setText (String.valueOf (rating / 10));
+        tvRatingNumber.setText (String.valueOf (rating) + "%");
         sbRating.setProgress (rating);
     }
 
     public static void sendRequest (StringRequest strRequest) {
         strRequest.setShouldCache (false);
         AppController.getInstance ().addToRequestQueue (strRequest);
-        strRequest.setRetryPolicy (new DefaultRetryPolicy (5000,
+        strRequest.setRetryPolicy (new DefaultRetryPolicy (30000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
     }

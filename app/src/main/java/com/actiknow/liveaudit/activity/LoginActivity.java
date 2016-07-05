@@ -26,7 +26,6 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.dd.morphingbutton.MorphingButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -199,27 +198,4 @@ public class LoginActivity extends AppCompatActivity {
         return getResources ().getInteger (resId);
     }
 
-    private void morphToSuccess (final MorphingButton btnMorph) {
-        MorphingButton.Params circle = MorphingButton.Params.create ()
-                .duration (1000)
-                .cornerRadius (dimen (R.dimen.bt))
-                .width (dimen (R.dimen.bt))
-                .height (dimen (R.dimen.bt))
-                .color (color (R.color.mb_green))
-                .colorPressed (color (R.color.mb_green_dark))
-                .icon (R.drawable.ic_ok);
-        btnMorph.morph (circle);
-    }
-
-    private void morphToFailure (final MorphingButton btnMorph, int duration) {
-        MorphingButton.Params circle = MorphingButton.Params.create ()
-                .duration (duration)
-                .cornerRadius (dimen (R.dimen.bt))
-                .width (dimen (R.dimen.bt))
-                .height (dimen (R.dimen.bt))
-                .color (color (R.color.mb_red))
-                .colorPressed (color (R.color.mb_red_dark))
-                .icon (R.drawable.ic_cancel);
-        btnMorph.morph (circle);
-    }
 }

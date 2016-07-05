@@ -80,32 +80,37 @@ public class AllQuestionsAdapter extends BaseAdapter {
 
         holder.switchYesNo.setTextOn ("Yes");
         holder.switchYesNo.setTextOff ("No");
-
         final Question question = questionList.get (position);
 
-        for (int i = 0; i < Constants.questionsList.size (); i++) {
-            final Response response;
-            response = Constants.responseList.get (i);
-            if (question.getQuestion_id () == response.getResponse_question_id ()) {
-                if (response.getResponse_switch_flag () == 0)
-                    holder.switchYesNo.setChecked (false);
-                else
-                    holder.switchYesNo.setChecked (true);
+        try {
 
-                if (response.getResponse_image1 ().length () != 0) {
-                    holder.tvImage.setTextColor (Color.parseColor ("#311b92"));
-                    holder.tvImage.setCompoundDrawablesWithIntrinsicBounds (R.drawable.ic_camera_selected, 0, 0, 0);
-                }
-                if (response.getResponse_comment ().length () != 0) {
-                    if (i == 0 && (response.getResponse_comment ().length () == Constants.atm_location_in_manual.length ())) {
+            for (int i = 0; i < Constants.questionsList.size (); i++) {
+                final Response response;
+                response = Constants.responseList.get (i);
+                if (question.getQuestion_id () == response.getQuestion_id ()) {
+                    if (response.getSwitch_flag () == 0)
+                        holder.switchYesNo.setChecked (false);
+                    else
+                        holder.switchYesNo.setChecked (true);
 
-                    } else {
-                        holder.tvComments.setTextColor (Color.parseColor ("#311b92"));
-                        holder.tvComments.setCompoundDrawablesWithIntrinsicBounds (R.drawable.ic_comment_selected, 0, 0, 0);
+                    if (response.getImage1 ().length () != 0) {
+                        holder.tvImage.setTextColor (Color.parseColor ("#311b92"));
+                        holder.tvImage.setCompoundDrawablesWithIntrinsicBounds (R.drawable.ic_camera_selected, 0, 0, 0);
+                    }
+                    if (response.getComment ().length () != 0) {
+                        if (i == 0 && (response.getComment ().length () == Constants.atm_location_in_manual.length ())) {
+
+                        } else {
+                            holder.tvComments.setTextColor (Color.parseColor ("#311b92"));
+                            holder.tvComments.setCompoundDrawablesWithIntrinsicBounds (R.drawable.ic_comment_selected, 0, 0, 0);
+                        }
                     }
                 }
             }
+        } catch (IndexOutOfBoundsException e) {
+            Utils.showLog (Log.ERROR, "Exception found", "" + e.getMessage (), true);
         }
+
 
 
 //        Utils.setTypefaceToAllViews (activity, holder.tvQuestionText);
@@ -114,27 +119,30 @@ public class AllQuestionsAdapter extends BaseAdapter {
         holder.switchYesNo.setOnCheckedChangeListener (new CompoundButton.OnCheckedChangeListener () {
             @Override
             public void onCheckedChanged (CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    for (int i = 0; i < Constants.questionsList.size (); i++) {
-                        final Response response;
-                        response = Constants.responseList.get (i);
-                        if (question.getQuestion_id () == response.getResponse_question_id ()) {
-                            response.setResponse_switch_flag (1);
+                try {
+                    if (isChecked) {
+                        for (int i = 0; i < Constants.questionsList.size (); i++) {
+                            final Response response;
+                            response = Constants.responseList.get (i);
+                            if (question.getQuestion_id () == response.getQuestion_id ()) {
+                                response.setSwitch_flag (1);
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < Constants.questionsList.size (); i++) {
+                            final Response response;
+                            response = Constants.responseList.get (i);
+                            if (question.getQuestion_id () == response.getQuestion_id ()) {
+                                response.setSwitch_flag (0);
+                            }
                         }
                     }
-                } else {
-                    for (int i = 0; i < Constants.questionsList.size (); i++) {
-                        final Response response;
-                        response = Constants.responseList.get (i);
-                        if (question.getQuestion_id () == response.getResponse_question_id ()) {
-                            response.setResponse_switch_flag (0);
-                        }
-                    }
+                    Utils.setSeekBar (AllQuestionListActivity.sbRating, AllQuestionListActivity.tvRatingNumber);
+                } catch (IndexOutOfBoundsException e) {
+                    Utils.showLog (Log.ERROR, "Exception found", "" + e.getMessage (), true);
                 }
-                Utils.setSeekBar (AllQuestionListActivity.sbRating, AllQuestionListActivity.tvRatingNumber);
             }
         });
-
 
         holder.tvImage.setOnClickListener (new View.OnClickListener () {
             @Override
@@ -165,13 +173,9 @@ public class AllQuestionsAdapter extends BaseAdapter {
                 if (mIntent.resolveActivity (activity.getPackageManager ()) != null)
                     activity.startActivityForResult (mIntent, question.getQuestion_id ());
 
-
                 holder.tvImage.setTextColor (Color.parseColor ("#311b92"));
                 holder.tvImage.setCompoundDrawablesWithIntrinsicBounds (R.drawable.ic_camera_selected, 0, 0, 0);
-
             }
-
-
         });
 
 
@@ -188,9 +192,9 @@ public class AllQuestionsAdapter extends BaseAdapter {
                 btEnterComment = (Button) dialogEnterComment.findViewById (R.id.btEnterComment);
                 etEnterComment = (EditText) dialogEnterComment.findViewById (R.id.etEnterComment);
                 if (position == 0)
-                    etEnterComment.setText (response.getResponse_comment ().replace (Constants.atm_location_in_manual, ""));
+                    etEnterComment.setText (response.getComment ().replace (Constants.atm_location_in_manual, ""));
                 else
-                    etEnterComment.setText (response.getResponse_comment ());
+                    etEnterComment.setText (response.getComment ());
 
                 Utils.setTypefaceToAllViews (activity, etEnterComment);
                 dialogEnterComment.getWindow ().setBackgroundDrawable (new ColorDrawable (android.graphics.Color.TRANSPARENT));
@@ -202,24 +206,22 @@ public class AllQuestionsAdapter extends BaseAdapter {
                             final Response response;
                             response = Constants.responseList.get (i);
                             //   etEnterComment.setText (response.getResponse_comment ());
-                            if (question.getQuestion_id () == response.getResponse_question_id ()) {
+                            if (question.getQuestion_id () == response.getQuestion_id ()) {
                                 if (position == 0 && Constants.atm_location_in_manual.length () != 0)
-                                    response.setResponse_comment (etEnterComment.getText ().toString () + " " + Constants.atm_location_in_manual);
+                                    response.setComment (etEnterComment.getText ().toString () + " " + Constants.atm_location_in_manual);
                                 else
-                                    response.setResponse_comment (etEnterComment.getText ().toString ());
+                                    response.setComment (etEnterComment.getText ().toString ());
                             }
                         }
                         dialogEnterComment.dismiss ();
                     }
                 });
-
                 holder.tvComments.setTextColor (Color.parseColor ("#311b92"));
                 holder.tvComments.setCompoundDrawablesWithIntrinsicBounds (R.drawable.ic_comment_selected, 0, 0, 0);
             }
         });
 
         holder.tvQuestionText.setText (question.getQuestion ());
-
         return convertView;
     }
 
