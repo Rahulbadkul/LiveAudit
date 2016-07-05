@@ -121,7 +121,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume () {
+
         super.onResume ();
+        if (Constants.auditor_id_main != 0) {
+            getAtmListFromServer ();
+            getQuestionListFromServer ();
+        }
+        //     recreate ();
         //    Constants.questionsList.clear ();
         //    if (Constants.auditor_id_main != 0) {
         //        getQuestionListFromServer ();
@@ -351,6 +357,7 @@ public class MainActivity extends AppCompatActivity {
                     new Response.Listener<String> () {
                         @Override
                         public void onResponse (String response) {
+                            atmList.clear ();
                             int is_data_received = 0;
                             int json_array_len = 0;
                             Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
