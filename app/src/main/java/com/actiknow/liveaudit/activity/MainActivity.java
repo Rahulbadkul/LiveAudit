@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
         Constants.auditor_name = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.AUDITOR_NAME);
         Constants.username = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.USERNAME);
         Constants.auditor_id_main = loginDetailsPref.getIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_ID);
+        Constants.auditor_agency_id = loginDetailsPref.getIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_AGENCY_ID);
     }
 
     private void initService () {
@@ -271,6 +272,7 @@ public class MainActivity extends AppCompatActivity {
                 loginDetailsPref.putIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_ID, 0);
                 loginDetailsPref.putStringPref (MainActivity.this, LoginDetailsPref.AUDITOR_NAME, "");
                 loginDetailsPref.putStringPref (MainActivity.this, LoginDetailsPref.USERNAME, "");
+                loginDetailsPref.putIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_AGENCY_ID, 0);
                 Intent intent = new Intent (MainActivity.this, LoginActivity.class);
                 Constants.username = "";
                 Constants.auditor_name = "";
@@ -525,7 +527,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     Constants.report.setAtm_id (0);
                                     Constants.report.setAuditor_id (Constants.auditor_id_main);
-                                    Constants.report.setAgency_id (0);
+                                    Constants.report.setAgency_id (Constants.auditor_agency_id);
                                     Constants.report.setAtm_unique_id (etEnterManuallyAtmId.getText ().toString ().toUpperCase ());
                                     Constants.report.setLatitude (String.valueOf (Constants.latitude));
                                     Constants.report.setLongitude (String.valueOf (Constants.longitude));

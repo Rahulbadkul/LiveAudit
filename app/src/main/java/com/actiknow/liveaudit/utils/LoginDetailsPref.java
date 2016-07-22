@@ -8,6 +8,7 @@ public class LoginDetailsPref {
     public static String AUDITOR_NAME = "auditor_name";
     public static String USERNAME = "username";
     public static String AUDITOR_ID = "auditor_id";
+    public static String AUDITOR_AGENCY_ID = "auditor_agency_id";
     private static LoginDetailsPref loginDetailsPref;
     private String LOGIN_DETAILS = "LOGIN_DETAILS";
 

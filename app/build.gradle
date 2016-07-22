@@ -8,8 +8,8 @@ android {
         applicationId "com.actiknow.liveaudit"
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 103
-        versionName "1.3"
+        versionCode 1032
+        versionName "1.3.2"
         multiDexEnabled true
     }
     buildTypes {

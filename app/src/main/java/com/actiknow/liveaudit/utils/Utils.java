@@ -187,7 +187,6 @@ public class Utils {
         }
     }
 
-
     public static boolean isPackageExists (Activity activity, String targetPackage) {
         List<ApplicationInfo> packages;
         PackageManager pm;
@@ -221,6 +220,4 @@ public class Utils {
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
     }
-
-
 }

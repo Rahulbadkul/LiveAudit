@@ -127,6 +127,7 @@ public class LoginActivity extends AppCompatActivity {
                                         Constants.auditor_id_main = jsonObj.getInt (AppConfigTags.AUDITOR_ID);
                                         Constants.username = jsonObj.getString (AppConfigTags.AUDITOR_EMAIL);
                                         Constants.auditor_name = jsonObj.getString (AppConfigTags.AUDITOR_NAME);
+                                        Constants.auditor_agency_id = jsonObj.getInt (AppConfigTags.AUDITOR_AGENCY_ID);
                                         setPreferences ();
                                         Intent intent = new Intent (LoginActivity.this, MainActivity.class);
                                         intent.setFlags (Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -178,6 +179,7 @@ public class LoginActivity extends AppCompatActivity {
         loginDetailsPref.putStringPref (LoginActivity.this, LoginDetailsPref.AUDITOR_NAME, Constants.auditor_name);
         loginDetailsPref.putStringPref (LoginActivity.this, LoginDetailsPref.USERNAME, Constants.username);
         loginDetailsPref.putIntPref (LoginActivity.this, LoginDetailsPref.AUDITOR_ID, Constants.auditor_id_main);
+        loginDetailsPref.putIntPref (LoginActivity.this, LoginDetailsPref.AUDITOR_AGENCY_ID, Constants.auditor_agency_id);
     }
 
     @Override

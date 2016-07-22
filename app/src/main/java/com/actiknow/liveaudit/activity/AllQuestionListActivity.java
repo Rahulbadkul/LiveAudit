@@ -146,7 +146,7 @@ public class AllQuestionListActivity extends AppCompatActivity {
                     e.printStackTrace ();
                 }
                 Constants.report.setIssues_json_array (String.valueOf (jsonArray));
-                Constants.report.setRating (sbRating.getProgress () / 10);
+                Constants.report.setRating (sbRating.getProgress ());
                 showSignatureDialog ();
             }
         });
