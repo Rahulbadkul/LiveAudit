@@ -75,7 +75,6 @@ import java.util.Map;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
     public static int GEO_IMAGE_REQUEST_CODE = 1;
@@ -193,7 +192,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         swipeRefreshLayout.setOnRefreshListener (new SwipeRefreshLayout.OnRefreshListener () {
             @Override
             public void onRefresh () {
-                Log.e ("karman", "in onrefresh function");
                 swipeRefreshLayout.setRefreshing (false);
                 listViewAllAtm.setVisibility (View.GONE);
                 progressBar.setVisibility (View.VISIBLE);
