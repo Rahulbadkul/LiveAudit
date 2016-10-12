@@ -163,7 +163,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
             };
 
-            Utils.sendRequest (strRequest1);
+            Utils.sendRequest (strRequest1, 30);
 
 
         } else {

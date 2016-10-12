@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -24,11 +25,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actiknow.liveaudit.R;
+import com.actiknow.liveaudit.activity.MainActivity;
 import com.actiknow.liveaudit.app.AppController;
 import com.actiknow.liveaudit.model.Response;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.toolbox.StringRequest;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -103,7 +106,10 @@ public class Utils {
                     public void onClick (DialogInterface dialog, int id) {
                         dialog.dismiss ();
                         if (finish_flag) {
-                            activity.finish ();
+                            Intent intent = new Intent (activity, MainActivity.class);
+                            intent.setFlags (Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            activity.startActivity (intent);
+//                            activity.finish();
                             activity.overridePendingTransition (R.anim.slide_in_left, R.anim.slide_out_right);
                         }
                     }
@@ -213,11 +219,37 @@ public class Utils {
         sbRating.setProgress (rating);
     }
 
-    public static void sendRequest (StringRequest strRequest) {
+    public static void sendRequest (StringRequest strRequest, int timeout_seconds) {
         strRequest.setShouldCache (false);
+        int timeout = timeout_seconds * 1000;
         AppController.getInstance ().addToRequestQueue (strRequest);
-        strRequest.setRetryPolicy (new DefaultRetryPolicy (30000,
+        strRequest.setRetryPolicy (new DefaultRetryPolicy (timeout,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+    }
+
+    public static Bitmap compressBitmap (Bitmap bitmap, Activity activity) {
+        Bitmap decoded = null;
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream ();
+            if (NetworkConnection.isNetworkAvailable (activity)) {
+                bitmap.compress (Bitmap.CompressFormat.JPEG, Constants.image_quality, out);
+            } else {
+                bitmap.compress (Bitmap.CompressFormat.JPEG, Constants.image_quality, out);
+            }
+            decoded = Utils.scaleDown (BitmapFactory.decodeStream (new ByteArrayInputStream (out.toByteArray ())), Constants.max_image_size, true);
+        } catch (Exception e) {
+            e.printStackTrace ();
+            Utils.showLog (Log.ERROR, "EXCEPTION", e.getMessage (), true);
+        }
+        return decoded;
+    }
+
+    public static Bitmap scaleDown (Bitmap realImage, float maxImageSize, boolean filter) {
+        float ratio = Math.min ((float) maxImageSize / realImage.getWidth (), (float) maxImageSize / realImage.getHeight ());
+        int width = Math.round ((float) ratio * realImage.getWidth ());
+        int height = Math.round ((float) ratio * realImage.getHeight ());
+        Bitmap newBitmap = Bitmap.createScaledBitmap (realImage, width, height, filter);
+        return newBitmap;
     }
 }

@@ -1,22 +1,32 @@
 
 package com.actiknow.liveaudit.activity;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -57,15 +67,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
     public static int GEO_IMAGE_REQUEST_CODE = 1;
+    public static int PERMISSION_REQUEST_CODE = 11;
+    ArrayList<Atm> tempArrayList = new ArrayList<Atm> ();
     TextView tvNoInternetConnection;
     ProgressBar progressBar;
     ListView listViewAllAtm;
@@ -74,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
     Dialog dialogSplash;
     Dialog dialogEnterManually;
     DatabaseHandler db;
+    EditText etSearch;
+    SwipeRefreshLayout swipeRefreshLayout;
     // Action Bar components
     private List<Atm> atmList = new ArrayList<> ();
     private AllAtmAdapter adapter;
@@ -93,6 +110,8 @@ public class MainActivity extends AppCompatActivity {
         getLatLong ();
         initService ();
         setUpNavigationDrawer ();
+        checkPermissions ();
+
 //        initLocationSettings ();
 
         if (Constants.splash_screen_first_time == 0 && Constants.auditor_id_main != 0)
@@ -117,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
         listViewAllAtm.setAdapter (adapter);
         client = new GoogleApiClient.Builder (this).addApi (AppIndex.API).build ();
         dialogSplash = new Dialog (this, R.style.full_screen);
+        swipeRefreshLayout.setRefreshing (false);
     }
 
     @Override
@@ -134,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
         //    }
     }
 
-
     private void initListener () {
         btEnterManually.setOnClickListener (new View.OnClickListener () {
             @Override
@@ -142,6 +161,48 @@ public class MainActivity extends AppCompatActivity {
                 showEnterManuallyDialog ();
             }
         });
+        etSearch.addTextChangedListener (new TextWatcher () {
+            @Override
+            public void onTextChanged (CharSequence cs, int arg1, int arg2, int arg3) {
+                int textlength = cs.length ();
+                tempArrayList.clear ();
+
+                for (Atm atm : atmList) {
+                    if (textlength <= String.valueOf (atm.getAtm_unique_id ()).length ()) {
+                        if (String.valueOf (atm.getAtm_unique_id ()).toLowerCase ().contains (cs.toString ().toLowerCase ())) {
+                            tempArrayList.add (atm);
+                        }
+                    }
+                }
+                adapter = new AllAtmAdapter (MainActivity.this, tempArrayList);
+                listViewAllAtm.setAdapter (adapter);
+            }
+
+            @Override
+            public void beforeTextChanged (CharSequence arg0, int arg1, int arg2, int arg3) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void afterTextChanged (Editable arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
+
+        swipeRefreshLayout.setOnRefreshListener (new SwipeRefreshLayout.OnRefreshListener () {
+            @Override
+            public void onRefresh () {
+                Log.e ("karman", "in onrefresh function");
+                swipeRefreshLayout.setRefreshing (false);
+                listViewAllAtm.setVisibility (View.GONE);
+                progressBar.setVisibility (View.VISIBLE);
+                getAtmListFromServer ();
+                etSearch.setText ("");
+                etSearch.setError (null);
+            }
+        });
+
     }
 
     private void isLogin () {
@@ -173,6 +234,8 @@ public class MainActivity extends AppCompatActivity {
         tvNoInternetConnection = (TextView) findViewById (R.id.tvNoIternetConnection);
         progressBar = (ProgressBar) findViewById (R.id.progressbar);
         btEnterManually = (Button) findViewById (R.id.btEnterManually);
+        etSearch = (EditText) findViewById (R.id.etAtmSearch);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById (R.id.swipe_refresh_layout);
     }
 
     private void getLatLong () {
@@ -248,6 +311,12 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_logout:
                 showLogOutDialog ();
                 return true;
+            case R.id.action_search:
+                if (etSearch.isShown ()) {
+                    etSearch.setVisibility (View.GONE);
+                } else {
+                    etSearch.setVisibility (View.VISIBLE);
+                }
         }
         Utils.hideSoftKeyboard (MainActivity.this);
 /**
@@ -405,6 +474,8 @@ public class MainActivity extends AppCompatActivity {
                                 listViewAllAtm.setVisibility (View.GONE);
                                 tvNoInternetConnection.setVisibility (View.VISIBLE);
                             }
+
+                            swipeRefreshLayout.setRefreshing (false);
                         }
                     },
                     new Response.ErrorListener () {
@@ -424,7 +495,7 @@ public class MainActivity extends AppCompatActivity {
                     return params;
                 }
             };
-            Utils.sendRequest (strRequest);
+            Utils.sendRequest (strRequest, 30);
 
         } else {
             progressBar.setVisibility (View.GONE);
@@ -441,6 +512,7 @@ public class MainActivity extends AppCompatActivity {
         for (Atm atm : allAtm)
             atmList.add (atm);
         adapter.notifyDataSetChanged ();
+        swipeRefreshLayout.setRefreshing (false);
     }
 
     private void getQuestionListFromServer () {
@@ -480,7 +552,7 @@ public class MainActivity extends AppCompatActivity {
                             getQuestionListFromLocalDatabase ();
                         }
                     });
-            Utils.sendRequest (strRequest1);
+            Utils.sendRequest (strRequest1, 30);
         } else {
             getQuestionListFromLocalDatabase ();
         }
@@ -577,12 +649,12 @@ public class MainActivity extends AppCompatActivity {
         for (com.actiknow.liveaudit.model.Report report : allReports) {
             final com.actiknow.liveaudit.model.Report finalReport = report;
             if (NetworkConnection.isNetworkAvailable (MainActivity.this)) {
-                Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITREPORT, true);
+                Utils.showLog (Log.INFO, "offline " + AppConfigTags.URL, AppConfigURL.URL_SUBMITREPORT, true);
                 StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITREPORT,
                         new com.android.volley.Response.Listener<String> () {
                             @Override
                             public void onResponse (String response) {
-                                Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
+                                Utils.showLog (Log.INFO, "offline " + AppConfigTags.SERVER_RESPONSE, response, true);
                                 if (response != null) {
                                     try {
                                         JSONObject jsonObj = new JSONObject (response);
@@ -635,7 +707,7 @@ public class MainActivity extends AppCompatActivity {
                         return params;
                     }
                 };
-                Utils.sendRequest (strRequest1);
+                Utils.sendRequest (strRequest1, 60);
             }
         }
     }
@@ -688,7 +760,7 @@ public class MainActivity extends AppCompatActivity {
                         return params;
                     }
                 };
-                Utils.sendRequest (strRequest1);
+                Utils.sendRequest (strRequest1, 30);
             } else {
                 Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection", true);
             }
@@ -701,7 +773,13 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == GEO_IMAGE_REQUEST_CODE) {
             switch (resultCode) {
                 case RESULT_OK:
-                    Bitmap bp = (Bitmap) data.getExtras ().get ("data");
+                    File f = new File (Environment.getExternalStorageDirectory () + File.separator + "img.jpg");
+
+                    Bitmap bp = null;
+                    if (f.exists ()) {
+                        bp = Utils.compressBitmap (BitmapFactory.decodeFile (f.getAbsolutePath ()), MainActivity.this);
+                    }
+//                    Bitmap bp = (Bitmap) data.getExtras ().get ("data");
                     String image = Utils.bitmapToBase64 (bp);
                     Constants.report.setGeo_image_string (image);
 
@@ -716,6 +794,102 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         }
+    }
+
+    public void checkPermissions () {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission (Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
+                    checkSelfPermission (Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                    checkSelfPermission (Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED ||
+                    checkSelfPermission (Manifest.permission.RECEIVE_BOOT_COMPLETED) != PackageManager.PERMISSION_GRANTED ||
+                    checkSelfPermission (WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+                requestPermissions (new String[] {Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.INTERNET, Manifest.permission.RECEIVE_BOOT_COMPLETED, WRITE_EXTERNAL_STORAGE},
+                        MainActivity.PERMISSION_REQUEST_CODE);
+            }
+/*
+            if (checkSelfPermission (Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions (new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, MainActivity.PERMISSION_REQUEST_CODE);
+            }
+            if (checkSelfPermission (Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions (new String[] {Manifest.permission.INTERNET}, MainActivity.PERMISSION_REQUEST_CODE);
+            }
+            if (checkSelfPermission (Manifest.permission.RECEIVE_BOOT_COMPLETED) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions (new String[] {Manifest.permission.RECEIVE_BOOT_COMPLETED,}, MainActivity.PERMISSION_REQUEST_CODE);
+            }
+            if (checkSelfPermission (Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions (new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, MainActivity.PERMISSION_REQUEST_CODE);
+            }
+  */
+
+        }
+    }
+
+    @Override
+    @TargetApi(23)
+    public void onRequestPermissionsResult (int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult (requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            for (int i = 0, len = permissions.length; i < len; i++) {
+                String permission = permissions[i];
+                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                    boolean showRationale = shouldShowRequestPermissionRationale (permission);
+                    if (! showRationale) {
+                        Utils.showToast (this, "");
+                        AlertDialog.Builder builder = new AlertDialog.Builder (MainActivity.this);
+                        builder.setMessage ("Permission are required please enable them on the App Setting page")
+                                .setCancelable (false)
+                                .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
+                                    public void onClick (DialogInterface dialog, int id) {
+                                        dialog.dismiss ();
+                                        Intent intent = new Intent (Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                                Uri.fromParts ("package", getPackageName (), null));
+                                        startActivity (intent);
+                                    }
+                                });
+                        AlertDialog alert = builder.create ();
+                        alert.show ();
+                        // user denied flagging NEVER ASK AGAIN
+                        // you can either enable some fall back,
+                        // disable features of your app
+                        // or open another dialog explaining
+                        // again the permission and directing to
+                        // the app setting
+                    } else if (Manifest.permission.CAMERA.equals (permission)) {
+//                        Utils.showToast (this, "Camera Permission is required");
+//                        showRationale (permission, R.string.permission_denied_contacts);
+                        // user denied WITHOUT never ask again
+                        // this is a good place to explain the user
+                        // why you need the permission and ask if he want
+                        // to accept it (the rationale)
+                    } else if (Manifest.permission.ACCESS_FINE_LOCATION.equals (permission)) {
+//                        Utils.showToast (this, "Location Permission is required");
+//                        showRationale (permission, R.string.permission_denied_contacts);
+                        // user denied WITHOUT never ask again
+                        // this is a good place to explain the user
+                        // why you need the permission and ask if he want
+                        // to accept it (the rationale)
+                    } else if (WRITE_EXTERNAL_STORAGE.equals (permission)) {
+//                        Utils.showToast (this, "Write Permission is required");
+//                        showRationale (permission, R.string.permission_denied_contacts);
+                        // user denied WITHOUT never ask again
+                        // this is a good place to explain the user
+                        // why you need the permission and ask if he want
+                        // to accept it (the rationale)
+                    }
+                }
+            }
+
+
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            }
+        }
+    }
+
+    @Override
+    public void onRefresh () {
+
     }
 }
 

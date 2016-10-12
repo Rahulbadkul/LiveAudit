@@ -37,9 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Created by BrijD on 14-12-22.
- */
+
 public class LocationService extends Service implements LocationListener {
 
     // The minimum distance to change Updates in meters
@@ -171,7 +169,7 @@ public class LocationService extends Service implements LocationListener {
                     return params;
                 }
             };
-            Utils.sendRequest (strRequest1);
+            Utils.sendRequest (strRequest1, 30);
         } else
             db.createAuditorLocation (auditorLocation);
     }
@@ -299,7 +297,7 @@ public class LocationService extends Service implements LocationListener {
                         return params;
                     }
                 };
-                Utils.sendRequest (strRequest1);
+                Utils.sendRequest (strRequest1, 30);
             } else {
                 Utils.showLog (Log.WARN, AppConfigTags.TAG, "If no internet connection", true);
             }

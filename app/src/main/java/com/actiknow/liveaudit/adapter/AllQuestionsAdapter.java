@@ -9,6 +9,9 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +31,7 @@ import com.actiknow.liveaudit.utils.AppConfigTags;
 import com.actiknow.liveaudit.utils.Constants;
 import com.actiknow.liveaudit.utils.Utils;
 
+import java.io.File;
 import java.util.List;
 
 public class AllQuestionsAdapter extends BaseAdapter {
@@ -168,7 +172,9 @@ public class AllQuestionsAdapter extends BaseAdapter {
                     }
                     mIntent = new Intent ();
                     mIntent.setPackage (defaultCameraPackage);
-                    mIntent.setAction (android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                    mIntent.setAction (MediaStore.ACTION_IMAGE_CAPTURE);
+                    File f = new File (Environment.getExternalStorageDirectory () + File.separator + "img.jpg");
+                    mIntent.putExtra (MediaStore.EXTRA_OUTPUT, Uri.fromFile (f));
                 }
                 if (mIntent.resolveActivity (activity.getPackageManager ()) != null)
                     activity.startActivityForResult (mIntent, question.getQuestion_id ());

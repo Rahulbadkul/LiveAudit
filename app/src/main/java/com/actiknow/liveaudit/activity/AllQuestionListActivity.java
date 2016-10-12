@@ -5,9 +5,11 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -43,6 +45,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -220,8 +223,15 @@ public class AllQuestionListActivity extends AppCompatActivity {
         // TODO Auto-generated method stub
         super.onActivityResult (requestCode, resultCode, data);
         try {
+//            switch (resultCode) {
+//                case RESULT_OK:
+            File f = new File (Environment.getExternalStorageDirectory () + File.separator + "img.jpg");
+            Bitmap bp = null;
+            if (f.exists ()) {
+                bp = Utils.compressBitmap (BitmapFactory.decodeFile (f.getAbsolutePath ()), AllQuestionListActivity.this);
+            }
 
-            Bitmap bp = (Bitmap) data.getExtras ().get ("data");
+//                    Bitmap bp = (Bitmap) data.getExtras ().get ("data");
             String image = Utils.bitmapToBase64 (bp);
 
             for (int i = 0; i < Constants.questionsList.size (); i++) {
@@ -230,6 +240,13 @@ public class AllQuestionListActivity extends AppCompatActivity {
                 if (requestCode == response.getQuestion_id ())
                     response.setImage1 (image);
             }
+//                    break;
+//                case RESULT_CANCELED:
+//                    Utils.showToast (MainActivity.this, "Please take an image");
+//                    break;
+//                default:
+//                    break;
+//            }
         } catch (Exception e) {
         }
     }
@@ -268,8 +285,8 @@ public class AllQuestionListActivity extends AppCompatActivity {
             @Override
             public void onClick (View v) {
                 dialogSign.dismiss ();
-                pDialog = new ProgressDialog (AllQuestionListActivity.this);
-                Utils.showProgressDialog (pDialog, null);
+//                pDialog = new ProgressDialog (AllQuestionListActivity.this);
+//                Utils.showProgressDialog (pDialog, null);
                 Bitmap bp = signatureView.getSignatureBitmap ();
                 Constants.report.setSignature_image_string (Utils.bitmapToBase64 (bp));
                 submitReportToServer (Constants.report);
@@ -286,21 +303,24 @@ public class AllQuestionListActivity extends AppCompatActivity {
                         public void onResponse (String response) {
                             Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
                             if (response != null) {
-                                pDialog.dismiss ();
+//                                pDialog.dismiss ();
                                 try {
                                     JSONObject jsonObj = new JSONObject (response);
                                     switch (jsonObj.getInt (AppConfigTags.STATUS)) {
                                         case 0:
                                             db.createReport (report);
-                                            pDialog.dismiss ();
-                                            Utils.showOkDialog (AllQuestionListActivity.this, "Some error occurred, Please try again after some time", true);
+//                                           pDialog.dismiss ();
+//                                            Utils.showOkDialog (AllQuestionListActivity.this, "Some error occurred, Please try again after some time", true);
+                                            Utils.showLog (Log.INFO, "RESPONSE LOG", "Some error occurred your responses have been saved offline and will be uploaded later", true);
                                             break;
                                         case 1:
-                                            pDialog.dismiss ();
-                                            Utils.showOkDialog (AllQuestionListActivity.this, "Your responses have been uploaded successfully to the server", true);
+//                                            pDialog.dismiss ();
+//                                            Utils.showOkDialog (AllQuestionListActivity.this, "Your responses have been uploaded successfully to the server", true);
+                                            Utils.showLog (Log.INFO, "RESPONSE LOG", "Your responses have been uploaded successfully to the server", true);
                                             break;
                                     }
                                 } catch (JSONException e) {
+                                    db.createReport (report);
                                     e.printStackTrace ();
                                 }
                             } else {
@@ -313,9 +333,9 @@ public class AllQuestionListActivity extends AppCompatActivity {
                         @Override
                         public void onErrorResponse (VolleyError error) {
                             Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
-                            pDialog.dismiss ();
-                            Utils.showOkDialog (AllQuestionListActivity.this, "Seems like there is an issue with the internet connection," +
-                                    " your responses have been saved and will be uploaded once you are online", true);
+//                            pDialog.dismiss ();
+//                            Utils.showOkDialog (AllQuestionListActivity.this, "Seems like there is an issue with the internet connection," +
+//                                    " your responses have been saved and will be uploaded once you are online", true);
                             db.createReport (report);
                         }
                     }) {
@@ -348,9 +368,12 @@ public class AllQuestionListActivity extends AppCompatActivity {
                     return params;
                 }
             };
-            Utils.sendRequest (strRequest1);
+            Utils.sendRequest (strRequest1, 60);
+            Utils.showOkDialog (AllQuestionListActivity.this, "Your responses have been saved" +
+                    " and will be uploaded in the background", true);
+
         } else {
-            pDialog.dismiss ();
+//            pDialog.dismiss ();
             Utils.showOkDialog (AllQuestionListActivity.this, "Seems like there is no internet connection, your responses have been saved" +
                     " and will be uploaded once you are online", true);
             db.createReport (report);

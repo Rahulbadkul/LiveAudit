@@ -1,14 +1,10 @@
 package com.actiknow.liveaudit.utils;
-
-
 import com.actiknow.liveaudit.model.Question;
 import com.actiknow.liveaudit.model.Report;
 import com.actiknow.liveaudit.model.Response;
 
 import java.util.ArrayList;
 import java.util.List;
-
-
 
 public class Constants {
     public static String auditor_name = "";
@@ -30,4 +26,7 @@ public class Constants {
 
     public static String location_tagging_start_time = "08:00";
     public static String location_tagging_end_time = "20:00";
+
+    public static int image_quality = 10; // 10
+    public static int max_image_size = 320; // 320
 }

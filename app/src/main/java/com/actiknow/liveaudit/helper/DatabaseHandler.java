@@ -310,35 +310,93 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public Report getReport (long report_id) {
         SQLiteDatabase db = this.getReadableDatabase ();
-        String selectQuery = "SELECT  * FROM " + TABLE_REPORT + " WHERE " + KEY_ID + " = " + report_id;
+        String selectQuery = "SELECT " + KEY_ID + ", " + KEY_ATM_ID + ", " + KEY_AUDITOR_ID + ", " + KEY_AGENCY_ID + ", " + KEY_ATM_UNIQUE_ID + ", " + KEY_ATM_ID + ", " +
+                KEY_GEO_IMAGE + ", " + KEY_LATITUDE + ", " + KEY_LONGITUDE + ", " + KEY_SIGN_IMAGE + ", " + KEY_RATING + " FROM " + TABLE_REPORT + " WHERE " + KEY_ID + " = " + report_id;
+        String selectQuery2 = "SELECT length(" + KEY_ISSUES_JSON + ") as length FROM " + TABLE_REPORT + " WHERE " + KEY_ID + " = " + report_id;
+        String selectQuery3 = "SELECT " + KEY_ISSUES_JSON + " FROM " + TABLE_REPORT + " WHERE " + KEY_ID + " = " + report_id;
         Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get Report where ID = " + report_id, false);
         Cursor c = db.rawQuery (selectQuery, null);
+        Cursor c2 = db.rawQuery (selectQuery2, null);
+        Cursor c3 = db.rawQuery (selectQuery3, null);
         if (c != null)
             c.moveToFirst ();
+        if (c2 != null)
+            c2.moveToFirst ();
+        if (c3 != null)
+            c3.moveToFirst ();
+
+        String issue_json = "";
+
+        if (c2.getInt (c2.getColumnIndex ("length")) > 1000000) {
+            int i = c2.getInt (c2.getColumnIndex ("length")) / 1000000;
+            int j = 1;
+//            Log.e ("value of i", " i = " + i);
+            for (int i2 = 0; i2 <= i; i2++) {
+                String query;
+                if (i2 == i) {
+                    int j2 = c2.getInt (c2.getColumnIndex ("length")) - i * 1000000;
+                    query = "SELECT substr (" + KEY_ISSUES_JSON + ", " + j + ", " + j2 + ") as str FROM " + TABLE_REPORT + " WHERE " + KEY_ID + " = " + report_id;
+                } else {
+                    query = "SELECT substr (" + KEY_ISSUES_JSON + ", " + j + ", 1000000) as str FROM " + TABLE_REPORT + " WHERE " + KEY_ID + " = " + report_id;
+                }
+//                Log.e ("query", query);
+                Cursor cursor = db.rawQuery (query, null);
+                if (cursor != null)
+                    cursor.moveToFirst ();
+//                json_substr.add (cursor.getString (cursor.getColumnIndex ("str")));
+
+//                Utils.showLog (Log.DEBUG, "IN FOR LOOP", (i2 + 1) + " iteration", true);
+
+                issue_json = issue_json.concat (cursor.getString (cursor.getColumnIndex ("str")).trim ());
+                j = j + 1000000;
+//                Log.e ("SUB STRING", cursor.getString (cursor.getColumnIndex ("str")).trim ());
+            }
+        } else {
+            issue_json = c3.getString (c3.getColumnIndex (KEY_ISSUES_JSON));
+        }
+
+
         Report report = new Report ();
-        report.setReport_id (c.getInt (c.getColumnIndex (KEY_ID)));
-        report.setAgency_id (c.getInt (c.getColumnIndex (KEY_AGENCY_ID)));
-        report.setAtm_id (c.getInt (c.getColumnIndex (KEY_ATM_ID)));
-        report.setAtm_unique_id (c.getString (c.getColumnIndex (KEY_ATM_UNIQUE_ID)));
-        report.setAuditor_id (c.getInt (c.getColumnIndex (KEY_AUDITOR_ID)));
-        report.setIssues_json_array (c.getString (c.getColumnIndex (KEY_ISSUES_JSON)));
-        report.setGeo_image_string (c.getString (c.getColumnIndex (KEY_GEO_IMAGE)));
-        report.setLatitude (c.getString (c.getColumnIndex (KEY_LATITUDE)));
-        report.setLongitude (c.getString (c.getColumnIndex (KEY_LONGITUDE)));
-        report.setRating (c.getInt (c.getColumnIndex (KEY_RATING)));
-        report.setSignature_image_string (c.getString (c.getColumnIndex (KEY_SIGN_IMAGE)));
+        try {
+            report.setReport_id (c.getInt (c.getColumnIndex (KEY_ID)));
+            report.setAgency_id (c.getInt (c.getColumnIndex (KEY_AGENCY_ID)));
+            report.setAtm_id (c.getInt (c.getColumnIndex (KEY_ATM_ID)));
+            report.setAtm_unique_id (c.getString (c.getColumnIndex (KEY_ATM_UNIQUE_ID)));
+            report.setAuditor_id (c.getInt (c.getColumnIndex (KEY_AUDITOR_ID)));
+            report.setIssues_json_array (issue_json);
+            report.setGeo_image_string (c.getString (c.getColumnIndex (KEY_GEO_IMAGE)));
+            report.setLatitude (c.getString (c.getColumnIndex (KEY_LATITUDE)));
+            report.setLongitude (c.getString (c.getColumnIndex (KEY_LONGITUDE)));
+            report.setRating (c.getInt (c.getColumnIndex (KEY_RATING)));
+            report.setSignature_image_string (c.getString (c.getColumnIndex (KEY_SIGN_IMAGE)));
+        } catch (Exception e) {
+            e.printStackTrace ();
+            Utils.showLog (Log.DEBUG, "EXCEPTION", e.getMessage (), true);
+        }
         return report;
     }
 
     public List<Report> getAllReports () {
         List<Report> reports = new ArrayList<Report> ();
-        String selectQuery = "SELECT  * FROM " + TABLE_REPORT;
+        String selectQuery = "SELECT " + KEY_ID + " FROM " + TABLE_REPORT;
         Utils.showLog (Log.DEBUG, AppConfigTags.DATABASE_LOG, "Get all reports", false);
         SQLiteDatabase db = this.getReadableDatabase ();
         Cursor c = db.rawQuery (selectQuery, null);
         // looping through all rows and adding to list
         if (c.moveToFirst ()) {
             do {
+                try {
+                    Report report = new Report ();
+                    report = getReport (c.getInt (c.getColumnIndex (KEY_ID)));
+                    reports.add (report);
+                } catch (Exception e) {
+                    e.printStackTrace ();
+                    Utils.showLog (Log.DEBUG, "EXCEPTION", e.getMessage (), true);
+                    // this gets called even if there is an exception somewhere above
+//                    if (c2 != null)
+//                        c2.close ();
+                }
+/*
                 Report report = new Report ();
                 report.setReport_id (c.getInt (c.getColumnIndex (KEY_ID)));
                 report.setAgency_id (c.getInt (c.getColumnIndex (KEY_AGENCY_ID)));
@@ -352,6 +410,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 report.setRating (c.getInt (c.getColumnIndex (KEY_RATING)));
                 report.setSignature_image_string (c.getString (c.getColumnIndex (KEY_SIGN_IMAGE)));
                 reports.add (report);
+*/
             } while (c.moveToNext ());
         }
         return reports;
