@@ -42,7 +42,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.actiknow.liveaudit.R;
-import com.actiknow.liveaudit.adapter.AllAtmRecyclerAdapter;
+import com.actiknow.liveaudit.adapter.AllAtmAdapter;
 import com.actiknow.liveaudit.helper.DatabaseHandler;
 import com.actiknow.liveaudit.model.Atm;
 import com.actiknow.liveaudit.model.Question;
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     Toolbar toolbar;
     // Action Bar components
     private List<Atm> atmList = new ArrayList<> ();
-    private AllAtmRecyclerAdapter adapter;
+    private AllAtmAdapter adapter;
     private AccountHeader headerResult;
     private Drawer result;
     private FloatingActionButton fabEnterManually;
@@ -245,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         new DrawerBuilder ().withActivity (this).build ();
 
         Utils.setTypefaceToAllViews (this, tvNoInternetConnection);
-        adapter = new AllAtmRecyclerAdapter (this, atmList);
+        adapter = new AllAtmAdapter (this, atmList);
         //    Constants.questionsList.clear ();
 
         AlphaInAnimationAdapter alphaAdapter = new AlphaInAnimationAdapter (adapter);
@@ -306,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                         }
                     }
                 }
-                adapter = new AllAtmRecyclerAdapter (MainActivity.this, tempArrayList);
+                adapter = new AllAtmAdapter (MainActivity.this, tempArrayList);
 
                 AlphaInAnimationAdapter alphaAdapter = new AlphaInAnimationAdapter (adapter);
                 alphaAdapter.setDuration (700);
@@ -331,7 +331,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             }
         });
 
-//        adapter.SetOnItemClickListener (new AllAtmRecyclerAdapter.OnItemClickListener () {
+//        adapter.SetOnItemClickListener (new AllAtmAdapter.OnItemClickListener () {
 //
 //            @Override
 //            public void onItemClick (View v, int position) {

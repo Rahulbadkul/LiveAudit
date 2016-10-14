@@ -8,10 +8,11 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +31,7 @@ import com.actiknow.liveaudit.model.Response;
 import com.actiknow.liveaudit.utils.AppConfigTags;
 import com.actiknow.liveaudit.utils.Constants;
 import com.actiknow.liveaudit.utils.Utils;
+import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.io.File;
 import java.util.List;
@@ -40,6 +42,7 @@ public class AllQuestionsAdapter extends BaseAdapter {
     private Activity activity;
     private LayoutInflater inflater;
     private List<Question> questionList;
+
     public AllQuestionsAdapter (Activity activity, List<Question> questionList) {
         this.activity = activity;
         this.questionList = questionList;
@@ -67,12 +70,12 @@ public class AllQuestionsAdapter extends BaseAdapter {
         if (inflater == null)
             inflater = (LayoutInflater) activity.getSystemService (Context.LAYOUT_INFLATER_SERVICE);
 //        if (convertView == null) {
-            convertView = inflater.inflate (R.layout.listview_item_question, null);
-            holder = new QuestionViewHolder ();
-            holder.tvQuestionText = (TextView) convertView.findViewById (R.id.tvQuestionInList);
+        convertView = inflater.inflate (R.layout.listview_item_question, null);
+        holder = new QuestionViewHolder ();
+        holder.tvQuestionText = (TextView) convertView.findViewById (R.id.tvQuestionInList);
         holder.tvImage = (TextView) convertView.findViewById (R.id.tvImageInList);
         holder.tvComments = (TextView) convertView.findViewById (R.id.tvCommentInList);
-            holder.switchYesNo = (Switch) convertView.findViewById (R.id.switchYesNoInList);
+        holder.switchYesNo = (Switch) convertView.findViewById (R.id.switchYesNoInList);
 //            convertView.setTag (holder);
 //        } else {
 //            holder = (QuestionViewHolder) convertView.getTag ();
@@ -114,7 +117,6 @@ public class AllQuestionsAdapter extends BaseAdapter {
         } catch (IndexOutOfBoundsException e) {
             Utils.showLog (Log.ERROR, "Exception found", "" + e.getMessage (), true);
         }
-
 
 
 //        Utils.setTypefaceToAllViews (activity, holder.tvQuestionText);
@@ -192,11 +194,65 @@ public class AllQuestionsAdapter extends BaseAdapter {
                 final EditText etEnterComment;
                 Response response = new Response ();
                 response = Constants.responseList.get (position);
+
+                final View positiveAction;
+
+                MaterialDialog dialog = new MaterialDialog.Builder (activity)
+                        .title (R.string.dialog_comment_Title)
+//                        .content (R.string.input_content)
+                        .inputType (InputType.TYPE_CLASS_TEXT)// |
+//                                InputType.TYPE_TEXT_VARIATION_PERSON_NAME |
+//                                InputType.TYPE_TEXT_FLAG_CAP_WORDS)
+//                        .inputRange (2, 16)
+                        .positiveText (R.string.dialog_comment_positive)
+                        .negativeText (R.string.dialog_comment_negative)
+                        .input (R.string.dialog_comment_Title, R.string.dialog_comment_Title, false, new MaterialDialog.InputCallback () {
+                            @Override
+                            public void onInput (@NonNull MaterialDialog dialog, CharSequence input) {
+                                Utils.showToast (activity, "Hello, " + input.toString () + "!");
+
+                                for (int i = 0; i < Constants.questionsList.size (); i++) {
+                                    final Response response;
+                                    response = Constants.responseList.get (i);
+                                    //   etEnterComment.setText (response.getResponse_comment ());
+                                    if (question.getQuestion_id () == response.getQuestion_id ()) {
+                                        if (position == 0 && Constants.atm_location_in_manual.length () != 0)
+                                            response.setComment (input.toString () + " " + Constants.atm_location_in_manual);
+                                        else
+                                            response.setComment (input.toString ());
+                                    }
+                                }
+                            }
+                        }).show ();
+/*
+                .onPositive (new MaterialDialog.SingleButtonCallback () {
+                            @Override
+                            public void onClick (@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                for (int i = 0; i < Constants.questionsList.size (); i++) {
+                                    final Response response;
+                                    response = Constants.responseList.get (i);
+                                    //   etEnterComment.setText (response.getResponse_comment ());
+                                    if (question.getQuestion_id () == response.getQuestion_id ()) {
+                                        if (position == 0 && Constants.atm_location_in_manual.length () != 0)
+                                            response.setComment (etEnterComment.getText ().toString () + " " + Constants.atm_location_in_manual);
+                                        else
+                                            response.setComment (etEnterComment.getText ().toString ());
+                                    }
+                                }
+                                dialogEnterComment.dismiss ();
+                            }
+                        }).build ();
+*/
+/*
+                positiveAction = dialog.getActionButton (DialogAction.POSITIVE);
+                dialog.show ();
+                positiveAction.setEnabled (false); // disabled by default
+
                 dialogEnterComment = new Dialog (activity);
                 dialogEnterComment.setContentView (R.layout.dialog_enter_comment);
                 dialogEnterComment.setCancelable (true);
-                btEnterComment = (Button) dialogEnterComment.findViewById (R.id.btEnterComment);
-                etEnterComment = (EditText) dialogEnterComment.findViewById (R.id.etEnterComment);
+                btEnterComment = (Button) dialogEnterComment.findViewById (btEnterComment);
+                etEnterComment = (EditText) dialogEnterComment.findViewById (etEnterComment);
                 if (position == 0)
                     etEnterComment.setText (response.getComment ().replace (Constants.atm_location_in_manual, ""));
                 else
@@ -224,8 +280,13 @@ public class AllQuestionsAdapter extends BaseAdapter {
                 });
                 holder.tvComments.setTextColor (Color.parseColor ("#311b92"));
                 holder.tvComments.setCompoundDrawablesWithIntrinsicBounds (R.drawable.ic_comment_selected, 0, 0, 0);
+*/
+
             }
+
+
         });
+
 
         holder.tvQuestionText.setText (question.getQuestion ());
         return convertView;

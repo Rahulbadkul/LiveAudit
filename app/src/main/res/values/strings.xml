@@ -19,11 +19,15 @@
     <string name="dialog_logout_positive">Yes</string>
     <string name="dialog_logout_negative">No</string>
 
-    <string name="dialog_geoimage_content">Please take an image of the ATM Machine\nNote : This
-        image will be Geotagged
+    <string name="dialog_geoimage_content">Please take an image of the ATM Machine\nNote : Thisimage
+        will be Geotagged
     </string>
     <string name="dialog_geoimage_positive">Ok</string>
     <string name="dialog_geoimage_negative">Cancel</string>
+
+    <string name="dialog_comment_Title">Enter Comment</string>
+    <string name="dialog_comment_positive">Submit</string>
+    <string name="dialog_comment_negative">Cancel</string>
 
     <string name="dialog_basic_positive">Ok</string>
 
