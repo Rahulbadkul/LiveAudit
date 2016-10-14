@@ -4,14 +4,13 @@ package com.actiknow.liveaudit.activity;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,14 +18,12 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -34,15 +31,18 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.OvershootInterpolator;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.actiknow.liveaudit.R;
-import com.actiknow.liveaudit.adapter.AllAtmRecyclerAdapter;
+import com.actiknow.liveaudit.adapter.AllAtmAdapter;
+import com.actiknow.liveaudit.adapter.NavDrawerAdapter;
 import com.actiknow.liveaudit.helper.DatabaseHandler;
 import com.actiknow.liveaudit.model.Atm;
 import com.actiknow.liveaudit.model.Question;
@@ -54,35 +54,14 @@ import com.actiknow.liveaudit.utils.GPSTracker;
 import com.actiknow.liveaudit.utils.LoginDetailsPref;
 import com.actiknow.liveaudit.utils.NetworkConnection;
 import com.actiknow.liveaudit.utils.Utils;
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
-import com.afollestad.materialdialogs.internal.MDTintHelper;
-import com.afollestad.materialdialogs.internal.ThemeSingleton;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.bumptech.glide.Glide;
-import com.github.clans.fab.FloatingActionButton;
-import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.mikepenz.fontawesome_typeface_library.FontAwesome;
-import com.mikepenz.iconics.IconicsDrawable;
-import com.mikepenz.materialdrawer.AccountHeader;
-import com.mikepenz.materialdrawer.AccountHeaderBuilder;
-import com.mikepenz.materialdrawer.Drawer;
-import com.mikepenz.materialdrawer.DrawerBuilder;
-import com.mikepenz.materialdrawer.model.DividerDrawerItem;
-import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
-import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
-import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
-import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
-import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader;
-import com.mikepenz.materialdrawer.util.DrawerImageLoader;
-import com.mikepenz.materialdrawer.util.DrawerUIUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -94,51 +73,39 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import jp.wasabeef.recyclerview.adapters.AlphaInAnimationAdapter;
-
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
+public class MainActivityBeforeRecycler extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
     public static int GEO_IMAGE_REQUEST_CODE = 1;
     public static int PERMISSION_REQUEST_CODE = 11;
     ArrayList<Atm> tempArrayList = new ArrayList<Atm> ();
     TextView tvNoInternetConnection;
     ProgressBar progressBar;
-    RecyclerView recyclerViewAllAtm;
+    ListView listViewAllAtm;
+    Button btEnterManually;
     GoogleApiClient client;
     Dialog dialogSplash;
     Dialog dialogEnterManually;
     DatabaseHandler db;
     EditText etSearch;
     SwipeRefreshLayout swipeRefreshLayout;
-    EditText etEnterManuallyAtmId;
-    EditText etEnterManuallyAtmLocation;
-    //    private ActionBarDrawerToggle mDrawerToggle;
-//    private DrawerLayout mDrawerLayout;
-//    private RelativeLayout mDrawerPanel;
-    RelativeLayout rlToolbarLogo;
-    Bundle savedInstanceState;
-    Toolbar toolbar;
     // Action Bar components
     private List<Atm> atmList = new ArrayList<> ();
-    private AllAtmRecyclerAdapter adapter;
-    private AccountHeader headerResult;
-    private Drawer result;
-    private FloatingActionButton fabEnterManually;
-    private FloatingActionMenu fabMenu;
+    private AllAtmAdapter adapter;
+    private ActionBarDrawerToggle mDrawerToggle;
+    private DrawerLayout mDrawerLayout;
+    private RelativeLayout mDrawerPanel;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_main);
-        this.savedInstanceState = savedInstanceState;
         initView ();
         initPref ();
         isLogin ();
         initListener ();
         initData ();
-        initDrawer ();
         getLatLong ();
         initService ();
         setUpNavigationDrawer ();
@@ -160,113 +127,15 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         db.closeDB ();
     }
 
-
-    private void initDrawer () {
-        DrawerImageLoader.init (new AbstractDrawerImageLoader () {
-            @Override
-            public void set (ImageView imageView, Uri uri, Drawable placeholder) {
-                Glide.with (imageView.getContext ()).load (uri).placeholder (placeholder).into (imageView);
-            }
-
-            @Override
-            public void cancel (ImageView imageView) {
-                Glide.clear (imageView);
-            }
-
-            @Override
-            public Drawable placeholder (Context ctx, String tag) {
-                //define different placeholders for different imageView targets
-                //default tags are accessible via the DrawerImageLoader.Tags
-                //custom ones can be checked via string. see the CustomUrlBasePrimaryDrawerItem LINE 111
-                if (DrawerImageLoader.Tags.PROFILE.name ().equals (tag)) {
-                    return DrawerUIUtils.getPlaceHolder (ctx);
-                } else if (DrawerImageLoader.Tags.ACCOUNT_HEADER.name ().equals (tag)) {
-                    return new IconicsDrawable (ctx).iconText (" ").backgroundColorRes (com.mikepenz.materialdrawer.R.color.primary).sizeDp (56);
-                } else if ("customUrlItem".equals (tag)) {
-                    return new IconicsDrawable (ctx).iconText (" ").backgroundColorRes (R.color.md_white_1000).sizeDp (56);
-                }
-
-                //we use the default one for
-                //DrawerImageLoader.Tags.PROFILE_DRAWER_ITEM.name()
-
-                return super.placeholder (ctx, tag);
-            }
-        });
-        headerResult = new AccountHeaderBuilder ()
-                .withActivity (this)
-                .withCompactStyle (true)
-                .addProfiles (new ProfileDrawerItem ()
-                        .withName (Constants.auditor_name)
-                        .withEmail (Constants.username)
-//                        .withIcon ("http://i.istockimg.com/file_thumbview_approve/64330137/3/stock-photo-64330137-a-icon-of-a-businessman-avatar-or-profile-pic.jpg"))
-                        .withIcon (R.drawable.ic_profile_default))
-                .withProfileImagesClickable (false)
-                .withPaddingBelowHeader (false)
-                .withSelectionListEnabledForSingleProfile (false)
-                .withHeaderBackground (R.drawable.header)
-                .withSavedInstance (savedInstanceState)
-                .build ();
-
-        result = new DrawerBuilder ()
-                .withActivity (this)
-                .withAccountHeader (headerResult)
-//                .withToolbar (toolbar)
-//                .withItemAnimator (new AlphaCrossFadeAnimator ())
-                .addDrawerItems (
-                        new PrimaryDrawerItem ().withName (R.string.drawer_item_home).withIcon (FontAwesome.Icon.faw_home).withIdentifier (1),
-                        new DividerDrawerItem (),
-                        new SecondaryDrawerItem ().withName (R.string.drawer_item_settings).withEnabled (false).withSelectable (false).withIdentifier (2),
-                        new SecondaryDrawerItem ().withName (R.string.drawer_item_help_and_feedback).withEnabled (false).withSelectable (false).withIdentifier (3),
-                        new SecondaryDrawerItem ().withName (R.string.drawer_item_about_liveaudit).withEnabled (false).withSelectable (false).withIdentifier (4),
-                        new SecondaryDrawerItem ().withName (R.string.drawer_item_logout).withSelectable (false).withIdentifier (5)
-                )
-                .withSavedInstance (savedInstanceState)
-                .withOnDrawerItemClickListener (new Drawer.OnDrawerItemClickListener () {
-                    @Override
-                    public boolean onItemClick (View view, int position, IDrawerItem drawerItem) {
-                        // do something with the clicked item :D
-                        switch ((int) drawerItem.getIdentifier ()) {
-                            case 5:
-                                showLogOutDialog ();
-                                Utils.showLog (Log.ERROR, "position ", "" + position, true);
-                                break;
-                        }
-                        return false;
-                    }
-                })
-                .build ();
-//        result.getActionBarDrawerToggle ().setDrawerIndicatorEnabled (false);
-
-
-    }
-
     private void initData () {
         db = new DatabaseHandler (getApplicationContext ());
-        new DrawerBuilder ().withActivity (this).build ();
-
         Utils.setTypefaceToAllViews (this, tvNoInternetConnection);
-        adapter = new AllAtmRecyclerAdapter (this, atmList);
+        adapter = new AllAtmAdapter (this, atmList);
         //    Constants.questionsList.clear ();
-
-        AlphaInAnimationAdapter alphaAdapter = new AlphaInAnimationAdapter (adapter);
-        alphaAdapter.setDuration (700);
-        recyclerViewAllAtm.setAdapter (alphaAdapter);
-        recyclerViewAllAtm.setHasFixedSize (true);
-        recyclerViewAllAtm.setLayoutManager (new LinearLayoutManager (this));
-        recyclerViewAllAtm.setItemAnimator (new DefaultItemAnimator ());
+        listViewAllAtm.setAdapter (adapter);
         client = new GoogleApiClient.Builder (this).addApi (AppIndex.API).build ();
         dialogSplash = new Dialog (this, R.style.full_screen);
         swipeRefreshLayout.setRefreshing (false);
-        fabMenu.setClosedOnTouchOutside (true);
-    }
-
-    @Override
-    protected void onSaveInstanceState (Bundle outState) {
-        //add the values which need to be saved from the drawer to the bundle
-        outState = result.saveInstanceState (outState);
-        //add the values which need to be saved from the accountHeader to the bundle
-        outState = headerResult.saveInstanceState (outState);
-        super.onSaveInstanceState (outState);
     }
 
     @Override
@@ -285,12 +154,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
     private void initListener () {
-        fabEnterManually.setOnClickListener (new View.OnClickListener () {
+        btEnterManually.setOnClickListener (new View.OnClickListener () {
             @Override
             public void onClick (View v) {
-                fabMenu.close (true);
                 showEnterManuallyDialog ();
-
             }
         });
         etSearch.addTextChangedListener (new TextWatcher () {
@@ -306,17 +173,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                         }
                     }
                 }
-                adapter = new AllAtmRecyclerAdapter (MainActivity.this, tempArrayList);
-
-                AlphaInAnimationAdapter alphaAdapter = new AlphaInAnimationAdapter (adapter);
-                alphaAdapter.setDuration (700);
-                alphaAdapter.setFirstOnly (true);
-                alphaAdapter.setInterpolator (new OvershootInterpolator ());
-
-//                SlideInLeftAnimationAdapter slideAdapter = new SlideInLeftAnimationAdapter (alphaAdapter);
-//                slideAdapter.setDuration (500);
-//                slideAdapter.setFirstOnly (true);
-                recyclerViewAllAtm.setAdapter (alphaAdapter);
+                adapter = new AllAtmAdapter (MainActivityBeforeRecycler.this, tempArrayList);
+                listViewAllAtm.setAdapter (adapter);
             }
 
             @Override
@@ -331,29 +189,11 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             }
         });
 
-//        adapter.SetOnItemClickListener (new AllAtmRecyclerAdapter.OnItemClickListener () {
-//
-//            @Override
-//            public void onItemClick (View v, int position) {
-//                // do something with position
-//            }
-//        });
-
-
-        rlToolbarLogo.setOnClickListener (new View.OnClickListener () {
-            @Override
-            public void onClick (View v) {
-                if (result != null && ! result.isDrawerOpen ()) {
-                    result.openDrawer ();
-                }
-            }
-        });
-
         swipeRefreshLayout.setOnRefreshListener (new SwipeRefreshLayout.OnRefreshListener () {
             @Override
             public void onRefresh () {
                 swipeRefreshLayout.setRefreshing (false);
-                recyclerViewAllAtm.setVisibility (View.GONE);
+                listViewAllAtm.setVisibility (View.GONE);
                 progressBar.setVisibility (View.VISIBLE);
                 getAtmListFromServer ();
                 etSearch.setText ("");
@@ -374,10 +214,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     private void initPref () {
         LoginDetailsPref loginDetailsPref = LoginDetailsPref.getInstance ();
-        Constants.auditor_name = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.AUDITOR_NAME);
-        Constants.username = loginDetailsPref.getStringPref (MainActivity.this, LoginDetailsPref.USERNAME);
-        Constants.auditor_id_main = loginDetailsPref.getIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_ID);
-        Constants.auditor_agency_id = loginDetailsPref.getIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_AGENCY_ID);
+        Constants.auditor_name = loginDetailsPref.getStringPref (MainActivityBeforeRecycler.this, LoginDetailsPref.AUDITOR_NAME);
+        Constants.username = loginDetailsPref.getStringPref (MainActivityBeforeRecycler.this, LoginDetailsPref.USERNAME);
+        Constants.auditor_id_main = loginDetailsPref.getIntPref (MainActivityBeforeRecycler.this, LoginDetailsPref.AUDITOR_ID);
+        Constants.auditor_agency_id = loginDetailsPref.getIntPref (MainActivityBeforeRecycler.this, LoginDetailsPref.AUDITOR_AGENCY_ID);
     }
 
     private void initService () {
@@ -388,18 +228,16 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
     private void initView () {
-        recyclerViewAllAtm = (RecyclerView) findViewById (R.id.rvAtmList);
+        listViewAllAtm = (ListView) findViewById (R.id.lvAtmList);
         tvNoInternetConnection = (TextView) findViewById (R.id.tvNoIternetConnection);
         progressBar = (ProgressBar) findViewById (R.id.progressbar);
+        btEnterManually = (Button) findViewById (R.id.btEnterManually);
         etSearch = (EditText) findViewById (R.id.etAtmSearch);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById (R.id.swipe_refresh_layout);
-        fabEnterManually = (FloatingActionButton) findViewById (R.id.fabEnterManually);
-        fabMenu = (FloatingActionMenu) findViewById (R.id.fabMenu);
-        rlToolbarLogo = (RelativeLayout) findViewById (R.id.toolbar_logo);
     }
 
     private void getLatLong () {
-        GPSTracker gps = new GPSTracker (MainActivity.this);
+        GPSTracker gps = new GPSTracker (MainActivityBeforeRecycler.this);
         if (gps.canGetLocation ()) {
             Constants.latitude = gps.getLatitude ();
             Constants.longitude = gps.getLongitude ();
@@ -451,8 +289,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     @Override
     public void onBackPressed () {
-        if (result != null && result.isDrawerOpen ()) {
-            result.closeDrawer ();
+        if (mDrawerLayout.isDrawerOpen (mDrawerPanel)) {
+            mDrawerLayout.closeDrawer (mDrawerPanel);
         } else {
             finish ();
             overridePendingTransition (R.anim.slide_in_left, R.anim.slide_out_right);
@@ -468,53 +306,56 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     @Override
     public boolean onOptionsItemSelected (MenuItem item) {
         switch (item.getItemId ()) {
+//            case R.id.action_logout:
+//                showLogOutDialog ();
+//                return true;
             case R.id.action_search:
                 if (etSearch.isShown ()) {
                     etSearch.setVisibility (View.GONE);
-                    final Handler handler = new Handler ();
-                    handler.postDelayed (new Runnable () {
-                        @Override
-                        public void run () {
-                            etSearch.setText ("");
-                        }
-                    }, 1000);
                 } else {
                     etSearch.setVisibility (View.VISIBLE);
                 }
         }
-        Utils.hideSoftKeyboard (MainActivity.this);
+        Utils.hideSoftKeyboard (MainActivityBeforeRecycler.this);
+/**
+ if (item != null && item.getItemId () == android.R.id.home) {
+ if (mDrawerLayout.isDrawerOpen (mDrawerPanel)) {
+ } else {
+ mDrawerLayout.openDrawer (mDrawerPanel);
+ }
+ return true;
+ }
+ */
         return super.onOptionsItemSelected (item);
     }
 
     private void showLogOutDialog () {
-        TextView tvMessage;
-        MaterialDialog dialog = new MaterialDialog.Builder (this)
-                .customView (R.layout.dialog_basic, true)
-                .positiveText (R.string.dialog_logout_positive)
-                .negativeText (R.string.dialog_logout_negative)
-                .onPositive (new MaterialDialog.SingleButtonCallback () {
-                    @Override
-                    public void onClick (@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                        dialog.dismiss ();
-                        LoginDetailsPref loginDetailsPref = LoginDetailsPref.getInstance ();
-                        loginDetailsPref.putIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_ID, 0);
-                        loginDetailsPref.putStringPref (MainActivity.this, LoginDetailsPref.AUDITOR_NAME, "");
-                        loginDetailsPref.putStringPref (MainActivity.this, LoginDetailsPref.USERNAME, "");
-                        loginDetailsPref.putIntPref (MainActivity.this, LoginDetailsPref.AUDITOR_AGENCY_ID, 0);
-                        Intent intent = new Intent (MainActivity.this, LoginActivity.class);
-                        Constants.username = "";
-                        Constants.auditor_name = "";
-                        Constants.auditor_id_main = 0;
-                        intent.setFlags (Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity (intent);
-                        overridePendingTransition (R.anim.slide_in_left, R.anim.slide_out_right);
-                    }
-                }).build ();
-
-        tvMessage = (TextView) dialog.getCustomView ().findViewById (R.id.tvMessage);
-        tvMessage.setText (R.string.dialog_logout_content);
-        Utils.setTypefaceToAllViews (MainActivity.this, tvMessage);
-        dialog.show ();
+        AlertDialog.Builder alert = new AlertDialog.Builder (MainActivityBeforeRecycler.this);
+        alert.setMessage ("Are you sure you want to LOGOUT");
+        alert.setPositiveButton ("YES", new DialogInterface.OnClickListener () {
+            @Override
+            public void onClick (DialogInterface dialog, int which) {
+                LoginDetailsPref loginDetailsPref = LoginDetailsPref.getInstance ();
+                loginDetailsPref.putIntPref (MainActivityBeforeRecycler.this, LoginDetailsPref.AUDITOR_ID, 0);
+                loginDetailsPref.putStringPref (MainActivityBeforeRecycler.this, LoginDetailsPref.AUDITOR_NAME, "");
+                loginDetailsPref.putStringPref (MainActivityBeforeRecycler.this, LoginDetailsPref.USERNAME, "");
+                loginDetailsPref.putIntPref (MainActivityBeforeRecycler.this, LoginDetailsPref.AUDITOR_AGENCY_ID, 0);
+                Intent intent = new Intent (MainActivityBeforeRecycler.this, LoginActivity.class);
+                Constants.username = "";
+                Constants.auditor_name = "";
+                Constants.auditor_id_main = 0;
+                intent.setFlags (Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity (intent);
+                overridePendingTransition (R.anim.slide_in_left, R.anim.slide_out_right);
+            }
+        });
+        alert.setNegativeButton ("NO", new DialogInterface.OnClickListener () {
+            @Override
+            public void onClick (DialogInterface dialog, int which) {
+                dialog.dismiss ();
+            }
+        });
+        alert.show ();
     }
 
     private void showSplashScreen () {
@@ -534,7 +375,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
     private void setUpNavigationDrawer () {
-        toolbar = (Toolbar) findViewById (R.id.toolbar1);
+        Toolbar toolbar = (Toolbar) findViewById (R.id.toolbar1);
         toolbar.showOverflowMenu ();
         setSupportActionBar (toolbar);
         ActionBar actionBar = getSupportActionBar ();
@@ -546,6 +387,36 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             actionBar.setDisplayShowTitleEnabled (false);
         } catch (Exception ignored) {
         }
+        ListView mDrawerListView = (ListView) findViewById (R.id.navDrawerList);
+        mDrawerPanel = (RelativeLayout) findViewById (R.id.navDrawerPanel);
+        mDrawerLayout = (DrawerLayout) findViewById (R.id.drawer_layout);
+        ArrayAdapter<String> mAdapter = new ArrayAdapter<> (this, android.R.layout.simple_list_item_1, getResources ().getStringArray (R.array.menulist));
+        mDrawerListView.setAdapter (new NavDrawerAdapter (this, getResources ().getStringArray (R.array.menulist)));
+        mDrawerListView.setOnItemClickListener (new AdapterView.OnItemClickListener () {
+            @Override
+            public void onItemClick (AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
+                    case 0:
+                        break;
+                }
+                mDrawerLayout.closeDrawer (mDrawerPanel);
+            }
+        });
+        mDrawerToggle = new ActionBarDrawerToggle (this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+            public void onDrawerOpened (View drawerView) {
+                super.onDrawerOpened (drawerView);
+                //getSupportActionBar().setTitle(getString(R.string.drawer_opened));
+                invalidateOptionsMenu ();
+            }
+
+            public void onDrawerClosed (View view) {
+                super.onDrawerClosed (view);
+                //getSupportActionBar().setTitle(mActivityTitle);
+                invalidateOptionsMenu ();
+            }
+        };
+        mDrawerToggle.setDrawerIndicatorEnabled (true);
+        mDrawerLayout.setDrawerListener (mDrawerToggle);
     }
 
     private void getAtmListFromServer () {
@@ -589,16 +460,16 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                             adapter.notifyDataSetChanged ();
                             if (is_data_received != 0 && json_array_len != 0) {
                                 progressBar.setVisibility (View.GONE);
-                                recyclerViewAllAtm.setVisibility (View.VISIBLE);
+                                listViewAllAtm.setVisibility (View.VISIBLE);
                                 tvNoInternetConnection.setVisibility (View.GONE);
                             } else if (is_data_received != 0 && json_array_len == 0) {
                                 tvNoInternetConnection.setVisibility (View.VISIBLE);
                                 progressBar.setVisibility (View.GONE);
-                                recyclerViewAllAtm.setVisibility (View.GONE);
+                                listViewAllAtm.setVisibility (View.GONE);
                             }
                             if (is_data_received == 0) {
                                 progressBar.setVisibility (View.GONE);
-                                recyclerViewAllAtm.setVisibility (View.GONE);
+                                listViewAllAtm.setVisibility (View.GONE);
                                 tvNoInternetConnection.setVisibility (View.VISIBLE);
                             }
 
@@ -610,7 +481,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                         public void onErrorResponse (VolleyError error) {
                             Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
                             progressBar.setVisibility (View.GONE);
-                            recyclerViewAllAtm.setVisibility (View.VISIBLE);
+                            listViewAllAtm.setVisibility (View.VISIBLE);
                             getAtmListFromLocalDatabase ();
                         }
                     }) {
@@ -626,9 +497,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         } else {
             progressBar.setVisibility (View.GONE);
-            recyclerViewAllAtm.setVisibility (View.VISIBLE);
+            listViewAllAtm.setVisibility (View.VISIBLE);
             getAtmListFromLocalDatabase ();
-            Utils.showOkDialog (MainActivity.this, "Seems like there is no internet connection, the app will continue in Offline mode", false);
+            Utils.showOkDialog (MainActivityBeforeRecycler.this, "Seems like there is no internet connection, the app will continue in Offline mode", false);
         }
     }
 
@@ -694,78 +565,80 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
     private void showEnterManuallyDialog () {
-        final View positiveAction;
-        MaterialDialog dialog = new MaterialDialog.Builder (this)
-                .title (R.string.dialog_enter_manually_title)
-                .customView (R.layout.dialog_enter_manually, true)
-                .positiveText (R.string.dialog_enter_manually_positive)
-                .negativeText (R.string.dialog_enter_manually_negative)
-                .onPositive (new MaterialDialog.SingleButtonCallback () {
-                    @Override
-                    public void onClick (@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                        dialog.dismiss ();
-                        Constants.atm_location_in_manual = etEnterManuallyAtmLocation.getText ().toString ().toUpperCase ();
+        Button btEnterManuallyContinue;
+        final EditText etEnterManuallyAtmId;
+        final EditText etEnterManuallyAtmLocation;
 
-                        Constants.report.setAtm_id (0);
-                        Constants.report.setAuditor_id (Constants.auditor_id_main);
-                        Constants.report.setAgency_id (Constants.auditor_agency_id);
-                        Constants.report.setAtm_unique_id (etEnterManuallyAtmId.getText ().toString ().toUpperCase ());
-                        Constants.report.setLatitude (String.valueOf (Constants.latitude));
-                        Constants.report.setLongitude (String.valueOf (Constants.longitude));
+        dialogEnterManually = new Dialog (MainActivityBeforeRecycler.this);
+        dialogEnterManually.setContentView (R.layout.dialog_enter_manually);
+        dialogEnterManually.setCancelable (true);
+        btEnterManuallyContinue = (Button) dialogEnterManually.findViewById (R.id.btEnterManuallyContinue);
+        etEnterManuallyAtmId = (EditText) dialogEnterManually.findViewById (R.id.etEnterManuallyAtmId);
+        etEnterManuallyAtmLocation = (EditText) dialogEnterManually.findViewById (R.id.etEnterManuallyLocation);
+        Utils.setTypefaceToAllViews (MainActivityBeforeRecycler.this, etEnterManuallyAtmId);
+        dialogEnterManually.getWindow ().setBackgroundDrawable (new ColorDrawable (android.graphics.Color.TRANSPARENT));
+        dialogEnterManually.show ();
+        btEnterManuallyContinue.setOnClickListener (new View.OnClickListener () {
+            @Override
+            public void onClick (View v) {
+                if (etEnterManuallyAtmId.getText ().toString ().length () == 0)
+                    etEnterManuallyAtmId.setError ("Please enter the ATM ID");
+                else {
+                    dialogEnterManually.dismiss ();
 
-                        Intent mIntent = null;
-                        if (Utils.isPackageExists (MainActivity.this, "com.google.android.camera")) {
-                            mIntent = new Intent ();
-                            mIntent.setPackage ("com.google.android.camera");
-                            mIntent.setAction (android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                        } else {
-                            PackageManager packageManager = getPackageManager ();
-                            String defaultCameraPackage = null;
-                            List<ApplicationInfo> list = packageManager.getInstalledApplications (PackageManager.GET_UNINSTALLED_PACKAGES);
-                            for (int n = 0; n < list.size (); n++) {
-                                if ((list.get (n).flags & ApplicationInfo.FLAG_SYSTEM) == 1) {
-                                    Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Installed Applications  : " + list.get (n).loadLabel (packageManager).toString (), false);
-                                    Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "package name  : " + list.get (n).packageName, false);
-                                    if (list.get (n).loadLabel (packageManager).toString ().equalsIgnoreCase ("Camera")) {
-                                        defaultCameraPackage = list.get (n).packageName;
-                                        break;
+                    AlertDialog.Builder builder = new AlertDialog.Builder (MainActivityBeforeRecycler.this);
+                    builder.setMessage ("Please take an image of the ATM Machine\nNote : This image will be Geotagged")
+                            .setCancelable (false)
+                            .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
+                                public void onClick (DialogInterface dialog, int id) {
+                                    dialog.dismiss ();
+                                    Constants.atm_location_in_manual = etEnterManuallyAtmLocation.getText ().toString ().toUpperCase ();
+//                                    Constants.atm_unique_id = etEnterManuallyAtmId.getText ().toString ().toUpperCase ();
+
+                                    Constants.report.setAtm_id (0);
+                                    Constants.report.setAuditor_id (Constants.auditor_id_main);
+                                    Constants.report.setAgency_id (Constants.auditor_agency_id);
+                                    Constants.report.setAtm_unique_id (etEnterManuallyAtmId.getText ().toString ().toUpperCase ());
+                                    Constants.report.setLatitude (String.valueOf (Constants.latitude));
+                                    Constants.report.setLongitude (String.valueOf (Constants.longitude));
+
+                                    Intent mIntent = null;
+                                    if (Utils.isPackageExists (MainActivityBeforeRecycler.this, "com.google.android.camera")) {
+                                        mIntent = new Intent ();
+                                        mIntent.setPackage ("com.google.android.camera");
+                                        mIntent.setAction (android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                                    } else {
+                                        PackageManager packageManager = getPackageManager ();
+                                        String defaultCameraPackage = null;
+                                        List<ApplicationInfo> list = packageManager.getInstalledApplications (PackageManager.GET_UNINSTALLED_PACKAGES);
+                                        for (int n = 0; n < list.size (); n++) {
+                                            if ((list.get (n).flags & ApplicationInfo.FLAG_SYSTEM) == 1) {
+                                                Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "Installed Applications  : " + list.get (n).loadLabel (packageManager).toString (), false);
+                                                Utils.showLog (Log.DEBUG, AppConfigTags.TAG, "package name  : " + list.get (n).packageName, false);
+                                                if (list.get (n).loadLabel (packageManager).toString ().equalsIgnoreCase ("Camera")) {
+                                                    defaultCameraPackage = list.get (n).packageName;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        mIntent = new Intent ();
+                                        mIntent.setPackage (defaultCameraPackage);
+                                        mIntent.setAction (android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                                     }
+                                    if (mIntent.resolveActivity (getPackageManager ()) != null)
+                                        startActivityForResult (mIntent, MainActivityBeforeRecycler.GEO_IMAGE_REQUEST_CODE);
                                 }
-                            }
-                            mIntent = new Intent ();
-                            mIntent.setPackage (defaultCameraPackage);
-                            mIntent.setAction (android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                        }
-                        if (mIntent.resolveActivity (getPackageManager ()) != null)
-                            startActivityForResult (mIntent, MainActivity.GEO_IMAGE_REQUEST_CODE);
-                    }
-                }).build ();
-
-        positiveAction = dialog.getActionButton (DialogAction.POSITIVE);
-        etEnterManuallyAtmId = (EditText) dialog.getCustomView ().findViewById (R.id.etEnterManuallyAtmId);
-        etEnterManuallyAtmLocation = (EditText) dialog.getCustomView ().findViewById (R.id.etEnterManuallyLocation);
-        etEnterManuallyAtmId.addTextChangedListener (new TextWatcher () {
-            @Override
-            public void beforeTextChanged (CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged (CharSequence s, int start, int before, int count) {
-                positiveAction.setEnabled (s.toString ().trim ().length () > 0);
-            }
-
-            @Override
-            public void afterTextChanged (Editable s) {
+                            })
+                            .setNegativeButton ("CANCEL", new DialogInterface.OnClickListener () {
+                                public void onClick (DialogInterface dialog, int id) {
+                                    dialog.dismiss ();
+                                }
+                            });
+                    AlertDialog alert = builder.create ();
+                    alert.show ();
+                }
             }
         });
-        Utils.setTypefaceToAllViews (MainActivity.this, etEnterManuallyAtmId);
-        int widgetColor = ThemeSingleton.get ().widgetColor;
-        MDTintHelper.setTint (etEnterManuallyAtmId,
-                widgetColor == 0 ? ContextCompat.getColor (this, R.color.accent) : widgetColor);
-        MDTintHelper.setTint (etEnterManuallyAtmLocation,
-                widgetColor == 0 ? ContextCompat.getColor (this, R.color.accent) : widgetColor);
-        dialog.show ();
-        positiveAction.setEnabled (false); // disabled by default
     }
 
     private void uploadStoredReportsToServer () {
@@ -773,10 +646,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         List<com.actiknow.liveaudit.model.Report> allReports = db.getAllReports ();
         for (com.actiknow.liveaudit.model.Report report : allReports) {
             final com.actiknow.liveaudit.model.Report finalReport = report;
-            if (NetworkConnection.isNetworkAvailable (MainActivity.this)) {
+            if (NetworkConnection.isNetworkAvailable (MainActivityBeforeRecycler.this)) {
                 Utils.showLog (Log.INFO, "offline " + AppConfigTags.URL, AppConfigURL.URL_SUBMITREPORT, true);
                 StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITREPORT,
-                        new com.android.volley.Response.Listener<String> () {
+                        new Response.Listener<String> () {
                             @Override
                             public void onResponse (String response) {
                                 Utils.showLog (Log.INFO, "offline " + AppConfigTags.SERVER_RESPONSE, response, true);
@@ -798,7 +671,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                                 }
                             }
                         },
-                        new com.android.volley.Response.ErrorListener () {
+                        new Response.ErrorListener () {
                             @Override
                             public void onErrorResponse (VolleyError error) {
                                 Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
@@ -845,7 +718,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             if (NetworkConnection.isNetworkAvailable (this)) {
                 Utils.showLog (Log.INFO, AppConfigTags.URL, AppConfigURL.URL_SUBMITAUDITORLOCATION, true);
                 StringRequest strRequest1 = new StringRequest (Request.Method.POST, AppConfigURL.URL_SUBMITAUDITORLOCATION,
-                        new com.android.volley.Response.Listener<String> () {
+                        new Response.Listener<String> () {
                             @Override
                             public void onResponse (String response) {
                                 Utils.showLog (Log.INFO, AppConfigTags.SERVER_RESPONSE, response, true);
@@ -868,7 +741,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                                 }
                             }
                         },
-                        new com.android.volley.Response.ErrorListener () {
+                        new Response.ErrorListener () {
                             @Override
                             public void onErrorResponse (VolleyError error) {
                                 Utils.showLog (Log.ERROR, AppConfigTags.VOLLEY_ERROR, error.toString (), true);
@@ -902,13 +775,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
                     Bitmap bp = null;
                     if (f.exists ()) {
-                        bp = Utils.compressBitmap (BitmapFactory.decodeFile (f.getAbsolutePath ()), MainActivity.this);
+                        bp = Utils.compressBitmap (BitmapFactory.decodeFile (f.getAbsolutePath ()), MainActivityBeforeRecycler.this);
                     }
 //                    Bitmap bp = (Bitmap) data.getExtras ().get ("data");
                     String image = Utils.bitmapToBase64 (bp);
                     Constants.report.setGeo_image_string (image);
 
-                    Intent intent = new Intent (MainActivity.this, AllQuestionListActivity.class);
+                    Intent intent = new Intent (MainActivityBeforeRecycler.this, AllQuestionListActivity.class);
                     startActivity (intent);
                     overridePendingTransition (R.anim.slide_in_right, R.anim.slide_out_left);
                     break;
@@ -931,7 +804,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
                 requestPermissions (new String[] {Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.INTERNET, Manifest.permission.RECEIVE_BOOT_COMPLETED, WRITE_EXTERNAL_STORAGE},
-                        MainActivity.PERMISSION_REQUEST_CODE);
+                        MainActivityBeforeRecycler.PERMISSION_REQUEST_CODE);
             }
 /*
             if (checkSelfPermission (Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -962,7 +835,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     boolean showRationale = shouldShowRequestPermissionRationale (permission);
                     if (! showRationale) {
                         Utils.showToast (this, "");
-                        AlertDialog.Builder builder = new AlertDialog.Builder (MainActivity.this);
+                        AlertDialog.Builder builder = new AlertDialog.Builder (MainActivityBeforeRecycler.this);
                         builder.setMessage ("Permission are required please enable them on the App Setting page")
                                 .setCancelable (false)
                                 .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
@@ -1014,6 +887,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     @Override
     public void onRefresh () {
+
     }
 }
 

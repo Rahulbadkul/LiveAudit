@@ -3,7 +3,6 @@ package com.actiknow.liveaudit.utils;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -11,11 +10,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
+import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -28,6 +28,8 @@ import com.actiknow.liveaudit.R;
 import com.actiknow.liveaudit.activity.MainActivity;
 import com.actiknow.liveaudit.app.AppController;
 import com.actiknow.liveaudit.model.Response;
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.toolbox.StringRequest;
 
@@ -99,23 +101,40 @@ public class Utils {
     }
 
     public static void showOkDialog (final Activity activity, String message, final boolean finish_flag) {
-        AlertDialog.Builder builder = new AlertDialog.Builder (activity);
-        builder.setMessage (message)
-                .setCancelable (false)
-                .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
-                    public void onClick (DialogInterface dialog, int id) {
+        TextView tvMessage;
+        MaterialDialog dialog = new MaterialDialog.Builder (activity)
+                .customView (R.layout.dialog_basic, true)
+                .positiveText (R.string.dialog_basic_positive)
+                .onPositive (new MaterialDialog.SingleButtonCallback () {
+                    @Override
+                    public void onClick (@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         dialog.dismiss ();
                         if (finish_flag) {
                             Intent intent = new Intent (activity, MainActivity.class);
                             intent.setFlags (Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             activity.startActivity (intent);
-//                            activity.finish();
                             activity.overridePendingTransition (R.anim.slide_in_left, R.anim.slide_out_right);
                         }
+                    }
+                }).build ();
+
+        tvMessage = (TextView) dialog.getCustomView ().findViewById (R.id.tvMessage);
+        tvMessage.setText (message);
+        Utils.setTypefaceToAllViews (activity, tvMessage);
+        dialog.show ();
+
+/*
+        AlertDialog.Builder builder = new AlertDialog.Builder (activity);
+        builder.setMessage (message)
+                .setCancelable (false)
+                .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
+                    public void onClick (DialogInterface dialog, int id) {
                     }
                 });
         AlertDialog alert = builder.create ();
         alert.show ();
+
+*/
     }
 
     public static void showSnackBar (CoordinatorLayout coordinatorLayout, String message) {
@@ -251,5 +270,13 @@ public class Utils {
         int height = Math.round ((float) ratio * realImage.getHeight ());
         Bitmap newBitmap = Bitmap.createScaledBitmap (realImage, width, height, filter);
         return newBitmap;
+    }
+
+    public static int getScreenHeight (Activity activity) {
+        DisplayMetrics displaymetrics = new DisplayMetrics ();
+        activity.getWindowManager ().getDefaultDisplay ().getMetrics (displaymetrics);
+        int height = displaymetrics.heightPixels;
+        int width = displaymetrics.widthPixels;
+        return height;
     }
 }

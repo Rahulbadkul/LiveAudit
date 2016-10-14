@@ -4,64 +4,88 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
-    android:background="@drawable/bg_layout_round_corners"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/textView6"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="10dp"
-        android:text="Enter the ATM ID"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
-    <EditText
-        android:id="@+id/etEnterManuallyAtmId"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textView6"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:ems="7"/>
-    <TextView
-        android:id="@+id/textView7"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/etEnterManuallyAtmId"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:text="Enter the Location"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
-    <EditText
-        android:id="@+id/etEnterManuallyLocation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/etEnterManuallyAtmId"
-        android:layout_alignStart="@+id/etEnterManuallyAtmId"
-        android:layout_below="@+id/textView7"
-        android:layout_marginBottom="10dp"
-        android:ems="7"
 
-        android:hint="Optional"/>
-    <Button
-        android:id="@+id/btEnterManuallyContinue"
-        android:layout_width="wrap_content"
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/input_layout_atm_id"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/etEnterManuallyLocation"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:background="@drawable/bg_button"
-        android:text="CONTINUE"
-        android:textColor="@color/text_color_white"
-        android:textSize="20sp"
-        android:textStyle="bold"/>
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+        <EditText
+            android:id="@+id/etEnterManuallyAtmId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="ATM ID"
+            android:inputType="phone"
+            android:padding="8dp"
+            android:textSize="@dimen/text_size_medium"/>
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/input_layout_atm_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/input_layout_atm_id">
+        <EditText
+            android:id="@+id/etEnterManuallyLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Location (optional)"
+            android:inputType="textMultiLine"
+            android:padding="8dp"
+            android:textSize="@dimen/text_size_medium"/>
+    </android.support.design.widget.TextInputLayout>
 
 
+    <!--
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:text="ATM ID"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="@dimen/text_size_small"/>
+        <EditText
+            android:id="@+id/etEnterManuallyAtmId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/textView6"
+            android:textSize="@dimen/text_size_medium"
+        />
+
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/etEnterManuallyAtmId"
+            android:text="Location (optional)"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="@dimen/text_size_small"/>
+        <EditText
+            android:id="@+id/etEnterManuallyLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/textView7"
+            android:textSize="@dimen/text_size_medium"/>
+
+    -->
 </RelativeLayout>

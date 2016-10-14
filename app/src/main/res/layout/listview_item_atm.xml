@@ -3,8 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:background="@color/white"
     android:orientation="horizontal">
     <RelativeLayout
+        android:id="@+id/rlAtmDetail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
@@ -61,4 +63,8 @@
             android:text="NEW DELHI"
             android:textSize="14sp"/>
     </RelativeLayout>
+    <View
+        android:id="@+id/view4"
+        style="@style/Divider"
+        android:layout_below="@+id/rlAtmDetail"/>
 </RelativeLayout>

@@ -5,39 +5,46 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.LoginActivity"
->
+    tools:context=".activity.LoginActivity">
     <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/login_screen_background"
         android:orientation="vertical">
-
-
         <android.support.design.widget.TextInputLayout
             android:id="@+id/input_layout_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/textView"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="20dp">
-
+            android:layout_marginLeft="@dimen/activity_margin"
+            android:layout_marginRight="@dimen/activity_margin"
+            android:layout_marginTop="@dimen/activity_margin">
             <EditText
                 android:id="@+id/etUsername"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:background="@drawable/layout_edittext"
                 android:drawableLeft="@drawable/ic_user"
                 android:hint="Email"
                 android:inputType="textEmailAddress"
-                android:paddingBottom="10dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-
-                android:paddingTop="15dp"/>
+                android:padding="@dimen/edittext_padding"
+                android:textSize="@dimen/text_size_medium"/>
+            <!--
+                        <EditText
+                            android:id="@+id/etUsername"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/layout_edittext"
+                            android:drawableLeft="@drawable/ic_user"
+                            android:hint="Email"
+                            android:inputType="textEmailAddress"
+                            android:paddingBottom="10dp"
+                            android:paddingLeft="10dp"
+                            android:paddingRight="10dp"
+                            android:paddingTop="15dp"/>
+            -->
         </android.support.design.widget.TextInputLayout>
         <android.support.design.widget.TextInputLayout
             android:id="@+id/input_layout_password"
@@ -45,24 +52,33 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_below="@+id/input_layout_email" android:layout_margin="20dp">
-
+            android:layout_below="@+id/input_layout_email"
+            android:layout_margin="@dimen/activity_margin">
             <EditText
                 android:id="@+id/etPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/layout_edittext"
                 android:drawableLeft="@drawable/ic_password"
                 android:hint="Password"
                 android:inputType="textPassword"
-                android:paddingBottom="10dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:paddingTop="15dp"/>
+                android:padding="@dimen/edittext_padding"
+                android:textSize="@dimen/text_size_medium"/>
+            <!--
+                        <EditText
+                            android:id="@+id/etPassword"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/layout_edittext"
+                            android:drawableLeft="@drawable/ic_password"
+                            android:hint="Password"
+                            android:inputType="textPassword"
+                            android:paddingBottom="10dp"
+                            android:paddingLeft="10dp"
+                            android:paddingRight="10dp"
+                            android:paddingTop="15dp"/>
+            -->
         </android.support.design.widget.TextInputLayout>
-
         <!--
-
         <EditText
             android:id="@+id/etUsername"
             android:layout_width="wrap_content"
@@ -97,7 +113,6 @@
             android:hint="Password"
             android:inputType="textPassword"
             android:padding="15dp"/>
-
 -->
         <!--
                 <com.dd.CircularProgressButton
@@ -119,8 +134,8 @@
         <!--
                 <com.dd.morphingbutton.MorphingButton
             -->
-        <Button
-            android:id="@+id/btLogin"
+        <TextView
+            android:id="@+id/tvLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignEnd="@+id/input_layout_password"
@@ -128,11 +143,11 @@
             android:layout_alignRight="@+id/input_layout_password"
             android:layout_alignStart="@+id/input_layout_password"
             android:layout_below="@+id/input_layout_password"
-
-            android:background="@color/colorPrimary"
-            android:text="Login"
+            android:background="@drawable/bg_button"
+            android:gravity="center"
+            android:text="LOGIN"
             android:textColor="@color/text_color_white"
-            android:textSize="20sp"
+            android:textSize="@dimen/text_size_extra_large"
             android:textStyle="bold"/>
         <TextView
             android:id="@+id/textView"
@@ -151,7 +166,7 @@
             android:id="@+id/tvForgetPassword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/btLogin"
+            android:layout_below="@+id/tvLogin"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="40dp"
             android:clickable="true"

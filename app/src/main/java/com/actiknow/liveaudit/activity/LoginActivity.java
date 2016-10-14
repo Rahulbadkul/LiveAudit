@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -37,7 +36,8 @@ import java.util.Map;
 public class LoginActivity extends AppCompatActivity {
     TextView tvForgetPassword, tvForgetUsername;
     EditText etUsername, etPassword;
-    Button btLogin;
+    //    Button btLogin;
+    TextView tvLogin;
     ProgressDialog progressDialog;
     CoordinatorLayout coordinatorLayout;
 //    MorphingButton btLogin;
@@ -56,7 +56,7 @@ public class LoginActivity extends AppCompatActivity {
         tvForgetPassword = (TextView) findViewById (R.id.tvForgetPassword);
         etUsername = (EditText) findViewById (R.id.etUsername);
         etPassword = (EditText) findViewById (R.id.etPassword);
-        btLogin = (Button) findViewById (R.id.btLogin);
+        tvLogin = (TextView) findViewById (R.id.tvLogin);
     }
 
     private void initData () {
@@ -76,7 +76,7 @@ public class LoginActivity extends AppCompatActivity {
                 return true;
             }
         });
-        btLogin.setOnClickListener (new View.OnClickListener () {
+        tvLogin.setOnClickListener (new View.OnClickListener () {
             @Override
             public void onClick (View v) {
                 Utils.hideSoftKeyboard (LoginActivity.this);
@@ -102,13 +102,6 @@ public class LoginActivity extends AppCompatActivity {
 
 
             //         new Login (this).execute (etUsername.getText ().toString (), etPassword.getText ().toString ());
-
-
-
-
-
-
-
 
 
 

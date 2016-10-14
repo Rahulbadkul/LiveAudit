@@ -252,24 +252,26 @@ public class AllQuestionListActivity extends AppCompatActivity {
     }
 
     private void showSignatureDialog () {
-        Button btSignCanel;
+        Button btSignCancel;
         Button btSignClear;
         Button btSignSave;
-        final SignatureView signatureView;
+        final SignatureView techSignatureView;
+        final SignatureView custSignatureView;
 
         dialogSign = new Dialog (AllQuestionListActivity.this);
         dialogSign.setContentView (R.layout.dialog_signature);
         dialogSign.setCancelable (false);
-        btSignCanel = (Button) dialogSign.findViewById (R.id.btSignCancel);
+        btSignCancel = (Button) dialogSign.findViewById (R.id.btSignCancel);
         btSignClear = (Button) dialogSign.findViewById (R.id.btSignClear);
         btSignSave = (Button) dialogSign.findViewById (R.id.btSignSave);
-        signatureView = (SignatureView) dialogSign.findViewById (R.id.signSignatureView);
+        techSignatureView = (SignatureView) dialogSign.findViewById (R.id.techSignatureView);
+        custSignatureView = (SignatureView) dialogSign.findViewById (R.id.custSignatureView);
 
-        Utils.setTypefaceToAllViews (AllQuestionListActivity.this, btSignCanel);
+        Utils.setTypefaceToAllViews (AllQuestionListActivity.this, btSignCancel);
 //        dialogSign.requestWindowFeature (Window.FEATURE_NO_TITLE);
         dialogSign.getWindow ().setBackgroundDrawable (new ColorDrawable (android.graphics.Color.TRANSPARENT));
         dialogSign.show ();
-        btSignCanel.setOnClickListener (new View.OnClickListener () {
+        btSignCancel.setOnClickListener (new View.OnClickListener () {
             @Override
             public void onClick (View v) {
                 dialogSign.dismiss ();
@@ -278,7 +280,8 @@ public class AllQuestionListActivity extends AppCompatActivity {
         btSignClear.setOnClickListener (new View.OnClickListener () {
             @Override
             public void onClick (View v) {
-                signatureView.clearCanvas ();
+                techSignatureView.clearCanvas ();
+                custSignatureView.clearCanvas ();
             }
         });
         btSignSave.setOnClickListener (new View.OnClickListener () {
@@ -287,7 +290,8 @@ public class AllQuestionListActivity extends AppCompatActivity {
                 dialogSign.dismiss ();
 //                pDialog = new ProgressDialog (AllQuestionListActivity.this);
 //                Utils.showProgressDialog (pDialog, null);
-                Bitmap bp = signatureView.getSignatureBitmap ();
+                Bitmap bp = techSignatureView.getSignatureBitmap ();
+                Bitmap bp2 = custSignatureView.getSignatureBitmap ();
                 Constants.report.setSignature_image_string (Utils.bitmapToBase64 (bp));
                 submitReportToServer (Constants.report);
             }
