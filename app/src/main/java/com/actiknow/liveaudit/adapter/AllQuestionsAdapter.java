@@ -194,11 +194,17 @@ public class AllQuestionsAdapter extends BaseAdapter {
                 final EditText etEnterComment;
                 Response response = new Response ();
                 response = Constants.responseList.get (position);
-
                 final View positiveAction;
 
+                String comment;
+
+                if (position == 0)
+                    comment = response.getComment ().replace (Constants.atm_location_in_manual, "");
+                else
+                    comment = response.getComment ();
+
                 MaterialDialog dialog = new MaterialDialog.Builder (activity)
-                        .title (R.string.dialog_comment_Title)
+                        .title (R.string.dialog_comment_title)
 //                        .content (R.string.input_content)
                         .inputType (InputType.TYPE_CLASS_TEXT)// |
 //                                InputType.TYPE_TEXT_VARIATION_PERSON_NAME |
@@ -206,7 +212,7 @@ public class AllQuestionsAdapter extends BaseAdapter {
 //                        .inputRange (2, 16)
                         .positiveText (R.string.dialog_comment_positive)
                         .negativeText (R.string.dialog_comment_negative)
-                        .input (R.string.dialog_comment_Title, R.string.dialog_comment_Title, false, new MaterialDialog.InputCallback () {
+                        .input ("", comment, false, new MaterialDialog.InputCallback () {
                             @Override
                             public void onInput (@NonNull MaterialDialog dialog, CharSequence input) {
                                 Utils.showToast (activity, "Hello, " + input.toString () + "!");
@@ -224,7 +230,12 @@ public class AllQuestionsAdapter extends BaseAdapter {
                                 }
                             }
                         }).show ();
-/*
+
+
+
+
+
+                /*
                 .onPositive (new MaterialDialog.SingleButtonCallback () {
                             @Override
                             public void onClick (@NonNull MaterialDialog dialog, @NonNull DialogAction which) {

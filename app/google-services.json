@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "567026751103",
+    "firebase_url": "https://liveaudit-b1837.firebaseio.com",
+    "project_id": "liveaudit-b1837",
+    "storage_bucket": "liveaudit-b1837.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:567026751103:android:bc548814b91f0600",
+        "android_client_info": {
+          "package_name": "com.actiknow.liveaudit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "567026751103-u7ticdrnrntpnu5norfm5baot58cm9rf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjyRmmU6jMfIiJz06dl6L1BH3DvqNLsB0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

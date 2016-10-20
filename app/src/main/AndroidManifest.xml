@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
         android:name="com.actiknow.liveaudit.app.AppController"
@@ -38,6 +38,26 @@
                   android:screenOrientation="portrait">
         </activity>
 
+        <!--
+       Defining Services
+   -->
+        <!--
+                <service
+                    android:name=".service.MyFirebaseMessagingService"
+                    android:enabled="true">
+                    <intent-filter>
+                        <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                    </intent-filter>
+                </service>
+
+                <service
+                    android:name="service.MyFirebaseInstanceIDService"
+                    android:enabled="true">
+                    <intent-filter>
+                        <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+                    </intent-filter>
+                </service>
+        -->
         <service
             android:name=".service.LocationService"
             android:enabled="true">
@@ -58,6 +78,7 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version"/>
+
 
     </application>
 

@@ -2,8 +2,10 @@
 package com.actiknow.liveaudit.activity;
 
 import android.Manifest;
+import android.animation.LayoutTransition;
 import android.annotation.TargetApi;
 import android.app.Dialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,6 +29,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -37,6 +40,7 @@ import android.view.View;
 import android.view.animation.OvershootInterpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -160,7 +164,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         db.closeDB ();
     }
 
-
     private void initDrawer () {
         DrawerImageLoader.init (new AbstractDrawerImageLoader () {
             @Override
@@ -254,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         recyclerViewAllAtm.setHasFixedSize (true);
         recyclerViewAllAtm.setLayoutManager (new LinearLayoutManager (this));
         recyclerViewAllAtm.setItemAnimator (new DefaultItemAnimator ());
+
         client = new GoogleApiClient.Builder (this).addApi (AppIndex.API).build ();
         dialogSplash = new Dialog (this, R.style.full_screen);
         swipeRefreshLayout.setRefreshing (false);
@@ -312,7 +316,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 alphaAdapter.setDuration (700);
                 alphaAdapter.setFirstOnly (true);
                 alphaAdapter.setInterpolator (new OvershootInterpolator ());
-
 //                SlideInLeftAnimationAdapter slideAdapter = new SlideInLeftAnimationAdapter (alphaAdapter);
 //                slideAdapter.setDuration (500);
 //                slideAdapter.setFirstOnly (true);
@@ -360,7 +363,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 etSearch.setError (null);
             }
         });
-
     }
 
     private void isLogin () {
@@ -462,25 +464,59 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     @Override
     public boolean onCreateOptionsMenu (Menu menu) {
         getMenuInflater ().inflate (R.menu.menu_main, menu);
-        return true;
+
+        SearchManager searchManager = (SearchManager) getSystemService (Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem (R.id.action_search).getActionView ();
+        if (null != searchView) {
+            searchView.setSearchableInfo (searchManager.getSearchableInfo (getComponentName ()));
+//            searchView.setIconifiedByDefault (false);
+        }
+
+//        final int searchBarId = searchView.getContext ().getResources ().getIdentifier ("android:id/search_bar", null, null);
+//        LinearLayout searchBar = (LinearLayout) searchView.findViewById (searchBarId);
+
+        EditText et = (EditText) searchView.findViewById (R.id.search_src_text);
+//        et.getBackground ().setColorFilter (R.color.text_color_grey_dark,null);
+//        et.setBackgroundColor (getResources ().getColor (R.color.text_color_grey_light)); // ← If you just want a color
+//        et.setBackground (getResources ().getDrawable (R.drawable.layout_search_edittext));
+
+        LinearLayout searchBar = (LinearLayout) searchView.findViewById (R.id.search_bar);
+        searchBar.setLayoutTransition (new LayoutTransition ());
+
+        searchView.setQueryHint ("Search ATM ID");
+        SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener () {
+            public boolean onQueryTextChange (String newText) {
+                etSearch.setText (newText);
+                return true;
+            }
+
+            public boolean onQueryTextSubmit (String query) {
+                //Here u can get the value "query" which is entered in the search box.
+                return true;
+            }
+        };
+        searchView.setOnQueryTextListener (queryTextListener);
+
+        return super.onCreateOptionsMenu (menu);
     }
 
     @Override
     public boolean onOptionsItemSelected (MenuItem item) {
         switch (item.getItemId ()) {
             case R.id.action_search:
-                if (etSearch.isShown ()) {
-                    etSearch.setVisibility (View.GONE);
-                    final Handler handler = new Handler ();
-                    handler.postDelayed (new Runnable () {
-                        @Override
-                        public void run () {
-                            etSearch.setText ("");
-                        }
-                    }, 1000);
-                } else {
-                    etSearch.setVisibility (View.VISIBLE);
-                }
+//                if (etSearch.isShown ()) {
+//                    etSearch.setVisibility (View.GONE);
+//                    final Handler handler = new Handler ();
+//                    handler.postDelayed (new Runnable () {
+//                        @Override
+//                        public void run () {
+//                            etSearch.setText ("");
+//                        }
+//                    }, 1000);
+//                } else {
+//                    etSearch.setVisibility (View.VISIBLE);
+//                }
+                break;
         }
         Utils.hideSoftKeyboard (MainActivity.this);
         return super.onOptionsItemSelected (item);
